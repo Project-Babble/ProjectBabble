@@ -5,6 +5,8 @@ import dlib
 import cv2
 import numpy as np
 import time
+import math
+from oneeurofilter import OneEuroFilter
 def nothing1(x):
     print(x)
 def nothing2(y):
@@ -13,12 +15,10 @@ def nothing3(z):
     print(z)
 def nothing4(y):
     print(y)	
-# construct the argument parser and parse the arguments
-# initialize dlib's face detector (HOG-based) and then load our
-# trained shape predictor
-print("[INFO] loading facial landmark predictor...")
-detector = dlib.get_frontal_face_detector()
-predictor = dlib.shape_predictor("model_3.dat")
+min_cutoff = 0.07
+beta = 0.03
+#print noisy point shape
+predictor = dlib.shape_predictor("2model.dat")
 # initialize the video stream and allow the cammera sensor to warmup
 print("[INFO] camera sensor warming up...")
 vs = VideoStream(0).start()
@@ -28,7 +28,12 @@ cv2.createTrackbar('1','Frame',1,1000,nothing1)
 cv2.createTrackbar('2','Frame',1,1000,nothing2)
 cv2.createTrackbar('3','Frame',1,1000,nothing3)
 cv2.createTrackbar('4','Frame',1,1000,nothing4)
-# loop over the frames from the video stream
+shape_array = np.zeros((32, 2), dtype="int")
+one_euro_filter = OneEuroFilter(
+	shape_array,
+	min_cutoff=min_cutoff,
+	beta=beta
+	) 
 while True:
 	a = 100
 	b = 200
@@ -43,13 +48,16 @@ while True:
 	(x, y, w, h) = face_utils.rect_to_bb(rect)
 	cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
 	start = time.time()
-	shape = predictor(gray, rect)
-	shape = face_utils.shape_to_np(shape)
-	# loop over the (x, y)-coordinates from our dlib shape
-	# predictor model draw them on the image 
-	
-	for (sX, sY) in shape:
-		cv2.circle(frame, (sX, sY), 1, (0, 0, 255), -1)
+	points = predictor(gray, rect)
+	points = face_utils.shape_to_np(points)
+	# loop over the (x, y)-coordinates for the facial landmarks
+	#and filter each point
+	points = one_euro_filter(points)
+	for (x, y) in points:
+		#make ints
+		x = int(x)
+		y = int(y)
+		cv2.circle(frame, (x, y), 1, (255, 0, 0), -1)
 	end = time.time()
 	try:
 		fps = 1/(end - start)
