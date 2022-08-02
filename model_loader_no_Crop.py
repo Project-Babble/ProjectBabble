@@ -33,10 +33,12 @@ cap = cv2.VideoCapture(0)
 while True:
     #read the frame
     ret, frame = cap.read()
-    #convert the frame to grayscale
+    #convert the frame to gr ayscale
     frame = cv2.resize(frame, (100,100))
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-    gray = cv2.GaussianBlur(gray, (3, 3), 0)
+    img = gray[10:gray.shape[0]-50, 0:gray.shape[1]]
+    img = cv2.resize(img, (100,100))
+    gray = cv2.GaussianBlur(img, (3, 3), 0)
     image = gray.reshape(1,1, 100, 100) 
     image = torch.from_numpy(image).to(device)
     image = image.float()
