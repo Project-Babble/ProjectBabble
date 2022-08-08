@@ -20,13 +20,15 @@ vc()
 #check if cuda is available
 if torch.cuda.is_available():
     device = torch.device("cuda")
+    print("CUDA is available")
 else:
     device = torch.device("cpu")
-
+    print("CUDA is not available")
 #cheekPuff,cheekSquint_L,cheekSquint_R,noseSneer_L,noseSneer_R,jawOpen,jawForward,jawLeft,jawRight,mouthFunnel,mouthPucker,mouthLeft,mouthRight,mouthRollUpper,mouthRollLower,mouthShrugUpper,mouthShrugLower,mouthClose,mouthSmile_L,mouthSmile_R,mouthFrown_L,mouthFrown_R,mouthDimple_L,mouthDimple_R,mouthUpperUp_L,mouthUpperUp_R,mouthLowerDown_L,mouthLowerDown_R,mouthPress_L,mouthPress_R,mouthStretch_L,mouthStretch_R,tongueOut
 classes = ["cheekPuff", "cheekSquint_L", "cheekSquint_R", "noseSneer_L", "noseSneer_R", "jawOpen", "jawForward", "jawLeft", "jawRight", "mouthFunnel", "mouthPucker", "mouthLeft", "mouthRight", "mouthRollUpper", "mouthRollLower", "mouthShrugUpper", "mouthShrugLower", "mouthClose", "mouthSmile_L", "mouthSmile_R", "mouthFrown_L", "mouthFrown_R", "mouthDimple_L", "mouthDimple_R", "mouthUpperUp_L", "mouthUpperUp_R", "mouthLowerDown_L", "mouthLowerDown_R", "mouthPress_L", "mouthPress_R", "mouthStretch_L", "mouthStretch_R", "tongueOut"]   
-model = mobilenetv2.mobilenetv2().to(device)
-model.load_state_dict(torch.load('model.pt'))
+device = torch.device("cpu")
+model =  mobilenetv2.mobilenetv2().to(device)
+model.load_state_dict(torch.load('modelv2.pt'))
 model.eval()
 
 cap = cv2.VideoCapture(0)
@@ -35,8 +37,9 @@ while True:
     ret, frame = cap.read()
     #convert the frame to gr ayscale
     frame = cv2.resize(frame, (100,100))
-    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-    img = gray[10:gray.shape[0]-50, 0:gray.shape[1]]
+    #remove 10 pixels from the top
+    frame = frame[10:,:,:]
+    img = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
     img = cv2.resize(img, (100,100))
     gray = cv2.GaussianBlur(img, (3, 3), 0)
     image = gray.reshape(1,1, 100, 100) 
@@ -45,6 +48,8 @@ while True:
     start = time.time()
     output = model(image)
     end = time.time()
+    #print fps
+    print(1/(end-start))
     output = output.detach().cpu().numpy()
     #get the avatar/parameter/jawOpen'
     output = output[0]
@@ -88,11 +93,5 @@ while True:
     cv2.imshow("image", gray)
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break
-cap.release()
-cv2.destroyAllWindows()
-
-
-
-
 cap.release()
 cv2.destroyAllWindows()
