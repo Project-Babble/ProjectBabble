@@ -14,7 +14,7 @@ classes = ["cheekPuff", "cheekSquint_L", "cheekSquint_R", "noseSneer_L", "noseSn
 
 cap = cv2.VideoCapture(0)
 sessionOptions = ort.SessionOptions()
-ort_sess = ort.InferenceSession("modelv2.onnx", providers = ['CPUExecutionProvider'])
+ort_sess = ort.InferenceSession("modelv2.2.onnx", providers = ['CPUExecutionProvider'])
 while True:
     #read the frame
     ret, frame = cap.read()
