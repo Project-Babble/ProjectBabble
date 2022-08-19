@@ -23,3 +23,7 @@ Lol
 ### Credit 
 
 Thanks to dfgHiatus#7426 for proviving the unity scripts in the demo!! 
+
+
+
+Copyright (c) 2022 Sameer Suri
