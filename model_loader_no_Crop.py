@@ -26,11 +26,7 @@ else:
     thread = mp.cpu_count() 
     torch.set_num_threads(thread/2)
     print("CUDA is not available")
-device = torch.device("cpu")
-thread = mp.cpu_count()
-#only use half of the cpu cores
-torch.set_num_threads(1)
-print("CUDA is not available")
+
 #cheekPuff,cheekSquint_L,cheekSquint_R,noseSneer_L,noseSneer_R,jawOpen,jawForward,jawLeft,jawRight,mouthFunnel,mouthPucker,mouthLeft,mouthRight,mouthRollUpper,mouthRollLower,mouthShrugUpper,mouthShrugLower,mouthClose,mouthSmile_L,mouthSmile_R,mouthFrown_L,mouthFrown_R,mouthDimple_L,mouthDimple_R,mouthUpperUp_L,mouthUpperUp_R,mouthLowerDown_L,mouthLowerDown_R,mouthPress_L,mouthPress_R,mouthStretch_L,mouthStretch_R,tongueOut
 classes = ["cheekPuff", "cheekSquint_L", "cheekSquint_R", "noseSneer_L", "noseSneer_R", "jawOpen", "jawForward", "jawLeft", "jawRight", "mouthFunnel", "mouthPucker", "mouthLeft", "mouthRight", "mouthRollUpper", "mouthRollLower", "mouthShrugUpper", "mouthShrugLower", "mouthClose", "mouthSmile_L", "mouthSmile_R", "mouthFrown_L", "mouthFrown_R", "mouthDimple_L", "mouthDimple_R", "mouthUpperUp_L", "mouthUpperUp_R", "mouthLowerDown_L", "mouthLowerDown_R", "mouthPress_L", "mouthPress_R", "mouthStretch_L", "mouthStretch_R", "tongueOut"]   
 model =  mobilenetv2.mobilenetv2().to(device)
