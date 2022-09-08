@@ -15,7 +15,7 @@ Lol
 ### Current setup guide 
 1. Clone the repo 
 2. Install the dependencies in requirements.txt with python 3.8 (or newer).
-3. run onnxinference.py 
+3. run model_loader_no_Crop.py
 4. run the unity build in the unity build folder
 5. make a netural face and move the camera around your mouth area until the avatar in the unity app makes a netural face too. 
 6. Enjoy mouth tracking! 
