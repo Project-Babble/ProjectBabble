@@ -1,7 +1,6 @@
 import mobilenetv2
 import cv2 
 import torch
-import matplotlib.pyplot as plt
 import time
 from pythonosc import udp_client
 import multiprocessing as mp
