@@ -37,11 +37,9 @@ while True:
     #read the frame
     ret, frame = cap.read()
     #convert the frame to gr ayscale
-    frame = cv2.resize(frame, (100,100))
-    #remove 10 pixels from the top
-    frame = frame[10:,:,:]
+    centerx, centery = [int(frame.shape[0] / 2) - 50, int(frame.shape[1] / 2) - 50]
+    frame = frame[centerx:centerx + 100, centery:centery + 100]
     img = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-    img = cv2.resize(img, (100,100))
     gray = cv2.GaussianBlur(img, (3, 3), 0)
     image = gray.reshape(1,1, 100, 100) 
     image = torch.from_numpy(image).to(device)
