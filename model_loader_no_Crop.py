@@ -91,6 +91,7 @@ while True:
     client.send_message("/mouthStretchRight", output[31])
     client.send_message("/tongueOut", output[32])
     #show the image
+    gray = cv2.resize(gray, (300,300), interpolation = cv2.INTER_AREA)
     cv2.imshow("image", gray)
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break
