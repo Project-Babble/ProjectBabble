@@ -30,7 +30,7 @@ else:
 #cheekPuff,cheekSquint_L,cheekSquint_R,noseSneer_L,noseSneer_R,jawOpen,jawForward,jawLeft,jawRight,mouthFunnel,mouthPucker,mouthLeft,mouthRight,mouthRollUpper,mouthRollLower,mouthShrugUpper,mouthShrugLower,mouthClose,mouthSmile_L,mouthSmile_R,mouthFrown_L,mouthFrown_R,mouthDimple_L,mouthDimple_R,mouthUpperUp_L,mouthUpperUp_R,mouthLowerDown_L,mouthLowerDown_R,mouthPress_L,mouthPress_R,mouthStretch_L,mouthStretch_R,tongueOut
 classes = ["cheekPuff", "cheekSquint_L", "cheekSquint_R", "noseSneer_L", "noseSneer_R", "jawOpen", "jawForward", "jawLeft", "jawRight", "mouthFunnel", "mouthPucker", "mouthLeft", "mouthRight", "mouthRollUpper", "mouthRollLower", "mouthShrugUpper", "mouthShrugLower", "mouthClose", "mouthSmile_L", "mouthSmile_R", "mouthFrown_L", "mouthFrown_R", "mouthDimple_L", "mouthDimple_R", "mouthUpperUp_L", "mouthUpperUp_R", "mouthLowerDown_L", "mouthLowerDown_R", "mouthPress_L", "mouthPress_R", "mouthStretch_L", "mouthStretch_R", "tongueOut"]   
 model =  mobilenetv2.mobilenetv2().to(device)
-model.load_state_dict(torch.load('BestTrainNeck1.pt',map_location=torch.device(device))
+model.load_state_dict(torch.load('BestTrainNeck1.pt',map_location=torch.device(device)))
 
 cap = cv2.VideoCapture(0)
 while True:
