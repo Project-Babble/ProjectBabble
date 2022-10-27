@@ -1,47 +1,40 @@
 '''
 Dataset Generation Script made with the tears of Rames The Generic#3540
-Randomizes the lighting setup, camera position, background, and blendshapes (predefined combinations).
+Randomizes the lighting setup, camera position, background, and blendshapes.
 Each image also gets a corrisponding csv file with the generated blendshapes.
-Use the combiner script to combine all the csv files into one.  
 
-
-Possible mesh naming schemees for automatic blendshape generation (WIP): 
-    MBLabBase_(Race)_(Sex)
-    
-Race: 
-    Afro: AF
-    Asian: AS
-    Caucasian: CA
-    Latino: LA
-    
-Sex:
-    Female: F
-    Male: M
-    
-Ex: MBLabBase_AS_M
-    
-
-
+Blendfile with MB_Lab_Base collection can be found at:
+https://drive.google.com/drive/folders/1JGOK7CJwX83kSTxbHzlhOmTmYGHx_Zpq?usp=sharing
 
 How to use: 
     
 1. Create a character with the MBLab plugin, randomize the facial features and finalize
-2. Rename the root of the character to MBLab_SK and the body mesh to MBLab_Mesh
-3. Add a Copy Location modifier to the CameraRig and set the Target to MBLab_SK and 
+
+2. Append the MB_Lab_Base collection to the Scene Collection
+
+3. Rename the root of the character to MBLab_SK and the body mesh like so:
+    
+        Possible mesh naming schemees for automatic blendshape generation (WIP): 
+        MBLabBase_(Race)_(Sex)
+        
+    Race: 
+        Afro: AF
+        Asian: AS
+        Caucasian: CA
+        Latino: LA
+        
+    Sex:
+        Female: F
+        Male: M
+        
+    Ex: MBLabBase_AS_M
+    
+    
+        
+4. Add a Copy Location modifier to the CameraRig and set the Target to MBLab_SK and 
    the newly created bone slot to head
-4. Add missing blendshapes: (Refer to video: YT Link here and these reference: https://arkit-face-blendshapes.com/)
-    mouthShrugUpper
-    mouthShrugLower
-    mouthDimple_L
-    mouthDimple_R
-    mouthUpperUp_L
-    mouthUpperUp_R
-    mouthLowerDown_L
-    mouthLowerDown_R
-    mouthPress_L
-    mouthPress_R
-    mouthStretch_L
-    mouthStretch_R
+   
+5. Send the end frame, file output path, and run the script with the play button. 
 
 '''
 

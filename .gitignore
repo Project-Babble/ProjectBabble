@@ -155,3 +155,5 @@ cython_debug/
 *.png
 *.csv
 datageneration/HeadTest.blend
+datageneration/BlendshapeBases.blend
+*.blend1
