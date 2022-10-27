@@ -1,0 +1,34 @@
+*cheekPuff	Expressions_mouthInflated_max	(XXX can't be active with:  mouthFunnel, mouthRollUpper, mouthRollLower, mouthUpperUp_L, mouthUpperUp_R, mouthLowerDown_L, mouthLowerDown_R, tongueOut XXX)
+*cheekSquint_L    Expressions_cheekSneerL_max
+*cheekSquint_R    Expressions_cheekSneerR_max
+noseSneer_L    
+noseSneer_R    
+*jawOpen    Expressions_mouthOpenLarge_max	(can't be active with:  mouthClose)
+*jawForward    Expressions_jawOut_max
+*jawLeft    Expressions_jawHoriz_max
+*jawRight    Expressions_jawHoriz_min
+*mouthFunnel    Expressions_mouthOpenO_max	(can't be active with:  cheekPuff)
+*mouthPucker    Expressions_mouthOpenLarge_min	
+*mouthLeft    Expressions_mouthHoriz_max
+*mouthRight    Expressions_mouthHoriz_min
+*mouthRollUpper    Expressions_mouthLowerOut_min		(can't be active with:  cheekPuff)
+*mouthRollLower  Expressions_mouthLowerOut_max		(can't be active with:  cheekPuff)
+*mouthShrugUpper    mouthShrugUpper (Created)
+*mouthShrugLower    mouthShrugLower (Created)
+*mouthClose  Expressions_mouthSmileOpen2_min  (XXX can't be active with:  jawOpen XXX)
+*mouthSmile_L  Expressions_mouthSmileL_max  
+*mouthSmile_R  Expressions_mouthSmileR_max  
+*mouthFrown_L    Expressions_mouthSmileL_max (Negative)	
+*mouthFrown_R    Expressions_mouthSmileR_max (Negative)	
+*mouthDimple_L    mouthDimple_L		(Created)
+*mouthDimple_R    mouthDimple_R		(Created)
+*mouthUpperUp_L   mouthUpperUp_L	(Created)						Expressions_mouthOpenAggr_min	(Combined, 2.0, may have to be created manually)	(XXX can't be active with:  cheekPuff XXX)
+*mouthUpperUp_R   mouthUpperUp_R	(Created)						Expressions_mouthOpenAggr_min	(Combined, 2.0, may have to be created manually)	(XXX can't be active with:  cheekPuff XXX)
+*mouthLowerDown_L  mouthLowerDown_L (Created)						Expressions_mouthLowerOut_max 1.0 + Expressions_mouthLowerOut_min 0.4 	(Combined, may have to be created manually)	(XXX can't be active with:  cheekPuff XXX)
+*mouthLowerDown_R  mouthLowerDown_R (Created)						Expressions_mouthLowerOut_max 1.0 + Expressions_mouthLowerOut_min 0.4		(Combined, may have to be created manually) (XXX can't be active with:  cheekPuff XXX)
+*mouthPress_L mouthPress_L (Created)
+*mouthPress_R  mouthPress_R (Created)
+*mouthStretch_L 	mouthStretch_L (Created)
+*mouthStretch_R 	mouthStretch_R (Created)
+*tongueOut	Expressions_tongueOut_max (XXX can't be active with:  cheekPuff XXX)
+
