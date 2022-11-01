@@ -15,7 +15,7 @@ How to use:
 3. Rename the root of the character to MBLab_SK and the body mesh like so:
     
         Possible mesh naming schemees for automatic blendshape generation (WIP): 
-        MBLabBase_(Race)_(Sex)
+        MBLab_(Race)_(Sex)
         
     Race: 
         Afro: AF
@@ -27,14 +27,15 @@ How to use:
         Female: F
         Male: M
         
-    Ex: MBLabBase_AS_M
+    Ex: MBLab_AS_M
     
     
         
 4. Add a Copy Location modifier to the CameraRig and set the Target to MBLab_SK and 
    the newly created bone slot to head
    
-5. Send the end frame, file output path, and run the script with the play button. 
+5. Sent the end frame, file output path, and run the script with the play button. 
+
 
 '''
 
@@ -469,28 +470,28 @@ bpy.ops.wm.console_toggle()
 print("Start Transfer")
 dest = get_objs('MB_LAB_Character')
 source = None
-if dest == 'MBlab_CA_M':
+if dest == 'MBLab_CA_M':
     source = 'MBLabBase_CA_M'
-if dest == 'MBlab_CA_F':
+if dest == 'MBLab_CA_F':
     source = 'MBLabBase_CA_F'
-if dest == 'MBlab_AF_M':
+if dest == 'MBLab_AF_M':
     source = 'MBLabBase_AF_M'
-if dest == 'MBlab_AF_F':
+if dest == 'MBLab_AF_F':
     source = 'MBLabBase_AF_F'
-if dest == 'MBlab_AS_M':
+if dest == 'MBLab_AS_M':
     source = 'MBLabBase_AS_M'
-if dest == 'MBlab_AS_F':
+if dest == 'MBLab_AS_F':
     source = 'MBLabBase_AS_F'
-if dest == 'MBlab_LA_M':
+if dest == 'MBLab_LA_M':
     source = 'MBLabBase_LA_M'
-if dest == 'MBlab_LA_F':
+if dest == 'MBLab_LA_F':
     source = 'MBLabBase_LA_F'
 copy_all_shape_keys(source, dest)
 print("End Transfer") 
 
 for i in range(s.frame_start,s.frame_end):              # Rendering stuff
     
-    path = "E:\\DIYSHIT\\FaceTracker\\Output\\"
+    path = "C:\\Users\\epicm\\Documents\\GitHub\\ProjectBabble\\datageneration\\Output\\"
 
 #for i in range(1): 
     s.frame_current = i
@@ -509,11 +510,10 @@ for i in range(s.frame_start,s.frame_end):              # Rendering stuff
         file.write('{}\n{}\n'.format(lables,joined_string))
         file.close()
     print(data)
-    sleep(.300)
+    sleep(.150)                 # Without the sleep the blendshapes become "out of sync" with the images, I don't know the cause of it is so there it is
 
 
     s.render.filepath = (
-                        #"C:\\temp\\" # some path
                         path
                         + imagename
                         )

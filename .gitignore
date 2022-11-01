@@ -157,3 +157,4 @@ cython_debug/
 datageneration/HeadTest.blend
 datageneration/BlendshapeBases.blend
 *.blend1
+datageneration/RenderSceneV2.blend
