@@ -1,10 +1,10 @@
-# Added VRCFT blendshapes to Mesh in RenderSceneV2.blend, ready to write
-import bpy
-import math
 import random
 import socket
 import pickle
+import math
 import struct
+
+
 
 def send_msg(sock, msg):
     # Prefix each message with a 4-byte length (network byte order)
@@ -31,22 +31,31 @@ def recvall(sock, n):
     return data
 
 
+
+predictions = []
+for i in range(200):
+    prediction = []
+    for j in range(83):
+        blendshape = round(random.uniform(0, 1), 3)
+        prediction.append(blendshape)
+    prediction.append(f'{i}.png')
+    predictions.append(prediction)
+print('generated blendshapes')
+
 HOST = 'localhost'
 PORT = 50000
-
+HEADERSIZE = 10
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-s.bind((HOST, PORT))
-s.listen(5)
+s.connect((HOST, PORT))
 
-while True:
-    conn, (address, port) = s.accept()
-    data = recv_msg(conn)
-    render_job = pickle.loads(data)
-    print(f'Got: {render_job[0]}')
-    ack_msg = pickle.dumps('Got Blendshape Lists')
-    send_msg(conn, ack_msg)
-    ack_msg = pickle.dumps('Rendering')
-    send_msg(conn, ack_msg)
+send_msg(s, pickle.dumps(predictions))
+
+ack = pickle.loads(recv_msg(s))
+print(ack)
+
+# Wait on finished VRCFT Shapes
+
+
 
 
 
