@@ -31,29 +31,47 @@ def recvall(sock, n):
     return data
 
 
+    
+
+
+
+                # Generates random values for blendshape predictions and file names.
 
 predictions = []
 for i in range(200):
     prediction = []
-    for j in range(83):
+    for j in range(72):
         blendshape = round(random.uniform(0, 1), 3)
         prediction.append(blendshape)
-    prediction.append(f'{i}.png')
+    #prediction.append(f'{i}.png')
     predictions.append(prediction)
 print('generated blendshapes')
-
+                                
+                                
+                                # Establish a connection to the render server
 HOST = 'localhost'
 PORT = 50000
 HEADERSIZE = 10
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 s.connect((HOST, PORT))
 
+
+
+
+                                    # Send predicted values
 send_msg(s, pickle.dumps(predictions))
 
+
+                                    # Confirmation from the server that blendshapes were recieved
 ack = pickle.loads(recv_msg(s))
 print(ack)
 
-# Wait on finished VRCFT Shapes
+                        # Wait on finished renders
+
+                                    # Render Server notifies that rendering has completed 
+fin = pickle.loads(recv_msg(s))
+print(fin)
+
 
 
 
