@@ -15,6 +15,10 @@ from time import sleep
 # Set path for enviroment
 path = "C:\\Users\\epicm\\Documents\\GitHub\\ProjectBabble\\datageneration\\Output\\"
 
+res_x = 800
+res_y = 800
+
+
 blendshape_list = (
 'eyeLeftSqueeze',
 'eyeRightSqueeze',
@@ -236,8 +240,8 @@ s.listen(5)
 
 scene=bpy.context.scene
 
-scene.render.resolution_x = 256 
-scene.render.resolution_y = 256
+scene.render.resolution_x = res_x
+scene.render.resolution_y = res_y
 
 
 try: 
