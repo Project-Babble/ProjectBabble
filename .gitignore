@@ -152,3 +152,8 @@ cython_debug/
 #.idea/
 
 /.vs
+# Data Generation outputs
+*.png
+*.csv
+*.blend1
+*.blend
