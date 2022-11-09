@@ -152,9 +152,8 @@ cython_debug/
 #.idea/
 
 /.vs
+# Data Generation outputs
 *.png
 *.csv
-datageneration/HeadTest.blend
-datageneration/BlendshapeBases.blend
 *.blend1
-datageneration/RenderSceneV2.blend
+*.blend
