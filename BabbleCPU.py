@@ -105,6 +105,7 @@ stored_values = makeminmaxarray(33)
 stored_values = onesizefitsallminmaxarray()
 
 
+
 """
 Demo program that allows a user to type in a webcam url or number and displays it using OpenCV
 """
@@ -122,8 +123,10 @@ layout = [
     [sg.Text('Enter OSC Port (Defualts to 9000)'), sg.Input(key = '-PORT-', size = (30, 1))],
     [sg.Text('Press Ok to start the webcam')],  
     [sg.Checkbox('Flip 180', key = '-FLIP180-')],
+    [sg.Checkbox('Flip 90 Left', key = '-FLIP90-')],
+    [sg.Checkbox('Flip 90 Right', key = '-FLIP90R-')],
     [sg.Checkbox('No Calibration', key = '-CAL-')],
-    [sg.Button('Start'), sg.Button('Stop')],
+    [sg.Button('Start'), sg.Button('Stop'), sg.Button('Draw ROI')],
 ]
 
 # Create the Window
@@ -147,7 +150,10 @@ while True:
     if model == '':
         model = 'v1.onnx'
     flip180 = values['-FLIP180-']
+    flip90 = values['-FLIP90-']
+    flip90r = values['-FLIP90R-']
     location = values['-LOC-']
+    ROI = None
     sess = ort.InferenceSession(model, providers=['CPUExecutionProvider'])
     input_name = sess.get_inputs()[0].name
     output_name = sess.get_outputs()[0].name
@@ -155,15 +161,25 @@ while True:
         break
     if event == 'Start':
         url = values['-URL-']
-        if url[0] in '0123456789':
-            url = int(url)
-        elif url == '':
+        if url == '':
             url = 0
+        elif url in '0123456789':
+            url = int(url)
         steamer = WebcamVideoStream(url).start()
         while True:
             frame = steamer.read()
+            if event == 'Draw ROI':
+                ROI = cv2.selectROI(frame)
+                cv2.destroyWindow("ROI selector")
+                cv2.waitKey(1)
+            if ROI != None:
+                frame = frame[int(ROI[1]):int(ROI[1]+ROI[3]), int(ROI[0]):int(ROI[0]+ROI[2])]
             if flip180:
                 frame = cv2.flip(frame, 0)
+            if flip90:
+                frame = cv2.rotate(frame, cv2.ROTATE_90_CLOCKWISE)
+            if flip90r:
+                frame = cv2.rotate(frame, cv2.ROTATE_90_COUNTERCLOCKWISE)
             frame2 = frame
             frame = cv2.resize(frame, (256, 256))
             #make it pil
