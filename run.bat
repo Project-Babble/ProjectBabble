@@ -1,2 +1,0 @@
-python onnxinference.py
-pause
