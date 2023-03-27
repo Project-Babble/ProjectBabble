@@ -1,4 +1,5 @@
 import os
+import json
 os.environ["OMP_NUM_THREADS"] = "1"
 import onnxruntime as ort
 import time
@@ -39,6 +40,62 @@ class WebcamVideoStream:
 		# indicate that the thread should be stopped
 		self.stopped = True
                 
+class Calibration(object):  
+    def __init__(self, filename):
+         self.CALIBRATION_FILE = filename
+         self._load_calibration(self.CALIBRATION_FILE)    
+
+    def update_calib(self, filename):
+        if self._last_update != os.stat(self.CALIBRATION_FILE).st_mtime:
+             print("Change detected, reloading calibration file")
+             self._load_calibration(filename)
+             return True
+        return False
+
+    def _load_calibration(self, filename):   
+        with open(filename) as user_file:       # Open and load the file into a dict 
+            self.calib = json.load(user_file)
+            self._last_update = os.fstat(user_file.fileno()).st_mtime
+        self.jsonminmax = [
+                [self.calib["cheekPuff"]["min"],self.calib["cheekPuff"]["max"]],                     # CheekPuff
+                [self.calib["cheekSquintLeft"]["min"],self.calib["cheekSquintLeft"]["max"]],         # cheekSquintLeft
+                [self.calib["cheekSquintRight"]["min"],self.calib["cheekSquintRight"]["max"]],       # cheekSquintRight
+                [self.calib["noseSneerLeft"]["min"],self.calib["noseSneerLeft"]["max"]],             # noseSneerLeft
+                [self.calib["noseSneerRight"]["min"],self.calib["noseSneerRight"]["max"]],           # noseSneerRight
+                [self.calib["jawOpen"]["min"],self.calib["jawOpen"]["max"]],                         # jawOpen
+                [self.calib["jawForward"]["min"],self.calib["jawForward"]["max"]],                   # jawForward
+                [self.calib["jawLeft"]["min"],self.calib["jawLeft"]["max"]],                         # jawLeft 
+                [self.calib["jawRight"]["min"],self.calib["jawRight"]["max"]],                       # jawRight
+                [self.calib["mouthFunnel"]["min"],self.calib["mouthFunnel"]["max"]],                 # mouthFunnel      
+                [self.calib["mouthPucker"]["min"],self.calib["mouthPucker"]["max"]],                 # mouthPucker
+                [self.calib["mouthLeft"]["min"],self.calib["mouthLeft"]["max"]],                     # mouthLeft
+                [self.calib["mouthRight"]["min"],self.calib["mouthRight"]["max"]],                   # mouthRight
+                [self.calib["mouthRollUpper"]["min"],self.calib["mouthRollUpper"]["max"]],           # mouthRollUpper
+                [self.calib["mouthRollLower"]["min"],self.calib["mouthRollLower"]["max"]],           # mouthRollLower
+                [self.calib["mouthShrugUpper"]["min"],self.calib["mouthShrugUpper"]["max"]],         # mouthShrugUpper
+                [self.calib["mouthShrugLower"]["min"],self.calib["mouthShrugLower"]["max"]],         # mouthShrugLower
+                [self.calib["mouthClose"]["min"],self.calib["mouthClose"]["max"]],                   # mouthClose
+                [self.calib["mouthSmileLeft"]["min"],self.calib["mouthSmileLeft"]["max"]],           # mouthSmileLeft
+                [self.calib["mouthSmileRight"]["min"],self.calib["mouthSmileRight"]["max"]],         # mouthSmileRight
+                [self.calib["mouthFrownLeft"]["min"],self.calib["mouthFrownLeft"]["max"]],           # mouthFrownLeft
+                [self.calib["mouthSmileRight"]["min"],self.calib["mouthSmileRight"]["max"]],         # mouthFrownRight
+                [self.calib["mouthDimpleLeft"]["min"],self.calib["mouthDimpleLeft"]["max"]],         # mouthDimpleLeft
+                [self.calib["mouthDimpleRight"]["min"],self.calib["mouthDimpleRight"]["max"]],       # mouthDimpleRight
+                [self.calib["mouthUpperUpLeft"]["min"],self.calib["mouthUpperUpLeft"]["max"]],       # mouthUpperUpLeft  
+                [self.calib["mouthUpperUpRight"]["min"],self.calib["mouthUpperUpRight"]["max"]],     # mouthUpperUpRight
+                [self.calib["mouthLowerDownLeft"]["min"],self.calib["mouthLowerDownLeft"]["max"]],   # mouthLowerDownLeft
+                [self.calib["mouthLowerDownRight"]["min"],self.calib["mouthLowerDownRight"]["max"]], # mouthLowerDownRight
+                [self.calib["mouthPressLeft"]["min"],self.calib["mouthPressLeft"]["max"]],           # mouthPressLeft
+                [self.calib["mouthPressRight"]["min"],self.calib["mouthPressRight"]["max"]],         # mouthPressRight
+                [self.calib["mouthStretchLeft"]["min"],self.calib["mouthStretchLeft"]["max"]],       # mouthStretchLeft
+                [self.calib["mouthStretchRight"]["min"],self.calib["mouthStretchRight"]["max"]],     # mouthStretchRight
+                [self.calib["tongueOut"]["min"],self.calib["tongueOut"]["max"]],                     # tongueOut
+            ]
+        return self.jsonminmax
+    
+        
+         
+                
 def onesizefitsallminmaxarray():                # Some predefined ranges in stored values instead of the generated ones
     stored_values = [
         [0.2, 0.6],                   # CheekPuff
@@ -46,23 +103,23 @@ def onesizefitsallminmaxarray():                # Some predefined ranges in stor
         [0, 1],                       # cheekSquintRight
         [0, 1],                       # noseSneerLeft
         [0, 1],                       # noseSneerRight
-        [0.1, 0.8],                   # jawOpen
+        [0.03, 0.6],                  # jawOpen
         [0.1, 0.8],                   # jawForward
         [0.05, 0.5],                  # jawLeft 
         [0.05, 0.5],                  # jawRight
-        [0.1, 1],                     # mouthFunnel      
-        [0.03, 0.7],                  # mouthPucker
+        [0.1, 0.6],                   # mouthFunnel      
+        [0.4, 1],                     # mouthPucker
         [0.05, 0.5],                  # mouthLeft
         [0.05, 0.5],                  # mouthRight
-        [0, 0.3],                     # mouthRollUpper
+        [0, 0.5],                     # mouthRollUpper
         [0, 0.3],                     # mouthRollLower
         [0.03, 0.5],                  # mouthShrugUpper
         [0.03, 0.5],                  # mouthShrugLower
-        [0, 0.3],                     # mouthClose
+        [0, 0.5],                     # mouthClose
         [0.1, 1],                     # mouthSmileLeft
         [0.1, 1],                     # mouthSmileRight
-        [0, 0.4],                     # mouthFrownLeft
-        [0, 0.4],                     # mouthFrownRight
+        [0, 0.6],                     # mouthFrownLeft
+        [0, 0.6],                     # mouthFrownRight
         [0, 1],                       # mouthDimpleLeft
         [0, 1],                       # mouthDimpleRight
         [0.02, 0.8],                  # mouthUpperUpLeft  
@@ -71,9 +128,9 @@ def onesizefitsallminmaxarray():                # Some predefined ranges in stor
         [0.02, 0.8],                  # mouthLowerDownRight
         [0, 1],                       # mouthPressLeft
         [0, 1],                       # mouthPressRight
-        [0, 1],                       # mouthStretchLeft
-        [0, 1],                       # mouthStretchRight
-        [0.1, 0.8],                   # tongueOut
+        [0.3, 1],                     # mouthStretchLeft
+        [0.3, 1],                     # mouthStretchRight
+        [0.2, 0.8],                   # tongueOut
     ]
     return stored_values
 
@@ -86,25 +143,24 @@ def makeminmaxarray(amount):
     return stored_values
 
 
-def minmax(stored_values, value):
-    if stored_values[0] == 0 and stored_values[1] == 0:
-        stored_values[0] = value
-        stored_values[1] = value
-        array = (0, value, 1)
-    else:
-        if value < stored_values[0]: stored_values[0] = value
-        if value > stored_values[1]: stored_values[1] = value
+def minmax(stored_values, value, passthrough = False):        # Set passthrough to true if you don't want to set the stored values wtih the function
+    if passthrough == False:                                # Sets and updates the min and max value
+        if stored_values[0] == 0 and stored_values[1] == 0:
+            stored_values[0] = value
+            stored_values[1] = value
+            array = (0, value, 1)
+        else:                                   # if value is greater than the max or less than the min, set it.
+            if value < stored_values[0]: stored_values[0] = value
+            if value > stored_values[1]: stored_values[1] = value
+            array = (stored_values[0], value, stored_values[1])
+    else: 
+        array = stored_values                               # Formats the min max value without changing the values
         array = (stored_values[0], value, stored_values[1])
     return array
 
 def normalize_value(array):
     normalized_value = ((array[1] - array[0]) / (array[2] - array[0]))
     return normalized_value
-
-stored_values = makeminmaxarray(33)
-stored_values = onesizefitsallminmaxarray()
-
-
 
 """
 Demo program that allows a user to type in a webcam url or number and displays it using OpenCV
@@ -121,6 +177,7 @@ layout = [
     [sg.Text('Output Mutiplier (defualts to 1. Please use 100 if you are using the unity demo.)'), sg.Input(key = '-MULT-', size = (30, 1))],
     [sg.Text('Enter OSC IP (Defualts to 127.0.0.1)'), sg.Input(key = '-OSC-', size = (30, 1))],
     [sg.Text('Enter OSC Port (Defualts to 9000)'), sg.Input(key = '-PORT-', size = (30, 1))],
+    [sg.Text('Enter Calibration file name (Defaults to calib.json)'), sg.Input(key = '-JSON_FILE-', size = (30, 1))],
     [sg.Text('Press Ok to start the webcam')],  
     [sg.Checkbox('Flip 180', key = '-FLIP180-')],
     [sg.Checkbox('Flip 90 Left', key = '-FLIP90-')],
@@ -131,6 +188,12 @@ layout = [
 
 # Create the Window
 window = sg.Window('Project BabbleV1.0', layout, location = (800, 400))
+event, values = window.read(timeout = 20)
+calibjson = values['-MODEL-']
+
+if calibjson == '':
+     calibjson = 'calib.json'
+calibration = Calibration(calibjson)
 # ----------------  Event Loop  ----------------
 while True:
     event, values = window.read(timeout = 20)
@@ -149,12 +212,20 @@ while True:
     model = values['-MODEL-']
     if model == '':
         model = 'v1.onnx'
+    if calibjson == '':
+        calibjson = 'calib.json'
+    calibration.update_calib(calibjson)     # Checks and updates values of the json file
+    stored_values = calibration.jsonminmax
     flip180 = values['-FLIP180-']
     flip90 = values['-FLIP90-']
     flip90r = values['-FLIP90R-']
     location = values['-LOC-']
     ROI = None
-    sess = ort.InferenceSession(model, providers=['CPUExecutionProvider'])
+    opts = ort.SessionOptions()
+    opts.intra_op_num_threads = 1 
+    opts.inter_op_num_threads = 1 
+    opts.execution_mode = ort.ExecutionMode.ORT_SEQUENTIAL
+    sess = ort.InferenceSession(model, opts, providers=['CPUExecutionProvider'])
     input_name = sess.get_inputs()[0].name
     output_name = sess.get_outputs()[0].name
     if event == sg.WIN_CLOSED or event == 'Stop':
@@ -181,6 +252,8 @@ while True:
             if flip90r:
                 frame = cv2.rotate(frame, cv2.ROTATE_90_COUNTERCLOCKWISE)
             frame2 = frame
+            calibration.update_calib(calibjson)       # Checks and updates values of the json file
+            stored_values = calibration.jsonminmax  
             frame = cv2.resize(frame, (256, 256))
             #make it pil
             frame = Image.fromarray(frame)
@@ -201,7 +274,7 @@ while True:
             if values['-CAL-'] == False:
                 array = []
                 for i in range(len(output)):
-                    yeah = minmax(stored_values[i], output[i])
+                    yeah = minmax(stored_values[i], output[i], True)    # Enabled passthrough to allow changes to happen with calib json
                     value = normalize_value(yeah)
                     array.append(value)
             else:
