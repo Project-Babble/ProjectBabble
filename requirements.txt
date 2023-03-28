@@ -11,7 +11,6 @@ HTMLParser==0.0.2
 ipython==8.11.0
 ipywidgets==8.0.5
 Jinja2==3.1.2
-jnius==1.1.0
 keyring==23.13.1
 lockfile==0.12.2
 mock==5.0.1
@@ -29,4 +28,3 @@ tornado==6.2
 trove_classifiers==2023.3.9
 truststore==0.6.0
 urllib3_secure_extra==0.1.0
-xmlrpclib==1.0.1
