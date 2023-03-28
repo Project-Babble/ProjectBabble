@@ -172,7 +172,7 @@ sg.theme('DarkAmber')   # Add a touch of color
 layout = [
     [sg.Image(key = '-IMAGE-')],
     [sg.Text('Enter Webcam URL or Number (Defualts to 0)'), sg.Input(key = '-URL-', size = (30, 1))],
-    [sg.Text('Enter Onnx model name (Defualts to v1.onnx)'), sg.Input(key = '-MODEL-', size = (30, 1))],
+    [sg.Text('Enter Onnx model name (Defualts to v1.1B0Q.onnx)'), sg.Input(key = '-MODEL-', size = (30, 1))],
     [sg.Text('OSC Location Address'), sg.Input(key = '-LOC-', size = (30, 1))],
     [sg.Text('Output Mutiplier (defualts to 1. Please use 100 if you are using the unity demo.)'), sg.Input(key = '-MULT-', size = (30, 1))],
     [sg.Text('Enter OSC IP (Defualts to 127.0.0.1)'), sg.Input(key = '-OSC-', size = (30, 1))],
@@ -211,7 +211,7 @@ while True:
     client = udp_client.SimpleUDPClient(OSCip, OSCport)
     model = values['-MODEL-']
     if model == '':
-        model = 'v1.onnx'
+        model = 'v1.1B0.onnx'
     if calibjson == '':
         calibjson = 'calib.json'
     calibration.update_calib(calibjson)     # Checks and updates values of the json file
@@ -221,16 +221,16 @@ while True:
     flip90r = values['-FLIP90R-']
     location = values['-LOC-']
     ROI = None
-    opts = ort.SessionOptions()
-    opts.intra_op_num_threads = 1 
-    opts.inter_op_num_threads = 1 
-    opts.execution_mode = ort.ExecutionMode.ORT_SEQUENTIAL
-    sess = ort.InferenceSession(model, opts, providers=['CPUExecutionProvider'])
-    input_name = sess.get_inputs()[0].name
-    output_name = sess.get_outputs()[0].name
     if event == sg.WIN_CLOSED or event == 'Stop':
         break
     if event == 'Start':
+        opts = ort.SessionOptions()
+        opts.intra_op_num_threads = 1 
+        opts.inter_op_num_threads = 1 
+        opts.execution_mode = ort.ExecutionMode.ORT_SEQUENTIAL
+        sess = ort.InferenceSession(model, opts, providers=['CPUExecutionProvider'])
+        input_name = sess.get_inputs()[0].name
+        output_name = sess.get_outputs()[0].name
         url = values['-URL-']
         if url == '':
             url = 0
