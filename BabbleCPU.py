@@ -205,9 +205,6 @@ calibration = Calibration(calibjson)
 while True:
     event, values = window.read(timeout = 20)
 
-
-
-
     if event == "Save":
          #this whole block of stuff in this iff could be re-written tbh...
         OSCip = values['-OSC-'] #VR Chat OSC ip
