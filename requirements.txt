@@ -3,4 +3,4 @@ opencv_python
 Pillow
 PySimpleGUI
 python_osc
-torchvision
+torch
