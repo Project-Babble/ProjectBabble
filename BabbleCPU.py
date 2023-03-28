@@ -1,11 +1,12 @@
 import os
 import json
+
 os.environ["OMP_NUM_THREADS"] = "1"
 import onnxruntime as ort
 import time
 import PySimpleGUI as sg
 import cv2
-from pythonosc import udp_client
+from osc import *
 from torchvision.transforms.functional import to_grayscale
 import PIL.Image as Image
 from torchvision import transforms
@@ -46,11 +47,11 @@ class Calibration(object):
          self._load_calibration(self.CALIBRATION_FILE)    
 
     def update_calib(self, filename):
-        if self._last_update != os.stat(self.CALIBRATION_FILE).st_mtime:
+       # if self._last_update != os.stat(self.CALIBRATION_FILE).st_mtime:
              print("Change detected, reloading calibration file")
              self._load_calibration(filename)
              return True
-        return False
+        #return False
 
     def _load_calibration(self, filename):   
         with open(filename) as user_file:       # Open and load the file into a dict 
@@ -169,52 +170,62 @@ Demo program that allows a user to type in a webcam url or number and displays i
 # ----------------  Create Form  ----------------
 sg.theme('DarkAmber')   # Add a touch of color
 # All the stuff inside your window.
+
+model = 'v1.1B0.onnx'
+OSCip ="127.0.0.1"
+OSCport = 9000
+multi = 1
+
 layout = [
-    [sg.Image(key = '-IMAGE-')],
-    [sg.Text('Enter Webcam URL or Number (Defualts to 0)'), sg.Input(key = '-URL-', size = (30, 1))],
-    [sg.Text('Enter Onnx model name (Defualts to v1.1B0Q.onnx)'), sg.Input(key = '-MODEL-', size = (30, 1))],
+    [sg.Image(key = '-IMAGE-')], #I just hardcoded default values here.. they should be stored in a class variable list.
+    [sg.Text('Enter Webcam URL or Number'), sg.Input("0", key = '-URL-', size = (2, 1))],
+    [sg.Text('Enter Onnx model name (Defualt v1.1B0.onnx)'), sg.Input("v1.1B0.onnx", key = '-MODEL-', size = (30, 1))],
     [sg.Text('OSC Location Address'), sg.Input(key = '-LOC-', size = (30, 1))],
-    [sg.Text('Output Mutiplier (defualts to 1. Please use 100 if you are using the unity demo.)'), sg.Input(key = '-MULT-', size = (30, 1))],
-    [sg.Text('Enter OSC IP (Defualts to 127.0.0.1)'), sg.Input(key = '-OSC-', size = (30, 1))],
-    [sg.Text('Enter OSC Port (Defualts to 9000)'), sg.Input(key = '-PORT-', size = (30, 1))],
-    [sg.Text('Enter Calibration file name (Defaults to calib.json)'), sg.Input(key = '-JSON_FILE-', size = (30, 1))],
+    [sg.Text('Output Mutiplier (Defualt 1. Use 100 if you are using the Unity demo.)'), sg.Input("1", key = '-MULT-', size = (30, 1))],
+    [sg.Text('Enter OSC IP (Defualt 127.0.0.1)'), sg.Input("127.0.0.1", key = '-OSC-', size = (15, 1))],
+    [sg.Text('Enter OSC Port (Defualt 9000)'), sg.Input("9000",key = '-PORT-', size = (10, 1))],
+    [sg.Button('Save')],
     [sg.Text('Press Ok to start the webcam')],  
-    [sg.Checkbox('Flip 180', key = '-FLIP180-')],
-    [sg.Checkbox('Flip 90 Left', key = '-FLIP90-')],
-    [sg.Checkbox('Flip 90 Right', key = '-FLIP90R-')],
+    [sg.Checkbox('Flip 180', key = '-FLIP180-'),
+    sg.Checkbox('Flip 90 Left', key = '-FLIP90-'),
+    sg.Checkbox('Flip 90 Right', key = '-FLIP90R-')],
     [sg.Checkbox('No Calibration', key = '-CAL-')],
     [sg.Button('Start'), sg.Button('Stop'), sg.Button('Draw ROI')],
 ]
 
 # Create the Window
-window = sg.Window('Project BabbleV1.0', layout, location = (800, 400))
+window = sg.Window('Project BabbleV1.1', layout, location = (800, 400))
 event, values = window.read(timeout = 20)
 calibjson = values['-MODEL-']
 
-if calibjson == '':
-     calibjson = 'calib.json'
+
+calibjson = 'calib.json'
 calibration = Calibration(calibjson)
 # ----------------  Event Loop  ----------------
 while True:
     event, values = window.read(timeout = 20)
-    OSCip= values['-OSC-'] #VR Chat OSC ip
-    if OSCip == '':
-        OSCip="127.0.0.1"
-    OSCport= values['-PORT-'] #VR Chat OSC port
-    if OSCport == '':
-        OSCport = 9000
-    multi = values['-MULT-']
-    if multi == '':
-        multi = 1
-    else:
-        multi = int(multi)
-    client = udp_client.SimpleUDPClient(OSCip, OSCport)
-    model = values['-MODEL-']
-    if model == '':
-        model = 'v1.1B0.onnx'
-    if calibjson == '':
-        calibjson = 'calib.json'
-    calibration.update_calib(calibjson)     # Checks and updates values of the json file
+
+    if event == "Save":
+         #this whole block of stuff in this iff could be re-written tbh...
+        OSCip = values['-OSC-'] #VR Chat OSC ip
+        if OSCip == '':
+            OSCip ="127.0.0.1"
+        OSCport = values['-PORT-'] #VR Chat OSC port
+        if OSCport == '':
+            OSCport = 9000
+        OSC.set_osc(OSCip, OSCport)
+        multi = values['-MULT-']
+        if multi == '':
+            multi = 1
+        else:
+            multi = int(multi)
+        if model == '':
+            model = 'v1.1B0.onnx'
+        model = values['-MODEL-']
+        calibration.update_calib(calibjson)       # Checks and updates values of the json file
+
+
+  #  calibration.update_calib(calibjson)     # Checks and updates values of the json file
     stored_values = calibration.jsonminmax
     flip180 = values['-FLIP180-']
     flip90 = values['-FLIP90-']
@@ -252,7 +263,6 @@ while True:
             if flip90r:
                 frame = cv2.rotate(frame, cv2.ROTATE_90_COUNTERCLOCKWISE)
             frame2 = frame
-            calibration.update_calib(calibjson)       # Checks and updates values of the json file
             stored_values = calibration.jsonminmax  
             frame = cv2.resize(frame, (256, 256))
             #make it pil
@@ -279,39 +289,9 @@ while True:
                     array.append(value)
             else:
                 array = output
-            client.send_message(location + "/cheekPuff", array[0] * multi)
-            client.send_message(location + "/cheekSquintLeft", output[1] * multi)
-            client.send_message(location + "/cheekSquintRight", output[2] * multi)
-            client.send_message(location + "/noseSneerLeft", output[3] * multi)
-            client.send_message(location + "/noseSneerRight", output[4] * multi)
-            client.send_message(location + "/jawOpen", array[5] * multi)
-            client.send_message(location + "/jawForward", array[6] * multi)
-            client.send_message(location + "/jawLeft", array[7] * multi)
-            client.send_message(location + "/jawRight", array[8] * multi)
-            client.send_message(location + "/mouthFunnel", array[9] * multi)
-            client.send_message(location + "/mouthPucker", array[10] * multi)
-            client.send_message(location + "/mouthLeft", array[11] * multi)
-            client.send_message(location + "/mouthRight", array[12] * multi)
-            client.send_message(location + "/mouthRollUpper", array[13] * multi)
-            client.send_message(location + "/mouthRollLower", array[14] * multi)
-            client.send_message(location + "/mouthShrugUpper", array[15] * multi)
-            client.send_message(location + "/mouthShrugLower", array[16] * multi)
-            client.send_message(location + "/mouthClose", output[17] * multi)
-            client.send_message(location + "/mouthSmileLeft", array[18] * multi)
-            client.send_message(location + "/mouthSmileRight", array[19] * multi)
-            client.send_message(location + "/mouthFrownLeft", array[20] * multi)
-            client.send_message(location + "/mouthFrownRight", array[21] * multi)
-            client.send_message(location + "/mouthDimpleLeft", array[22] * multi)
-            client.send_message(location + "/mouthDimpleRight", array[23] * multi)
-            client.send_message(location + "/mouthUpperUpLeft", array[24] * multi)
-            client.send_message(location + "/mouthUpperUpRight", array[25] * multi)
-            client.send_message(location + "/mouthLowerDownLeft", array[26] * multi)
-            client.send_message(location + "/mouthLowerDownRight", array[27] * multi)
-            client.send_message(location + "/mouthPressLeft", array[28] * multi)
-            client.send_message(location + "/mouthPressRight", array[29] * multi)
-            client.send_message(location + "/mouthStretchLeft", array[30] * multi)
-            client.send_message(location + "/mouthStretchRight", array[31] * multi)
-            client.send_message(location + "/tongueOut", array[32] * multi)
+
+            OSC.send_osc(array, multi, location)
+
             imgbytes = cv2.imencode('.png', frame2)[1].tobytes()  # ditto
             window['-IMAGE-'].update(data=imgbytes)
             event, values = window.read(timeout = 20)
