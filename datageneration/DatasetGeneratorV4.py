@@ -1,5 +1,5 @@
-import bpy
-
+#import bpy
+import copy
 def get_objs(collection):                   # Returns all meshes in a collection
     collection = bpy.data.collections[collection]
     for obj in collection.all_objects:
@@ -8,97 +8,121 @@ def get_objs(collection):                   # Returns all meshes in a collection
             mesh_name = obj.name
             #shapekey_name = shapekey_name.split()
     return mesh_name 
-# Get the currently selected object
-shape_defs = dict(
-    cheekPuff = 'mouthInflate',
-    jawOpen = 'Expressions_mouthOpen_max',
-    jawForward = 'Expressions_jawOut_max',     # added
-    jawLeft = 'jawLeft',     # added
-    jawRight = 'jawRight',     # added
-    mouthFunnel = 'mouthFunnel',     # added
-    mouthPucker = 'mouthPucker', # fixed in vrcft master
-    mouthLeft = 'mouthLeft',     # added
-    mouthRight = 'mouthRight',     # added
-    mouthRollUpper = 'mouthRollUpper',     # fixed in vrcft master
-    mouthRollLower = 'mouthRollLower',     # fixed in vrcft master
-    mouthShrugUpper = 'mouthShrugUpper',     # added
-    mouthShrugLower = 'mouthShrugLower',     # added
-    mouthClose = 'mouthClose',             # MUST BE EQUAL TO jawOpen
-    mouthSmileLeft = 'mouthSmileL',     # added
-    mouthSmileLeft_bl = ['mouthSmileLeft', 'mouthFrownLeft', ]
-    mouthSmileRight = 'mouthSmileR',    # added
-    mouthFrownLeft = 'mouthFrownLeft',     # added
-    mouthFrownRight = 'mouthFrownRight',     # added
-    mouthDimpleLeft = 'mouthDimple_L',   # added
-    mouthDimpleRight = 'mouthDimple_R',      # added
-    mouthUpperUpLeft = 'mouthUpperUp_L',      # added				
-    mouthUpperUpRight = 'mouthUpperUp_R',      # added
-    mouthLowerDownLeft = 'mouthLowerDown_L', 	 # added	
-    mouthLowerDownRight = 'mouthLowerDown_R',      # added
-    mouthPressLeft = 'mouthPress_L',      # added
-    mouthPressRight = 'mouthPress_R',      # added
-    mouthStretchLeft = 'mouthStretch_L',     # added
-    mouthStretchRight = 'mouthStretch_R',    # added
-    tongueOut = 'tongueOut'
-)
 
-shapes_index = ["cheekPuff", "jawOpen", "jawForward", "jawLeft", "jawRight", "mouthFunnel", "mouthPucker", "mouthLeft", "mouthRight", 
-"mouthRollUpper", "mouthRollLower", "mouthShrugUpper", "mouthShrugLower", "mouthClose", "mouthSmileLeft", 
-"mouthSmileRight", "mouthFrownLeft", "mouthFrownRight", "mouthDimpleLeft", "mouthDimpleRight", "mouthUpperUpLeft", 
-"mouthUpperUpRight", "mouthLowerDownLeft", "mouthLowerDownRight", "mouthPressLeft", "mouthPressRight", "mouthStretchLeft", 
-"mouthStretchRight", "tongueOut"]
+class Defines():
+    shape_defs = dict(              # 29 shapes
+        cheekPuff = 'mouthInflate',
+        jawOpen = 'Expressions_mouthOpen_max',
+        jawForward = 'Expressions_jawOut_max',     # added
+        jawLeft = 'jawLeft',     # added
+        jawRight = 'jawRight',     # added
+        mouthFunnel = 'mouthFunnel',     # added
+        mouthPucker = 'mouthPucker', # fixed in vrcft master
+        mouthLeft = 'mouthLeft',     # added
+        mouthRight = 'mouthRight',     # added
+        mouthRollUpper = 'mouthRollUpper',     # fixed in vrcft master
+        mouthRollLower = 'mouthRollLower',     # fixed in vrcft master
+        mouthShrugUpper = 'mouthShrugUpper',     # added
+        mouthShrugLower = 'mouthShrugLower',     # added
+        mouthClose = 'mouthClose',             # MUST BE EQUAL TO jawOpen
+        mouthSmileLeft = 'mouthSmileL',     # added
+        mouthSmileRight = 'mouthSmileR',    # added
+        mouthFrownLeft = 'mouthFrownLeft',     # added
+        mouthFrownRight = 'mouthFrownRight',     # added
+        mouthDimpleLeft = 'mouthDimple_L',   # added
+        mouthDimpleRight = 'mouthDimple_R',      # added
+        mouthUpperUpLeft = 'mouthUpperUp_L',      # added		
+        mouthUpperUpRight = 'mouthUpperUp_R',      # added
+        mouthLowerDownLeft = 'mouthLowerDown_L', 	 # added	
+        mouthLowerDownRight = 'mouthLowerDown_R',      # added
+        mouthPressLeft = 'mouthPress_L',      # added
+        mouthPressRight = 'mouthPress_R',      # added
+        mouthStretchLeft = 'mouthStretch_L',     # added
+        mouthStretchRight = 'mouthStretch_R',    # added
+        tongueOut = 'tongueOut' 
+    )
 
-cheekPuff_bl = ['cheekPuff', 'jawOpen', 'mouthFunnel', 'mouthShrugUpper', 'mouthShrugLower', 'mouthClose', 'mouthUpperUpLeft', 'mouthUpperUpRight', 'mouthLowerDownLeft', 'mouthLowerDownRight', 'tongueOut']
-jawOpen_bl = ['cheekPuff', 'jawOpen', 'mouthShrugLower', 'mouthShrugUpper']
-jawForward_bl = ['jawForward']
-jawLeft_bl = ['jawLeft', 'jawRight']
-jawRight_bl = ['jawRight', 'jawLeft']
-mouthFunnel_bl = ['mouthFunnel', 'cheekPuff', 'mouthPucker', 'mouthRollUpper', 'mouthRollLower', 'mouthClose']
-mouthPucker_bl = ['mouthPucker', 'jawLeft', 'jawRight', 'mouthFunnel', 'mouthRollUpper', 'mouthRollLower', 'mouthClose']
-mouthLeft_bl = ['mouthLeft', 'mouthRight']
-mouthRight_bl = ['mouthRight', 'mouthLeft']
-mouthRollUpper_bl = ['mouthRollUpper', 'jawOpen', 'mouthFunnel', 'mouthPucker', 'mouthClose', 'mouthUpperUpLeft', 'mouthUpperUpRight']
-mouthRollLower_bl = ['mouthRollLower', 'jawOpen', 'mouthFunnel', 'mouthPucker', 'mouthClose', 'mouthLowerDownLeft', 'mouthLowerDownRight']
-mouthShrugUpper_bl = ['mouthShrugUpper', 'jawOpen', 'mouthClose', 'tongueOut']
-mouthShrugLower_bl = ['mouthShrugLower', 'jawOpen', 'mouthClose', 'tongueOut']
-mouthClose_bl = ['mouthFunnel', 'mouthPucker', 'mouthClose', 'mouthShrugUpper', 'mouthShrugLower']
-bpy.ops.wm.console_toggle()
+    shape_index = ["cheekPuff", "jawOpen", "jawForward", "jawLeft", "jawRight", "mouthFunnel", "mouthPucker", "mouthLeft", "mouthRight", 
+    "mouthRollUpper", "mouthRollLower", "mouthShrugUpper", "mouthShrugLower", "mouthClose", "mouthSmileLeft", 
+    "mouthSmileRight", "mouthFrownLeft", "mouthFrownRight", "mouthDimpleLeft", "mouthDimpleRight", "mouthUpperUpLeft", 
+    "mouthUpperUpRight", "mouthLowerDownLeft", "mouthLowerDownRight", "mouthPressLeft", "mouthPressRight", "mouthStretchLeft", 
+    "mouthStretchRight", "tongueOut"]
 
-print("Start Transfer")
-dest = get_objs('MB_LAB_Character')
-source = None
-if dest == 'MBLab_CA_M':
-    source = 'MBLabBase_CA_M'
-if dest == 'MBLab_CA_F':
-    source = 'MBLabBase_CA_F'
-if dest == 'MBLab_AF_M':
-    source = 'MBLabBase_AF_M'
-if dest == 'MBLab_AF_F':
-    source = 'MBLabBase_AF_F'
-if dest == 'MBLab_AS_M':
-    source = 'MBLabBase_AS_M'
-if dest == 'MBLab_AS_F':
-    source = 'MBLabBase_AS_F'
-if dest == 'MBLab_LA_M':
-    source = 'MBLabBase_LA_M'
-if dest == 'MBLab_LA_F':
-    source = 'MBLabBase_LA_F'
+    shape_bl = dict(  
+        cheekPuff = ['cheekPuff', 'jawOpen', 'mouthFunnel', 'mouthShrugUpper', 'mouthShrugLower', 'mouthClose', 'mouthUpperUpLeft', 'mouthUpperUpRight', 'mouthLowerDownLeft', 'mouthLowerDownRight', 'tongueOut'],
+        jawOpen = ['cheekPuff', 'jawOpen', 'mouthShrugLower', 'mouthShrugUpper'],
+        jawForward = ['jawForward'],
+        jawLeft = ['jawLeft', 'jawRight'],
+        jawRight = ['jawRight', 'jawLeft'],
+        mouthFunnel = ['mouthFunnel', 'cheekPuff', 'mouthPucker', 'mouthRollUpper', 'mouthRollLower', 'mouthClose'],
+        mouthPucker = ['mouthPucker', 'jawLeft', 'jawRight', 'mouthFunnel', 'mouthRollUpper', 'mouthRollLower', 'mouthClose'],
+        mouthLeft = ['mouthLeft', 'mouthRight'],
+        mouthRight = ['mouthRight', 'mouthLeft'],
+        mouthRollUpper = ['mouthRollUpper', 'jawOpen', 'mouthFunnel', 'mouthPucker', 'mouthClose', 'mouthUpperUpLeft', 'mouthUpperUpRight'],
+        mouthRollLower = ['mouthRollLower', 'jawOpen', 'mouthFunnel', 'mouthPucker', 'mouthClose', 'mouthLowerDownLeft', 'mouthLowerDownRight'],
+        mouthShrugUpper = ['mouthShrugUpper', 'jawOpen', 'mouthClose', 'tongueOut'],
+        mouthShrugLower = ['mouthShrugLower', 'jawOpen', 'mouthClose', 'tongueOut'],
+        mouthClose = ['mouthFunnel', 'mouthPucker', 'mouthClose', 'mouthShrugUpper', 'mouthShrugLower'],
+        mouthSmileLeft = ['mouthSmileLeft', 'mouthFrownLeft', 'mouthDimpleLeft', 'mouthPressLeft', 'mouthStretchLeft'],
+        mouthSmileRight = ['mouthSmileRight', 'mouthFrownRight', 'mouthDimpleRight', 'mouthPressRight', 'mouthStretchRight'],
+        mouthFrownLeft = ['mouthSmileLeft', 'mouthFrownLeft', 'mouthDimpleLeft', 'mouthPressLeft', 'mouthStretchLeft'],
+        mouthFrownRight = ['mouthSmileRight', 'mouthFrownRight', 'mouthDimpleRight', 'mouthPressRight', 'mouthStretchRight'],
+        mouthDimpleLeft = ['mouthSmileLeft', 'mouthFrownLeft', 'mouthDimpleLeft', 'mouthPressLeft', 'mouthStretchLeft'],
+        mouthDimpleRight = ['mouthSmileRight', 'mouthFrownRight', 'mouthDimpleRight', 'mouthPressRight', 'mouthStretchRight'],
+        mouthUpperUpLeft = ['mouthUpperUpLeft', 'mouthRollUpper'],
+        mouthUpperUpRight = ['mouthUpperUpRight', 'mouthRollUpper'],	
+        mouthLowerDownLeft = ['mouthUpperUpLeft', 'mouthRollLower'],
+        mouthLowerDownRight = ['mouthUpperUpRight', 'mouthRollLower'],		
+        mouthPressLeft = ['mouthSmileLeft', 'mouthFrownLeft', 'mouthDimpleLeft', 'mouthPressLeft', 'mouthStretchLeft'],
+        mouthPressRight = ['mouthSmileRight', 'mouthFrownRight', 'mouthDimpleRight', 'mouthPressRight', 'mouthStretchRight'],
+        mouthStretchLeft = ['mouthSmileLeft', 'mouthFrownLeft', 'mouthDimpleLeft', 'mouthPressLeft', 'mouthStretchLeft'],
+        mouthStretchRight = ['mouthSmileRight', 'mouthFrownRight', 'mouthDimpleRight', 'mouthPressRight', 'mouthStretchRight'],
+        tongueOut = ['tongueOut']
+        )
 
-obj = bpy.context.object
-start_kf = bpy.context.scene.frame_start
-end_kf = bpy.context.scene.frame_end
+class ShapeSetter():
+    def __init__(self):
+        self.blacklist = []           
+        self.randomized_shapes = []
+        self.possible_shapes = []
+        self.count = 0
 
+    def reset(self, DefsClass):
+        defs = DefsClass
+        self.blacklist = []                  # Reset
+        self.randomized_shapes = []
+        self.possible_shapes = copy.copy(defs.shape_index)
 
-'''
-counter = 0
-for frameNumber in range(0, bpy.context.scene.frame_end):
-    for shapekey in range(0, bpy.context.scene.frame_end):
-        obj.data.shape_keys.key_blocks[shapekey].value = 1.0 if (frameNumber == counter) else 0.0
-        obj.data.shape_keys.key_blocks[shapekey].keyframe_insert(data_path="value", frame=frameNumber)
-        counter += 1
-    obj.data.shape_keys.key_blocks[counter - 1].value = 0.0
-    counter = 0
-'''
+    def get_avalible_shapes(self, DefsClass, classExample):
+        defs = DefsClass
+        if type(classExample) == int:               # Take either String or int
+            classExample = defs.shape_index[classExample]
+        if type(classExample) == str:
+            classExample = defs.shape_index[defs.shape_index.index(classExample)]
+
+        self.blacklist.append(defs.shape_bl[classExample])    # Add the class example's blacklist to start
+        #print(shape)
+        #print(f'Blacklist: {self.blacklist}')
+        for i in range(len(self.possible_shapes)):   # Check Blacklist for every potential shape
+            for j in range(len(self.blacklist)):
+                for k in range(len(self.blacklist[j])):      # If there's a blacklisted item in potential shapes, remove it
+                    if self.blacklist[j][k] in self.possible_shapes:
+                        self.possible_shapes.pop(self.possible_shapes.index(self.blacklist[j][k]))
+                        #print(f'Possible Shapes: {self.possible_shapes}')
+        return(self.possible_shapes)
+    
+    def tick(self):
+        self.count += 1
+FRAME_START = 0
+FRAME_END = 100
+
+defines = Defines()
+setter = ShapeSetter()
+
+setter.reset(defines)
+possible_shapes = setter.get_avalible_shapes(defines, "cheekPuff")
+setter.reset(defines)
+possible_shapes = setter.get_avalible_shapes(defines, 1)
 
 # Selector Algo
 
@@ -111,16 +135,7 @@ roll shape value
 add blacklist to iteration blacklist
 '''
         # LowRange
-count_inner = 0
-count_outer = 0
-iter_blacklist = []
-class_exmaple = shapes_index[i]
-iter_blacklist = blacklist_index[i]
 
-count_inner += 1
-if count_inner == len(shapes_index):
-    count_inner = 0
-    count_outer = 1
     
     
     
