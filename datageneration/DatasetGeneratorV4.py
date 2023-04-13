@@ -1,5 +1,6 @@
 #import bpy
 import copy
+import random
 def get_objs(collection):                   # Returns all meshes in a collection
     collection = bpy.data.collections[collection]
     for obj in collection.all_objects:
@@ -8,6 +9,9 @@ def get_objs(collection):                   # Returns all meshes in a collection
             mesh_name = obj.name
             #shapekey_name = shapekey_name.split()
     return mesh_name 
+
+def clamp(num, min_value, max_value):
+   return max(min(num, max_value), min_value)
 
 class Defines():
     shape_defs = dict(              # 29 shapes
@@ -47,6 +51,8 @@ class Defines():
     "mouthSmileRight", "mouthFrownLeft", "mouthFrownRight", "mouthDimpleLeft", "mouthDimpleRight", "mouthUpperUpLeft", 
     "mouthUpperUpRight", "mouthLowerDownLeft", "mouthLowerDownRight", "mouthPressLeft", "mouthPressRight", "mouthStretchLeft", 
     "mouthStretchRight", "tongueOut"]
+    
+    auto_exclude = ['mouthClose',]
 
     shape_bl = dict(  
         cheekPuff = ['cheekPuff', 'jawOpen', 'mouthFunnel', 'mouthShrugUpper', 'mouthShrugLower', 'mouthClose', 'mouthUpperUpLeft', 'mouthUpperUpRight', 'mouthLowerDownLeft', 'mouthLowerDownRight', 'tongueOut'],
@@ -71,8 +77,8 @@ class Defines():
         mouthDimpleRight = ['mouthSmileRight', 'mouthFrownRight', 'mouthDimpleRight', 'mouthPressRight', 'mouthStretchRight'],
         mouthUpperUpLeft = ['mouthUpperUpLeft', 'mouthRollUpper'],
         mouthUpperUpRight = ['mouthUpperUpRight', 'mouthRollUpper'],	
-        mouthLowerDownLeft = ['mouthUpperUpLeft', 'mouthRollLower'],
-        mouthLowerDownRight = ['mouthUpperUpRight', 'mouthRollLower'],		
+        mouthLowerDownLeft = ['mouthLowerDownLeft', 'mouthRollLower'],
+        mouthLowerDownRight = ['mouthLowerDownRight', 'mouthRollLower'],		
         mouthPressLeft = ['mouthSmileLeft', 'mouthFrownLeft', 'mouthDimpleLeft', 'mouthPressLeft', 'mouthStretchLeft'],
         mouthPressRight = ['mouthSmileRight', 'mouthFrownRight', 'mouthDimpleRight', 'mouthPressRight', 'mouthStretchRight'],
         mouthStretchLeft = ['mouthSmileLeft', 'mouthFrownLeft', 'mouthDimpleLeft', 'mouthPressLeft', 'mouthStretchLeft'],
@@ -85,44 +91,60 @@ class ShapeSetter():
         self.blacklist = []           
         self.randomized_shapes = []
         self.possible_shapes = []
+        self.selected_shapes = []
+        self.selected_shapes_index = []
         self.count = 0
 
-    def reset(self, DefsClass):
+    def reset(self, DefsClass):     
         defs = DefsClass
-        self.blacklist = []                  # Reset
+        self.blacklist = []                 
         self.randomized_shapes = []
+        self.selected_shapes = []
+        self.selected_shapes_index = []
         self.possible_shapes = copy.copy(defs.shape_index)
 
-    def get_avalible_shapes(self, DefsClass, classExample):
-        defs = DefsClass
-        if type(classExample) == int:               # Take either String or int
-            classExample = defs.shape_index[classExample]
-        if type(classExample) == str:
-            classExample = defs.shape_index[defs.shape_index.index(classExample)]
-
-        self.blacklist.append(defs.shape_bl[classExample])    # Add the class example's blacklist to start
-        #print(shape)
-        #print(f'Blacklist: {self.blacklist}')
-        for i in range(len(self.possible_shapes)):   # Check Blacklist for every potential shape
+    def get_avalible_shapes(self, defs, shape):         # Adds the shape's blacklist to the list and returns the remaining potential shapes
+        self.blacklist.append(defs.shape_bl[shape])
+        for i in range(len(self.possible_shapes)):   
             for j in range(len(self.blacklist)):
-                for k in range(len(self.blacklist[j])):      # If there's a blacklisted item in potential shapes, remove it
+                for k in range(len(self.blacklist[j])):     
                     if self.blacklist[j][k] in self.possible_shapes:
                         self.possible_shapes.pop(self.possible_shapes.index(self.blacklist[j][k]))
-                        #print(f'Possible Shapes: {self.possible_shapes}')
         return(self.possible_shapes)
     
+    def generate_example(self, DefsClass, range, classExample):
+        defs = DefsClass
+        self.reset(defs)
+        if type(classExample) == int: classExample = defs.shape_index[classExample]             # Take either String or int
+        if type(classExample) == str: classExample = defs.shape_index[defs.shape_index.index(classExample)]
+        self.selected_shapes.append(clamp(random.uniform(range[0], range[1]), 0, 1))
+        self.selected_shapes_index.append(classExample)
+        shape = random.choice(self.get_avalible_shapes(defs, classExample))  
+        while len(self.possible_shapes) > 0:
+            if 0.75 >= random.uniform(0,1):
+                self.selected_shapes.append(clamp(random.uniform(self.selected_shapes[0] - 0.6, self.selected_shapes[0] - 0.1), 0, 1))
+                self.selected_shapes_index.append(shape)
+            try:
+                shape = random.choice(self.get_avalible_shapes(defs, shape))  
+            except: break
+        return self.selected_shapes, self.selected_shapes_index
     def tick(self):
         self.count += 1
+
 FRAME_START = 0
 FRAME_END = 100
 
-defines = Defines()
-setter = ShapeSetter()
+defs = Defines()
+ss = ShapeSetter()
 
-setter.reset(defines)
-possible_shapes = setter.get_avalible_shapes(defines, "cheekPuff")
-setter.reset(defines)
-possible_shapes = setter.get_avalible_shapes(defines, 1)
+range_list = [[0.5,1.05],
+              [0.4, 0.7],
+              [-0.2, 0.5]
+              ]
+
+values, names = ss.generate_example(defs, range_list[1], 'mouthLeft')
+print(values)
+print(names)
 
 # Selector Algo
 
