@@ -52,7 +52,12 @@ class Defines():
     "mouthUpperUpRight", "mouthLowerDownLeft", "mouthLowerDownRight", "mouthPressLeft", "mouthPressRight", "mouthStretchLeft", 
     "mouthStretchRight", "tongueOut"]
     
-    auto_exclude = ['mouthClose',]
+    exclusives = [            # mark these combinations for special treatment when generating values(combined values, etc...)
+        ['mouthClose', 'jawOpen'],
+        ['mouthShrugUpper', 'mouthShrugLower'],
+        ['tongueOut', 'jawOpen']
+        
+                    ]
 
     shape_bl = dict(  
         cheekPuff = ['cheekPuff', 'jawOpen', 'mouthFunnel', 'mouthShrugUpper', 'mouthShrugLower', 'mouthClose', 'mouthUpperUpLeft', 'mouthUpperUpRight', 'mouthLowerDownLeft', 'mouthLowerDownRight', 'tongueOut'],
@@ -83,7 +88,7 @@ class Defines():
         mouthPressRight = ['mouthSmileRight', 'mouthFrownRight', 'mouthDimpleRight', 'mouthPressRight', 'mouthStretchRight'],
         mouthStretchLeft = ['mouthSmileLeft', 'mouthFrownLeft', 'mouthDimpleLeft', 'mouthPressLeft', 'mouthStretchLeft'],
         mouthStretchRight = ['mouthSmileRight', 'mouthFrownRight', 'mouthDimpleRight', 'mouthPressRight', 'mouthStretchRight'],
-        tongueOut = ['tongueOut']
+        tongueOut = ['tongueOut', 'mouthClose']
         )
 
 class ShapeSetter():
@@ -112,6 +117,16 @@ class ShapeSetter():
                         self.possible_shapes.pop(self.possible_shapes.index(self.blacklist[j][k]))
         return(self.possible_shapes)
     
+    def process_exclusives(self, defs):         
+        if defs.exclusives[0][0] in self.selected_shapes_index and not defs.exclusives[0][1] in self.selected_shapes_index:  # mouthClose = jawOpen
+            self.selected_shapes_index.append(defs.exclusives[0][1])
+            self.selected_shapes.append(0.0)
+        if all(item in self.selected_shapes_index for item in defs.exclusives[0]):       
+            print(self.selected_shapes_index)
+            self.selected_shapes[self.selected_shapes_index.index(defs.exclusives[0][1])] = self.selected_shapes[self.selected_shapes_index.index(defs.exclusives[0][0])]
+
+        
+    
     def generate_example(self, DefsClass, range, classExample):
         defs = DefsClass
         self.reset(defs)
@@ -121,12 +136,12 @@ class ShapeSetter():
         self.selected_shapes_index.append(classExample)
         shape = random.choice(self.get_avalible_shapes(defs, classExample))  
         while len(self.possible_shapes) > 0:
-            if 0.75 >= random.uniform(0,1):
+            if 0.75 >= random.uniform(0,1):     # 75% chance for shape to be set
                 self.selected_shapes.append(clamp(random.uniform(self.selected_shapes[0] - 0.6, self.selected_shapes[0] - 0.1), 0, 1))
                 self.selected_shapes_index.append(shape)
-            try:
-                shape = random.choice(self.get_avalible_shapes(defs, shape))  
+            try: shape = random.choice(self.get_avalible_shapes(defs, shape))  
             except: break
+        self.process_exclusives(defs)
         return self.selected_shapes, self.selected_shapes_index
     def tick(self):
         self.count += 1
@@ -142,7 +157,7 @@ range_list = [[0.5,1.05],
               [-0.2, 0.5]
               ]
 
-values, names = ss.generate_example(defs, range_list[1], 'mouthLeft')
+values, names = ss.generate_example(defs, range_list[1], 'mouthClose')
 print(values)
 print(names)
 
