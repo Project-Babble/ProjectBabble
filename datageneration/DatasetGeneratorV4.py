@@ -1,4 +1,4 @@
-#import bpy
+import bpy
 import copy
 import random
 def get_objs(collection):                   # Returns all meshes in a collection
@@ -56,7 +56,6 @@ class Defines():
         ['mouthClose', 'jawOpen'],
         ['mouthShrugUpper', 'mouthShrugLower'],
         ['tongueOut', 'jawOpen']
-        
                     ]
 
     shape_bl = dict(  
@@ -74,8 +73,8 @@ class Defines():
         mouthShrugUpper = ['mouthShrugUpper', 'jawOpen', 'mouthClose', 'tongueOut'],
         mouthShrugLower = ['mouthShrugLower', 'jawOpen', 'mouthClose', 'tongueOut'],
         mouthClose = ['mouthFunnel', 'mouthPucker', 'mouthClose', 'mouthShrugUpper', 'mouthShrugLower'],
-        mouthSmileLeft = ['mouthSmileLeft', 'mouthFrownLeft', 'mouthDimpleLeft', 'mouthPressLeft', 'mouthStretchLeft'],
-        mouthSmileRight = ['mouthSmileRight', 'mouthFrownRight', 'mouthDimpleRight', 'mouthPressRight', 'mouthStretchRight'],
+        mouthSmileLeft = ['mouthSmileLeft', 'mouthFrownLeft', 'mouthDimpleLeft', 'mouthPressLeft', 'mouthStretchLeft', 'mouthShrugUpper', 'mouthShrugLower'],
+        mouthSmileRight = ['mouthSmileRight', 'mouthFrownRight', 'mouthDimpleRight', 'mouthPressRight', 'mouthStretchRight', 'mouthShrugUpper', 'mouthShrugLower'],
         mouthFrownLeft = ['mouthSmileLeft', 'mouthFrownLeft', 'mouthDimpleLeft', 'mouthPressLeft', 'mouthStretchLeft'],
         mouthFrownRight = ['mouthSmileRight', 'mouthFrownRight', 'mouthDimpleRight', 'mouthPressRight', 'mouthStretchRight'],
         mouthDimpleLeft = ['mouthSmileLeft', 'mouthFrownLeft', 'mouthDimpleLeft', 'mouthPressLeft', 'mouthStretchLeft'],
@@ -107,6 +106,12 @@ class ShapeSetter():
         self.selected_shapes = []
         self.selected_shapes_index = []
         self.possible_shapes = copy.copy(defs.shape_index)
+        
+    def convert_to_defined(self, defs):
+        defines_list = []
+        for i in range(len(self.selected_shapes_index)):
+            defines_list.append(defs.shape_defs[self.selected_shapes_index[i]])
+        return(defines_list)
 
     def get_avalible_shapes(self, defs, shape):         # Adds the shape's blacklist to the list and returns the remaining potential shapes
         self.blacklist.append(defs.shape_bl[shape])
@@ -119,14 +124,26 @@ class ShapeSetter():
     
     def process_exclusives(self, defs):         
         if defs.exclusives[0][0] in self.selected_shapes_index and not defs.exclusives[0][1] in self.selected_shapes_index:  # mouthClose = jawOpen
-            self.selected_shapes_index.append(defs.exclusives[0][1])
+            self.selected_shapes_index.append(defs.exclusives[0][1])        # Add jawOpen value if missing 
             self.selected_shapes.append(0.0)
         if all(item in self.selected_shapes_index for item in defs.exclusives[0]):       
-            print(self.selected_shapes_index)
-            self.selected_shapes[self.selected_shapes_index.index(defs.exclusives[0][1])] = self.selected_shapes[self.selected_shapes_index.index(defs.exclusives[0][0])]
+            self.selected_shapes[self.selected_shapes_index.index(defs.exclusives[0][1])] = self.selected_shapes[self.selected_shapes_index.index(defs.exclusives[0][0])]   # set jawOpen = mouthClose
 
-        
-    
+        if defs.exclusives[1][0] in self.selected_shapes_index and not defs.exclusives[1][1] in self.selected_shapes_index:     # mouthShrugLower = mouthShrugUpper
+            self.selected_shapes_index.append(defs.exclusives[1][1])        # Add jawOpen value if missing 
+            self.selected_shapes.append(self.selected_shapes[self.selected_shapes_index.index(defs.exclusives[1][0])])
+        if defs.exclusives[1][1] in self.selected_shapes_index and not defs.exclusives[1][0] in self.selected_shapes_index:
+            self.selected_shapes_index.append(defs.exclusives[1][0])        # Add jawOpen value if missing 
+            self.selected_shapes.append(self.selected_shapes[self.selected_shapes_index.index(defs.exclusives[1][1])])
+        if defs.exclusives[1][1] in self.selected_shapes_index and defs.exclusives[1][0] in self.selected_shapes_index:
+            self.selected_shapes[self.selected_shapes_index.index(defs.exclusives[1][1])] = self.selected_shapes[self.selected_shapes_index.index(defs.exclusives[1][0])]
+
+        if defs.exclusives[2][0] in self.selected_shapes_index and not defs.exclusives[2][1] in self.selected_shapes_index: # tongueOut requires jawOpen >= 0.35
+            self.selected_shapes_index.append(defs.exclusives[2][1])        # Add jawOpen value if missing 
+            self.selected_shapes.append(0.0)
+        if defs.exclusives[2][0] in self.selected_shapes_index and self.selected_shapes[self.selected_shapes_index.index(defs.exclusives[2][1])] <= 0.35:
+            self.selected_shapes[self.selected_shapes_index.index(defs.exclusives[2][1])] = clamp(random.uniform(0.35, 1.05), 0, 1)
+
     def generate_example(self, DefsClass, range, classExample):
         defs = DefsClass
         self.reset(defs)
@@ -137,12 +154,13 @@ class ShapeSetter():
         shape = random.choice(self.get_avalible_shapes(defs, classExample))  
         while len(self.possible_shapes) > 0:
             if 0.75 >= random.uniform(0,1):     # 75% chance for shape to be set
-                self.selected_shapes.append(clamp(random.uniform(self.selected_shapes[0] - 0.6, self.selected_shapes[0] - 0.1), 0, 1))
+                self.selected_shapes.append(clamp(random.uniform(-0.1, self.selected_shapes[0] - 0.1), 0, 1))
                 self.selected_shapes_index.append(shape)
             try: shape = random.choice(self.get_avalible_shapes(defs, shape))  
             except: break
         self.process_exclusives(defs)
-        return self.selected_shapes, self.selected_shapes_index
+        
+        return self.selected_shapes, self.convert_to_defined(defs)
     def tick(self):
         self.count += 1
 
@@ -152,12 +170,25 @@ FRAME_END = 100
 defs = Defines()
 ss = ShapeSetter()
 
-range_list = [[0.5,1.05],
+range_list = [
+              [0.5,1.05],
               [0.4, 0.7],
               [-0.2, 0.5]
               ]
 
-values, names = ss.generate_example(defs, range_list[1], 'mouthClose')
+ob = bpy.data.objects['MBLab_CA_M']
+for shape in ob.data.shape_keys.key_blocks:
+    shape.value=0
+
+values, names = ss.generate_example(defs, range_list[1], 'tongueOut')
+targetmesh_shapelist = []
+ob = bpy.data.objects['MBLab_CA_M']
+for i in range(len(values)):
+    ob.data.shape_keys.key_blocks[names[i]].value = values[i]
+
+
+print(targetmesh_shapelist)
+        
 print(values)
 print(names)
 
