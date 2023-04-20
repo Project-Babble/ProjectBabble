@@ -1,6 +1,8 @@
 import bpy
 import copy
 import random
+import os
+import time
 def get_objs(collection):                   # Returns all meshes in a collection
     collection = bpy.data.collections[collection]
     for obj in collection.all_objects:
@@ -13,13 +15,21 @@ def get_objs(collection):                   # Returns all meshes in a collection
 def clamp(num, min_value, max_value):
    return max(min(num, max_value), min_value)
 
+def zero(ob):
+    ob = bpy.data.objects[ob]
+    for shape in ob.data.shape_keys.key_blocks:
+        shape.value=0
+        shape.keyframe_insert(data_path="value", frame=bpy.context.scene.frame_current)
+
 class Defines():
     shape_defs = dict(              # 29 shapes
-        cheekPuff = 'mouthInflate',
-        jawOpen = 'Expressions_mouthOpen_max',
-        jawForward = 'Expressions_jawOut_max',     # added
+        cheekPuff = 'cheekPuff',
+        jawOpen = 'jawOpen',
+        jawForward = 'jawForward',     # added
         jawLeft = 'jawLeft',     # added
         jawRight = 'jawRight',     # added
+        noseSneerLeft = 'noseSneerLeft', # added
+        noseSneerRight = 'noseSneerRight', # added
         mouthFunnel = 'mouthFunnel',     # added
         mouthPucker = 'mouthPucker', # fixed in vrcft master
         mouthLeft = 'mouthLeft',     # added
@@ -46,13 +56,13 @@ class Defines():
         tongueOut = 'tongueOut' 
     )
 
-    shape_index = ["cheekPuff", "jawOpen", "jawForward", "jawLeft", "jawRight", "mouthFunnel", "mouthPucker", "mouthLeft", "mouthRight", 
+    shape_index = ["cheekPuff", "jawOpen", "jawForward", "jawLeft", "jawRight", "noseSneerLeft", "noseSneerRight", "mouthFunnel", "mouthPucker", "mouthLeft", "mouthRight", 
     "mouthRollUpper", "mouthRollLower", "mouthShrugUpper", "mouthShrugLower", "mouthClose", "mouthSmileLeft", 
     "mouthSmileRight", "mouthFrownLeft", "mouthFrownRight", "mouthDimpleLeft", "mouthDimpleRight", "mouthUpperUpLeft", 
     "mouthUpperUpRight", "mouthLowerDownLeft", "mouthLowerDownRight", "mouthPressLeft", "mouthPressRight", "mouthStretchLeft", 
     "mouthStretchRight", "tongueOut"]
     
-    exclusives = [            # mark these combinations for special treatment when generating values(combined values, etc...)
+    exclusives = [            # mark these combinations for special treatment after generating values(combined values, etc...)
         ['mouthClose', 'jawOpen'],
         ['mouthShrugUpper', 'mouthShrugLower'],
         ['tongueOut', 'jawOpen']
@@ -64,6 +74,8 @@ class Defines():
         jawForward = ['jawForward'],
         jawLeft = ['jawLeft', 'jawRight'],
         jawRight = ['jawRight', 'jawLeft'],
+        noseSneerLeft = ['noseSneerLeft'],
+        noseSneerRight = ['noseSneerRight'],
         mouthFunnel = ['mouthFunnel', 'cheekPuff', 'mouthPucker', 'mouthRollUpper', 'mouthRollLower', 'mouthClose'],
         mouthPucker = ['mouthPucker', 'jawLeft', 'jawRight', 'mouthFunnel', 'mouthRollUpper', 'mouthRollLower', 'mouthClose'],
         mouthLeft = ['mouthLeft', 'mouthRight'],
@@ -72,17 +84,17 @@ class Defines():
         mouthRollLower = ['mouthRollLower', 'jawOpen', 'mouthFunnel', 'mouthPucker', 'mouthClose', 'mouthLowerDownLeft', 'mouthLowerDownRight'],
         mouthShrugUpper = ['mouthShrugUpper', 'jawOpen', 'mouthClose', 'tongueOut'],
         mouthShrugLower = ['mouthShrugLower', 'jawOpen', 'mouthClose', 'tongueOut'],
-        mouthClose = ['mouthFunnel', 'mouthPucker', 'mouthClose', 'mouthShrugUpper', 'mouthShrugLower'],
+        mouthClose = ['mouthPucker', 'mouthClose', 'mouthShrugUpper', 'mouthShrugLower', 'tongueOut', 'mouthUpperUpLeft', 'mouthUpperUpRight', 'mouthLowerDownLeft', 'mouthLowerDownRight'],
         mouthSmileLeft = ['mouthSmileLeft', 'mouthFrownLeft', 'mouthDimpleLeft', 'mouthPressLeft', 'mouthStretchLeft', 'mouthShrugUpper', 'mouthShrugLower'],
         mouthSmileRight = ['mouthSmileRight', 'mouthFrownRight', 'mouthDimpleRight', 'mouthPressRight', 'mouthStretchRight', 'mouthShrugUpper', 'mouthShrugLower'],
         mouthFrownLeft = ['mouthSmileLeft', 'mouthFrownLeft', 'mouthDimpleLeft', 'mouthPressLeft', 'mouthStretchLeft'],
         mouthFrownRight = ['mouthSmileRight', 'mouthFrownRight', 'mouthDimpleRight', 'mouthPressRight', 'mouthStretchRight'],
         mouthDimpleLeft = ['mouthSmileLeft', 'mouthFrownLeft', 'mouthDimpleLeft', 'mouthPressLeft', 'mouthStretchLeft'],
         mouthDimpleRight = ['mouthSmileRight', 'mouthFrownRight', 'mouthDimpleRight', 'mouthPressRight', 'mouthStretchRight'],
-        mouthUpperUpLeft = ['mouthUpperUpLeft', 'mouthRollUpper'],
-        mouthUpperUpRight = ['mouthUpperUpRight', 'mouthRollUpper'],	
-        mouthLowerDownLeft = ['mouthLowerDownLeft', 'mouthRollLower'],
-        mouthLowerDownRight = ['mouthLowerDownRight', 'mouthRollLower'],		
+        mouthUpperUpLeft = ['mouthUpperUpLeft', 'mouthRollUpper', 'cheekPuff'],
+        mouthUpperUpRight = ['mouthUpperUpRight', 'mouthRollUpper', 'cheekPuff'],	
+        mouthLowerDownLeft = ['mouthLowerDownLeft', 'mouthRollLower', 'cheekPuff'],
+        mouthLowerDownRight = ['mouthLowerDownRight', 'mouthRollLower', 'cheekPuff'],		
         mouthPressLeft = ['mouthSmileLeft', 'mouthFrownLeft', 'mouthDimpleLeft', 'mouthPressLeft', 'mouthStretchLeft'],
         mouthPressRight = ['mouthSmileRight', 'mouthFrownRight', 'mouthDimpleRight', 'mouthPressRight', 'mouthStretchRight'],
         mouthStretchLeft = ['mouthSmileLeft', 'mouthFrownLeft', 'mouthDimpleLeft', 'mouthPressLeft', 'mouthStretchLeft'],
@@ -97,6 +109,7 @@ class ShapeSetter():
         self.possible_shapes = []
         self.selected_shapes = []
         self.selected_shapes_index = []
+        self.total_shapes = 0
         self.count = 0
 
     def reset(self, DefsClass):     
@@ -105,6 +118,7 @@ class ShapeSetter():
         self.randomized_shapes = []
         self.selected_shapes = []
         self.selected_shapes_index = []
+        self.total_shapes = len(defs.shape_defs)
         self.possible_shapes = copy.copy(defs.shape_index)
         
     def convert_to_defined(self, defs):
@@ -159,54 +173,117 @@ class ShapeSetter():
             try: shape = random.choice(self.get_avalible_shapes(defs, shape))  
             except: break
         self.process_exclusives(defs)
-        
+        self.tick()
         return self.selected_shapes, self.convert_to_defined(defs)
+    
     def tick(self):
         self.count += 1
+        if self.count == self.total_shapes:
+            self.count = 0
+class EncodeDecode():
+    def float_to_uint24(self, f):
+        f = round(f, 7)
+        f_clamped = max(0, min(1, f))
+        uint24 = int(f_clamped * ((1 << 24) - 1))
+        return uint24
+    def encode(self, f, index):
+        hex_str = format(f, '06x')
+        hex_str = list(hex_str.strip(" "))
+        #print(hex_str)
+        bpy.data.scenes["Scene"].node_tree.nodes["Group.002"].inputs[index].default_value = ((int('0x' + hex_str[0] + hex_str[1], 0) / 255),(int('0x' + hex_str[2] + hex_str[3], 0) / 255),(int('0x' + hex_str[4] + hex_str[5], 0) / 255),1)
 
-FRAME_START = 0
-FRAME_END = 100
+    
+
+
+FRAME_START = bpy.context.scene.frame_start
+FRAME_END = bpy.context.scene.frame_end
 
 defs = Defines()
 ss = ShapeSetter()
-
+encdec = EncodeDecode()
+tick = 0
+range_select = 0
 range_list = [
-              [0.5,1.05],
+              [0.6,1.05],
               [0.4, 0.7],
               [-0.2, 0.5]
               ]
 
-ob = bpy.data.objects['MBLab_CA_M']
-for shape in ob.data.shape_keys.key_blocks:
-    shape.value=0
 
-values, names = ss.generate_example(defs, range_list[1], 'tongueOut')
-targetmesh_shapelist = []
-ob = bpy.data.objects['MBLab_CA_M']
-for i in range(len(values)):
-    ob.data.shape_keys.key_blocks[names[i]].value = values[i]
+mesh = 'BabbleCA_M'
+ob = bpy.data.objects[mesh]
+
+for frame in range(FRAME_START, FRAME_END+1):   # Iterate over each frame in the range
+    model_shapes = []
+    print(f"Generated {frame} of {FRAME_END} shapes")
+    ob = ob
+    if tick == ss.total_shapes:
+        tick = 0
+        range_select += 1
+        if range_select > 2:range_select = 0
+    values, names = ss.generate_example(defs, range_list[range_select], defs.shape_index[ss.count])
+    bpy.context.scene.frame_set(frame)# Go to the current frame
+    zero(mesh)
+    for i in range(len(values)):    # Iterate over each shape key
+        ob.data.shape_keys.key_blocks[names[i]].value = values[i]
+        key = ob.data.shape_keys.key_blocks[names[i]]
+        key.keyframe_insert(data_path="value", frame=frame)
+    hmd_type = random.randint(0,2)
+    ob = bpy.data.objects['Pimax']
+    ob.hide_render = True
+    ob.keyframe_insert(data_path="hide_render", frame=frame)
+    ob = bpy.data.objects['Quest2']
+    ob.hide_render = True
+    ob.keyframe_insert(data_path="hide_render", frame=frame)
+    if hmd_type == 0:
+        ob = bpy.data.objects['Pimax']
+        ob.hide_render = True
+        ob.keyframe_insert(data_path="hide_render", frame=frame)
+        ob = bpy.data.objects['Quest2']
+        ob.hide_render = True
+        ob.keyframe_insert(data_path="hide_render", frame=frame)
+    if hmd_type == 1:
+        ob = bpy.data.objects['Pimax']
+        ob.hide_render = False
+        ob.keyframe_insert(data_path="hide_render", frame=frame)
+    if hmd_type == 2:
+        ob = bpy.data.objects['Quest2']
+        ob.hide_render = False
+        ob.keyframe_insert(data_path="hide_render", frame=frame)
+    
+    camera_type = random.randint(0,1)
+    ob = bpy.data.objects['ViveCamera']
+    ob.hide_render = True
+    ob.keyframe_insert(data_path="hide_render", frame=frame)
+    ob = bpy.data.objects['PhoneCamera']
+    ob.hide_render = True
+    ob.keyframe_insert(data_path="hide_render", frame=frame)
+    if camera_type == 0:
+        ob = bpy.data.objects['ViveCamera']
+        ob.hide_render = False
+        ob.keyframe_insert(data_path="hide_render", frame=frame)
+    if camera_type == 1:
+        ob = bpy.data.objects['PhoneCamera']
+        ob.hide_render = False
+        ob.keyframe_insert(data_path="hide_render", frame=frame)
 
 
-print(targetmesh_shapelist)
-        
-print(values)
-print(names)
 
-# Selector Algo
+    ob = bpy.data.objects[mesh]
+    shapecount = len(defs.shape_index)
+    encdec.encode(shapecount, 1)
+    bpy.data.scenes["Scene"].node_tree.nodes["Group.002"].inputs[1].keyframe_insert(data_path="default_value", frame=frame)
+    for i in range(shapecount):
+        encdec.encode(encdec.float_to_uint24(ob.data.shape_keys.key_blocks[defs.shape_defs[defs.shape_index[i]]].value), i + 1)
+    for i in range(shapecount):
+        bpy.data.scenes["Scene"].node_tree.nodes["Group.002"].inputs[i + 2].keyframe_insert(data_path="default_value", frame=frame)
 
-'''
-select class example
-roll shape value
-add blacklist to interation blacklist
-select shape not in blacklist
-roll shape value 
-add blacklist to iteration blacklist
-'''
-        # LowRange
 
-    
-    
-    
-    
-    
-    
+
+    '''
+    for i in range(len(defs.shape_index)):
+        encdec.encode(encdec.float_to_uint24(ob.data.shape_keys.key_blocks[defs.shape_defs[defs.shape_index[i]]].value), i + 1)
+        bpy.data.scenes["Scene"].node_tree.nodes["Group.002"].inputs[i + 2].keyframe_insert(data_path="default_value", frame=frame)
+        '''
+
+    tick += 1
