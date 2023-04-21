@@ -182,18 +182,26 @@ class ShapeSetter():
             self.count = 0
 class EncodeDecode():
     def float_to_uint24(self, f):
-        f = round(f, 7)
+        f = round(f, 8)
         f_clamped = max(0, min(1, f))
         uint24 = int(f_clamped * ((1 << 24) - 1))
         return uint24
-    def encode(self, f, index):
+    
+    def uint24_to_float(self, uint24):
+        f = uint24 / ((1 << 24) - 1)
+        return f
+
+    def encode(self, f, index):  # uint24 to blender pixel (1.0, 1.0, 1.0) 
         hex_str = format(f, '06x')
         hex_str = list(hex_str.strip(" "))
-        #print(hex_str)
         bpy.data.scenes["Scene"].node_tree.nodes["Group.002"].inputs[index].default_value = ((int('0x' + hex_str[0] + hex_str[1], 0) / 255),(int('0x' + hex_str[2] + hex_str[3], 0) / 255),(int('0x' + hex_str[4] + hex_str[5], 0) / 255),1)
+        return ((int('0x' + hex_str[0] + hex_str[1], 0) / 255),(int('0x' + hex_str[2] + hex_str[3], 0) / 255),(int('0x' + hex_str[4] + hex_str[5], 0) / 255),1)
 
+    def decode(self, pixel):    # Pixel to uint24 (255, 255, 255)
+        output_hex = ('0x' + hex(pixel[0]).replace('0x', '').rjust(2, "0") + hex(pixel[1]).replace('0x', '').rjust(2, "0") + hex(pixel[2]).replace('0x', '').rjust(2, "0"))
+        output_hex = int(output_hex, 0)
+        return(output_hex)
     
-
 
 FRAME_START = bpy.context.scene.frame_start
 FRAME_END = bpy.context.scene.frame_end
@@ -224,10 +232,17 @@ for frame in range(FRAME_START, FRAME_END+1):   # Iterate over each frame in the
     values, names = ss.generate_example(defs, range_list[range_select], defs.shape_index[ss.count])
     bpy.context.scene.frame_set(frame)# Go to the current frame
     zero(mesh)
-    for i in range(len(values)):    # Iterate over each shape key
+    shapecount = len(defs.shape_index)  
+    for i in range(shapecount):             # Reset compositor data
+        encdec.encode(encdec.float_to_uint24(ob.data.shape_keys.key_blocks[defs.shape_defs[defs.shape_index[i]]].value), i + 2)
+    for i in range(shapecount):             # Write reset Compositor data
+        bpy.data.scenes["Scene"].node_tree.nodes["Group.002"].inputs[i + 2].keyframe_insert(data_path="default_value", frame=frame)
+    
+    for i in range(len(values)):    # Iterate over each shape key   
         ob.data.shape_keys.key_blocks[names[i]].value = values[i]
         key = ob.data.shape_keys.key_blocks[names[i]]
         key.keyframe_insert(data_path="value", frame=frame)
+        
     hmd_type = random.randint(0,2)
     ob = bpy.data.objects['Pimax']
     ob.hide_render = True
@@ -270,13 +285,18 @@ for frame in range(FRAME_START, FRAME_END+1):   # Iterate over each frame in the
 
 
     ob = bpy.data.objects[mesh]
-    shapecount = len(defs.shape_index)
     encdec.encode(shapecount, 1)
     bpy.data.scenes["Scene"].node_tree.nodes["Group.002"].inputs[1].keyframe_insert(data_path="default_value", frame=frame)
+    
     for i in range(shapecount):
-        encdec.encode(encdec.float_to_uint24(ob.data.shape_keys.key_blocks[defs.shape_defs[defs.shape_index[i]]].value), i + 1)
+        encdec.encode(encdec.float_to_uint24(ob.data.shape_keys.key_blocks[defs.shape_defs[defs.shape_index[i]]].value), i + 2)
+    
+    
     for i in range(shapecount):
         bpy.data.scenes["Scene"].node_tree.nodes["Group.002"].inputs[i + 2].keyframe_insert(data_path="default_value", frame=frame)
+    
+
+    # Todo: Figure out why keyframed value isn't fucking changing 
 
 
 
