@@ -65,7 +65,8 @@ class Defines():
     exclusives = [            # mark these combinations for special treatment after generating values(combined values, etc...)
         ['mouthClose', 'jawOpen'],
         ['mouthShrugUpper', 'mouthShrugLower'],
-        ['tongueOut', 'jawOpen']
+        ['tongueOut', 'jawOpen'],
+        ['mouthSmileLeft', 'mouthSmileRight']
                     ]
 
     shape_bl = dict(  
@@ -158,6 +159,13 @@ class ShapeSetter():
         if defs.exclusives[2][0] in self.selected_shapes_index and self.selected_shapes[self.selected_shapes_index.index(defs.exclusives[2][1])] <= 0.35:
             self.selected_shapes[self.selected_shapes_index.index(defs.exclusives[2][1])] = clamp(random.uniform(0.35, 1.05), 0, 1)
 
+        if defs.exclusives[3][1] in self.selected_shapes_index and defs.exclusives[3][0] in self.selected_shapes_index:     # randomly make mouthSmileLeft and mouthSmileRight equal to the greater value
+            if random.randint(0, 1) == 1:   # 50% chance to make values equal
+                if self.selected_shapes[self.selected_shapes_index.index(defs.exclusives[3][1])] > self.selected_shapes[self.selected_shapes_index.index(defs.exclusives[3][0])]:
+                    self.selected_shapes[self.selected_shapes_index.index(defs.exclusives[3][0])] = self.selected_shapes[self.selected_shapes_index.index(defs.exclusives[3][1])]
+                if self.selected_shapes[self.selected_shapes_index.index(defs.exclusives[3][0])] > self.selected_shapes[self.selected_shapes_index.index(defs.exclusives[3][1])]:
+                    self.selected_shapes[self.selected_shapes_index.index(defs.exclusives[3][1])] = self.selected_shapes[self.selected_shapes_index.index(defs.exclusives[3][0])]
+
     def generate_example(self, DefsClass, range, classExample):
         defs = DefsClass
         self.reset(defs)
@@ -202,7 +210,6 @@ class EncodeDecode():
         output_hex = int(output_hex, 0)
         return(output_hex)
     
-
 FRAME_START = bpy.context.scene.frame_start
 FRAME_END = bpy.context.scene.frame_end
 
@@ -217,10 +224,8 @@ range_list = [
               [-0.2, 0.5]
               ]
 
-
 mesh = 'BabbleCA_M'
 ob = bpy.data.objects[mesh]
-
 for frame in range(FRAME_START, FRAME_END+1):   # Iterate over each frame in the range
     model_shapes = []
     print(f"Generated {frame} of {FRAME_END} shapes")
@@ -250,6 +255,7 @@ for frame in range(FRAME_START, FRAME_END+1):   # Iterate over each frame in the
     ob = bpy.data.objects['Quest2']
     ob.hide_render = True
     ob.keyframe_insert(data_path="hide_render", frame=frame)
+
     if hmd_type == 0:
         ob = bpy.data.objects['Pimax']
         ob.hide_render = True
@@ -282,28 +288,13 @@ for frame in range(FRAME_START, FRAME_END+1):   # Iterate over each frame in the
         ob.hide_render = False
         ob.keyframe_insert(data_path="hide_render", frame=frame)
 
-
-
     ob = bpy.data.objects[mesh]
     encdec.encode(shapecount, 1)
     bpy.data.scenes["Scene"].node_tree.nodes["Group.002"].inputs[1].keyframe_insert(data_path="default_value", frame=frame)
     
     for i in range(shapecount):
         encdec.encode(encdec.float_to_uint24(ob.data.shape_keys.key_blocks[defs.shape_defs[defs.shape_index[i]]].value), i + 2)
-    
-    
     for i in range(shapecount):
         bpy.data.scenes["Scene"].node_tree.nodes["Group.002"].inputs[i + 2].keyframe_insert(data_path="default_value", frame=frame)
     
-
-    # Todo: Figure out why keyframed value isn't fucking changing 
-
-
-
-    '''
-    for i in range(len(defs.shape_index)):
-        encdec.encode(encdec.float_to_uint24(ob.data.shape_keys.key_blocks[defs.shape_defs[defs.shape_index[i]]].value), i + 1)
-        bpy.data.scenes["Scene"].node_tree.nodes["Group.002"].inputs[i + 2].keyframe_insert(data_path="default_value", frame=frame)
-        '''
-
     tick += 1
