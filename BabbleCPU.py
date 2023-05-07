@@ -92,9 +92,7 @@ class Calibration(object):
                 [self.calib["tongueOut"]["min"],self.calib["tongueOut"]["max"]],                     # tongueOut
             ]
         return self.jsonminmax
-    
-        
-         
+
                 
 def onesizefitsallminmaxarray():                # Some predefined ranges in stored values instead of the generated ones
     stored_values = [
@@ -148,14 +146,14 @@ def minmax(stored_values, value, passthrough = False):        # Set passthrough 
         if stored_values[0] == 0 and stored_values[1] == 0:
             stored_values[0] = value
             stored_values[1] = value
-            array = (0, value, 1)
+            array = (0, max(min(value, 1), 0), 1)
         else:                                   # if value is greater than the max or less than the min, set it.
             if value < stored_values[0]: stored_values[0] = value
             if value > stored_values[1]: stored_values[1] = value
-            array = (stored_values[0], value, stored_values[1])
+            array = (stored_values[0], max(min(value, 1), 0), stored_values[1])
     else: 
         array = stored_values                               # Formats the min max value without changing the values
-        array = (stored_values[0], value, stored_values[1])
+        array = (stored_values[0], max(min(value, 1), 0), stored_values[1])
     return array
 
 def normalize_value(array):
@@ -172,7 +170,7 @@ sg.theme('DarkAmber')   # Add a touch of color
 layout = [
     [sg.Image(key = '-IMAGE-')],
     [sg.Text('Enter Webcam URL or Number (Defualts to 0)'), sg.Input(key = '-URL-', size = (30, 1))],
-    [sg.Text('Enter Onnx model name (Defualts to v1.1B0Q.onnx)'), sg.Input(key = '-MODEL-', size = (30, 1))],
+    [sg.Text('Enter Onnx model name (Defualts to MN100KV4.onnx)'), sg.Input(key = '-MODEL-', size = (30, 1))],
     [sg.Text('OSC Location Address'), sg.Input(key = '-LOC-', size = (30, 1))],
     [sg.Text('Output Mutiplier (defualts to 1. Please use 100 if you are using the unity demo.)'), sg.Input(key = '-MULT-', size = (30, 1))],
     [sg.Text('Enter OSC IP (Defualts to 127.0.0.1)'), sg.Input(key = '-OSC-', size = (30, 1))],
@@ -187,7 +185,7 @@ layout = [
 ]
 
 # Create the Window
-window = sg.Window('Project BabbleV1.0', layout, location = (800, 400))
+window = sg.Window('Project BabbleV1.0.3', layout, location = (800, 400))
 event, values = window.read(timeout = 20)
 calibjson = values['-MODEL-']
 
@@ -211,7 +209,7 @@ while True:
     client = udp_client.SimpleUDPClient(OSCip, OSCport)
     model = values['-MODEL-']
     if model == '':
-        model = 'v1.1B0.onnx'
+        model = 'MN100KV4.onnx'
     if calibjson == '':
         calibjson = 'calib.json'
     calibration.update_calib(calibjson)     # Checks and updates values of the json file
@@ -225,9 +223,9 @@ while True:
         break
     if event == 'Start':
         opts = ort.SessionOptions()
-        opts.intra_op_num_threads = 1 
-        opts.inter_op_num_threads = 1 
-        opts.execution_mode = ort.ExecutionMode.ORT_SEQUENTIAL
+        opts.intra_op_num_threads = 1
+        opts.inter_op_num_threads = 1
+        opts.graph_optimization_level = ort.GraphOptimizationLevel.ORT_ENABLE_EXTENDED
         sess = ort.InferenceSession(model, opts, providers=['CPUExecutionProvider'])
         input_name = sess.get_inputs()[0].name
         output_name = sess.get_outputs()[0].name
@@ -270,7 +268,6 @@ while True:
             end = time.time()
             output = out[0]
             output = output[0]
-            output = [0 if x < 0 else x for x in output]
             if values['-CAL-'] == False:
                 array = []
                 for i in range(len(output)):
@@ -279,39 +276,40 @@ while True:
                     array.append(value)
             else:
                 array = output
+            for i in range(len(output)):            # Clip values between 0 - 1
+                output[i] = max(min(output[i], 1), 0) 
             client.send_message(location + "/cheekPuff", array[0] * multi)
-            client.send_message(location + "/cheekSquintLeft", output[1] * multi)
-            client.send_message(location + "/cheekSquintRight", output[2] * multi)
-            client.send_message(location + "/noseSneerLeft", output[3] * multi)
-            client.send_message(location + "/noseSneerRight", output[4] * multi)
-            client.send_message(location + "/jawOpen", array[5] * multi)
-            client.send_message(location + "/jawForward", array[6] * multi)
-            client.send_message(location + "/jawLeft", array[7] * multi)
-            client.send_message(location + "/jawRight", array[8] * multi)
-            client.send_message(location + "/mouthFunnel", array[9] * multi)
-            client.send_message(location + "/mouthPucker", array[10] * multi)
-            client.send_message(location + "/mouthLeft", array[11] * multi)
-            client.send_message(location + "/mouthRight", array[12] * multi)
-            client.send_message(location + "/mouthRollUpper", array[13] * multi)
-            client.send_message(location + "/mouthRollLower", array[14] * multi)
-            client.send_message(location + "/mouthShrugUpper", array[15] * multi)
-            client.send_message(location + "/mouthShrugLower", array[16] * multi)
-            client.send_message(location + "/mouthClose", output[17] * multi)
-            client.send_message(location + "/mouthSmileLeft", array[18] * multi)
-            client.send_message(location + "/mouthSmileRight", array[19] * multi)
-            client.send_message(location + "/mouthFrownLeft", array[20] * multi)
-            client.send_message(location + "/mouthFrownRight", array[21] * multi)
-            client.send_message(location + "/mouthDimpleLeft", array[22] * multi)
-            client.send_message(location + "/mouthDimpleRight", array[23] * multi)
-            client.send_message(location + "/mouthUpperUpLeft", array[24] * multi)
-            client.send_message(location + "/mouthUpperUpRight", array[25] * multi)
-            client.send_message(location + "/mouthLowerDownLeft", array[26] * multi)
-            client.send_message(location + "/mouthLowerDownRight", array[27] * multi)
-            client.send_message(location + "/mouthPressLeft", array[28] * multi)
-            client.send_message(location + "/mouthPressRight", array[29] * multi)
-            client.send_message(location + "/mouthStretchLeft", array[30] * multi)
-            client.send_message(location + "/mouthStretchRight", array[31] * multi)
-            client.send_message(location + "/tongueOut", array[32] * multi)
+            client.send_message(location + "/noseSneerLeft", output[1] * multi)
+            client.send_message(location + "/noseSneerRight", output[2] * multi)
+            client.send_message(location + "/jawOpen", array[3] * multi)
+            client.send_message(location + "/jawForward", array[4] * multi)
+            client.send_message(location + "/jawLeft", array[5] * multi)
+            client.send_message(location + "/jawRight", array[6] * multi)
+            client.send_message(location + "/mouthFunnel", array[7] * multi)
+            client.send_message(location + "/mouthPucker", array[8] * multi)
+            client.send_message(location + "/mouthLeft", array[9] * multi)
+            client.send_message(location + "/mouthRight", array[10] * multi)
+            client.send_message(location + "/mouthRollUpper", array[11] * multi)
+            client.send_message(location + "/mouthRollLower", array[12] * multi)
+            client.send_message(location + "/mouthShrugUpper", array[13] * multi)
+            client.send_message(location + "/mouthShrugLower", array[14] * multi)
+            client.send_message(location + "/mouthClose", output[15] * multi)
+            client.send_message(location + "/mouthSmileLeft", array[16] * multi)
+            client.send_message(location + "/mouthSmileRight", array[17] * multi)
+            client.send_message(location + "/mouthFrownLeft", array[18] * multi)
+            client.send_message(location + "/mouthFrownRight", array[19] * multi)
+            client.send_message(location + "/mouthDimpleLeft", array[20] * multi)
+            client.send_message(location + "/mouthDimpleRight", array[21] * multi)
+            client.send_message(location + "/mouthUpperUpLeft", array[22] * multi)
+            client.send_message(location + "/mouthUpperUpRight", array[23] * multi)
+            client.send_message(location + "/mouthLowerDownLeft", array[24] * multi)
+            client.send_message(location + "/mouthLowerDownRight", array[25] * multi)
+            client.send_message(location + "/mouthPressLeft", array[26] * multi)
+            client.send_message(location + "/mouthPressRight", array[27] * multi)
+            client.send_message(location + "/mouthStretchLeft", array[28] * multi)
+            client.send_message(location + "/mouthStretchRight", array[29] * multi)
+            client.send_message(location + "/tongueOut", array[30] * multi)
+            frame2 = cv2.cvtColor(frame2, cv2.COLOR_BGR2GRAY)
             imgbytes = cv2.imencode('.png', frame2)[1].tobytes()  # ditto
             window['-IMAGE-'].update(data=imgbytes)
             event, values = window.read(timeout = 20)
