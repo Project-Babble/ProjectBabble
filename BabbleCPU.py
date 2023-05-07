@@ -181,6 +181,7 @@ layout = [
     [sg.Checkbox('Flip 90 Left', key = '-FLIP90-')],
     [sg.Checkbox('Flip 90 Right', key = '-FLIP90R-')],
     [sg.Checkbox('No Calibration', key = '-CAL-')],
+    [sg.Checkbox('Use GPU (DirectML)', key = '-GPU-')],
     [sg.Button('Start'), sg.Button('Stop'), sg.Button('Draw ROI')],
 ]
 
@@ -212,6 +213,8 @@ while True:
         model = 'MN100KV4.onnx'
     if calibjson == '':
         calibjson = 'calib.json'
+    usegpu = values['-GPU-']
+
     calibration.update_calib(calibjson)     # Checks and updates values of the json file
     stored_values = calibration.jsonminmax
     flip180 = values['-FLIP180-']
@@ -226,7 +229,10 @@ while True:
         opts.intra_op_num_threads = 1
         opts.inter_op_num_threads = 1
         opts.graph_optimization_level = ort.GraphOptimizationLevel.ORT_ENABLE_EXTENDED
-        sess = ort.InferenceSession(model, opts, providers=['CPUExecutionProvider'])
+        if not usegpu:
+            sess = ort.InferenceSession(model, opts, providers=['CPUExecutionProvider'])
+        if usegpu:
+            sess = ort.InferenceSession(model, opts, providers=['DmlExecutionProvider'])
         input_name = sess.get_inputs()[0].name
         output_name = sess.get_outputs()[0].name
         url = values['-URL-']
