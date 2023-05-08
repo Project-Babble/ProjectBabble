@@ -1,7 +1,7 @@
 {
     "cheekPuff": {
-    "min": 0.2,
-    "max": 0.6
+    "min": 0.0,
+    "max": 0.5
     },
     "cheekSquintLeft": {
     "min": 0.0,
@@ -20,72 +20,72 @@
     "max": 1.0
     },
     "jawOpen": {
-    "min": 0.03,
-    "max": 0.6
+    "min": 0.0,
+    "max": 0.7
     },
     "jawForward": {
     "min": 0.1,
     "max": 0.8
     },
     "jawLeft": {
-    "min": 0.05,
+    "min": 0.0,
     "max": 0.5
     },
     "jawRight": {
-    "min": 0.05,
+    "min": 0.0,
     "max": 0.5
     },
     "mouthFunnel": {
-    "min": 0.1,
-    "max": 0.6
+    "min": 0.05,
+    "max": 0.8
     },
     "mouthPucker": {
-    "min": 0.4,
-    "max": 1.0
+    "min": 0.0,
+    "max": 0.8
     },
     "mouthLeft": {
     "min": 0.05,
-    "max": 0.5
+    "max": 0.7
     },
     "mouthRight": {
     "min": 0.05,
-    "max": 0.5
+    "max": 0.7
     },
     "mouthRollUpper": {
     "min": 0.0,
-    "max": 0.5
+    "max": 0.7
     },
     "mouthRollLower": {
     "min": 0.0,
-    "max": 0.5
+    "max": 0.7
     },
     "mouthShrugUpper": {
     "min": 0.03,
-    "max": 0.5
+    "max": 0.6
     },
     "mouthShrugLower": {
     "min": 0.03,
-    "max": 0.5
+    "max": 0.6
     },
     "mouthClose": {
-    "min": 0.0,
-    "max": 0.5
+    "min": 0.2,
+    "max": 0.7
     },
     "mouthSmileLeft": {
-    "min": 0.1,
+    "min": 0.0,
     "max": 1.0
     },
     "mouthSmileRight": {
-    "min": 0.1,
+    "min": 0.0,
     "max": 1.0
     },
     "mouthFrownLeft": {
     "min": 0.0,
-    "max": 0.6
+    "max": 0.7
     },
     "mouthFrownRight": {
     "min": 0.0,
-    "max": 0.6
+    "max": 0.7
     },
     "mouthDimpleLeft": {
     "min": 0.0,
