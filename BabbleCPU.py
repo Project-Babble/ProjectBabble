@@ -58,8 +58,6 @@ class Calibration(object):
             self._last_update = os.fstat(user_file.fileno()).st_mtime
         self.jsonminmax = [
                 [self.calib["cheekPuff"]["min"],self.calib["cheekPuff"]["max"]],                     # CheekPuff
-                [self.calib["cheekSquintLeft"]["min"],self.calib["cheekSquintLeft"]["max"]],         # cheekSquintLeft
-                [self.calib["cheekSquintRight"]["min"],self.calib["cheekSquintRight"]["max"]],       # cheekSquintRight
                 [self.calib["noseSneerLeft"]["min"],self.calib["noseSneerLeft"]["max"]],             # noseSneerLeft
                 [self.calib["noseSneerRight"]["min"],self.calib["noseSneerRight"]["max"]],           # noseSneerRight
                 [self.calib["jawOpen"]["min"],self.calib["jawOpen"]["max"]],                         # jawOpen
@@ -285,12 +283,12 @@ while True:
             for i in range(len(output)):            # Clip values between 0 - 1
                 output[i] = max(min(output[i], 1), 0) 
             client.send_message(location + "/cheekPuff", array[0] * multi)
-            client.send_message(location + "/noseSneerLeft", output[1] * multi)
-            client.send_message(location + "/noseSneerRight", output[2] * multi)
-            client.send_message(location + "/jawOpen", array[3] * multi)
-            client.send_message(location + "/jawForward", array[4] * multi)
-            client.send_message(location + "/jawLeft", array[5] * multi)
-            client.send_message(location + "/jawRight", array[6] * multi)
+            client.send_message(location + "/noseSneerLeft", output[5] * multi)
+            client.send_message(location + "/noseSneerRight", output[6] * multi)
+            client.send_message(location + "/jawOpen", array[1] * multi)
+            client.send_message(location + "/jawForward", array[2] * multi)
+            client.send_message(location + "/jawLeft", array[3] * multi)
+            client.send_message(location + "/jawRight", array[4] * multi)
             client.send_message(location + "/mouthFunnel", array[7] * multi)
             client.send_message(location + "/mouthPucker", array[8] * multi)
             client.send_message(location + "/mouthLeft", array[9] * multi)
