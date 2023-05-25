@@ -168,7 +168,7 @@ sg.theme('DarkAmber')   # Add a touch of color
 layout = [
     [sg.Image(key = '-IMAGE-')],
     [sg.Text('Enter Webcam URL or Number (Defualts to 0)'), sg.Input(key = '-URL-', size = (30, 1))],
-    [sg.Text('Enter Onnx model name (Defualts to v1.1RSB0EL.onnx)'), sg.Input(key = '-MODEL-', size = (30, 1))],
+    [sg.Text('Enter Onnx model name (Defualts to EffnetB0300K.onnx)'), sg.Input(key = '-MODEL-', size = (30, 1))],
     [sg.Text('OSC Location Address'), sg.Input(key = '-LOC-', size = (30, 1))],
     [sg.Text('Output Mutiplier (defualts to 1. Please use 100 if you are using the unity demo.)'), sg.Input(key = '-MULT-', size = (30, 1))],
     [sg.Text('Enter OSC IP (Defualts to 127.0.0.1)'), sg.Input(key = '-OSC-', size = (30, 1))],
@@ -208,7 +208,7 @@ while True:
     client = udp_client.SimpleUDPClient(OSCip, OSCport)
     model = values['-MODEL-']
     if model == '':
-        model = 'v1.1RSB0EL.onnx'
+        model = 'EffnetB0300K.onnx'
     if calibjson == '':
         calibjson = 'calib.json'
     usegpu = values['-GPU-']
