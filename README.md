@@ -1,12 +1,13 @@
 # ProjectBabble
 A Mouth tracking system for VR, 100% Opensource!
 
-Currently the architecture is a modified mobilenetv3-large training on blenshapes from ARKit! The model outputs 33 blenshapes of which most cross over with SRanipals blendshapes.
+Currently the architecture is a modified efficientnetv2-b0 training on blenshapes from ARKit! The model outputs 31 blenshapes of which most cross over with SRanipals blendshapes.
 
-### A few things to note
-1. The current version of the model may not work for your mouth as it has been trained on a not very diverse dataset. Expect this to change in newer versions. 
-2. Not all blendshapes may work as there isnt enough data collected in the dataset. 
-3. This model is not a 1 to 1 translation to SRanipal blenshapes. While most blendshapes do cross over with SRanipal cheek and tounge movements are limited.
+### One thing to note
+1. This model is not a 1 to 1 translation to SRanipal blenshapes. While most blendshapes do cross over with SRanipal cheek and tounge movements are limited.
+
+### How to run
+Go to the releases tab, download the latest exe. Clone this repo, and then move the calibration file (calib.json) to the same location as the exe. Next get the .onnx model in the repo and move it to the same location as the exe. Run the exe and enjoy!
 
 ### Warranty
 Lol 
