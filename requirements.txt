@@ -1,6 +1,0 @@
-onnxruntime
-opencv_python
-Pillow
-PySimpleGUI
-python_osc
-torch
