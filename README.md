@@ -9,6 +9,9 @@ Currently the architecture is a modified efficientnetv2-b0 training on blenshape
 ### How to run
 Go to the releases tab, download the latest exe. Clone this repo, and then move the calibration file (calib.json) to the same location as the exe. Next get the .onnx model in the repo and move it to the same location as the exe. Run the exe and enjoy!
 
+### PLEASE HIT THE TURN OFF CALIBRATION BUTTON UNTILL FURTHER NOTICE
+It ruins the model's quality 
+
 ### Warranty
 Lol 
 
