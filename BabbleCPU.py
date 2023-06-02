@@ -5,11 +5,13 @@ import onnxruntime as ort
 import time
 import PySimpleGUI as sg
 import cv2
+import numpy as np
 from pythonosc import udp_client
 from torchvision.transforms.functional import to_grayscale
 import PIL.Image as Image
 from torchvision import transforms
 from threading import Thread
+from one_euro_filter import OneEuroFilter
 
 
 class WebcamVideoStream:
@@ -142,7 +144,7 @@ sg.theme('DarkAmber')   # Add a touch of color
 layout = [
     [sg.Image(key = '-IMAGE-')],
     [sg.Text('Enter Webcam URL or Number (Defualts to 0)'), sg.Input(key = '-URL-', size = (30, 1))],
-    [sg.Text('Enter Onnx model name (Defualts to EFV2300K45E57.onnx)'), sg.Input(key = '-MODEL-', size = (30, 1))],
+    [sg.Text('Enter Onnx model name (Defualts to EFV2300K45E100P2.onnx)'), sg.Input(key = '-MODEL-', size = (30, 1))],
     [sg.Text('OSC Location Address'), sg.Input(key = '-LOC-', size = (30, 1))],
     [sg.Text('Output Mutiplier (defualts to 1. Please use 100 if you are using the unity demo.)'), sg.Input(key = '-MULT-', size = (30, 1))],
     [sg.Text('Enter OSC IP (Defualts to 127.0.0.1)'), sg.Input(key = '-OSC-', size = (30, 1))],
@@ -184,7 +186,7 @@ while True:
     client = udp_client.SimpleUDPClient(OSCip, OSCport)
     model = values['-MODEL-']
     if model == '':
-        model = 'EFV2300K45E57.onnx'
+        model = 'EFV2300K45E100P2.onnx'
     if calibjson == '':
         calibjson = 'calib.json'
     usegpu = values['-GPU-']
@@ -215,6 +217,14 @@ while True:
         elif url in '0123456789':
             url = int(url)
         steamer = WebcamVideoStream(url).start()
+        min_cutoff = 15.5004 
+        beta = 0.62 
+        noisy_point = np.array([45])
+        filter = OneEuroFilter(
+            noisy_point,
+            min_cutoff=min_cutoff,
+            beta=beta
+        )
         while True:
             frame = steamer.read()
             if event == 'Draw ROI':
@@ -249,6 +259,7 @@ while True:
             end = time.time()
             output = out[0]
             output = output[0]
+            output = filter(output)
             if values['-CAL-'] == False:
                 array = []
                 for i in range(len(output)):

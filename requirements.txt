@@ -4,3 +4,4 @@ Pillow
 PySimpleGUI
 python_osc
 torch
+torchvision
