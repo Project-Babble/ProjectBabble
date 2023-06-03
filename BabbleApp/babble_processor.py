@@ -109,7 +109,7 @@ class EyeProcessor:
         self.prev_y = None
         self.bd_blink = False
         self.current_algo = EyeInfoOrigin.MODEL
-        self.model = 'EFV2300K45E100P2.onnx'
+        self.model = self.settings.gui_model_file
         self.use_gpu = self.settings.gui_use_gpu
         self.output = []
         self.calibrate_config = np.empty((1, 45))
@@ -173,10 +173,10 @@ class EyeProcessor:
                 rows, cols, _ = self.previous_image.shape
 
             if self.config.gui_vertical_flip:
-                cv2.flip(self.current_image, 0)
+                self.current_image = cv2.flip(self.current_image, 0)
 
             if self.config.gui_horizontal_flip:
-                cv2.flip(self.current_image, 1)
+                self.current_image = cv2.flip(self.current_image, 1)
 
             img_center = (cols / 2, rows / 2)
             rotation_matrix = cv2.getRotationMatrix2D(

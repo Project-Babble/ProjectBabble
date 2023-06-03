@@ -73,13 +73,6 @@ class VRChatOSC:
         self.cancellation_event = cancellation_event
         self.msg_queue = msg_queue
         self.eye_id = Tab.CAM
-        self.left_y = 621
-        self.right_y = 621
-        self.r_eye_x = 0
-        self.l_eye_x = 0
-        self.r_eye_blink = 0.7
-        self.l_eye_blink = 0.7
-
 
     def run(self):
         start = time.time()
