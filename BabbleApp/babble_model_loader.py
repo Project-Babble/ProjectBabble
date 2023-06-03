@@ -16,16 +16,6 @@ from one_euro_filter import OneEuroFilter
 def run_model(self):
 
 
-    opts = ort.SessionOptions()
-    opts.intra_op_num_threads = 1
-    opts.inter_op_num_threads = 1
-    opts.graph_optimization_level = ort.GraphOptimizationLevel.ORT_ENABLE_EXTENDED
-    if not self.use_gpu:
-        sess = ort.InferenceSession(self.model, opts, providers=['CPUExecutionProvider'])
-    else:
-        sess = ort.InferenceSession(self.model, opts, providers=['DmlExecutionProvider'])
-    input_name = sess.get_inputs()[0].name
-    output_name = sess.get_outputs()[0].name
 
     min_cutoff = 15.5004
     beta = 0.62
@@ -48,7 +38,7 @@ def run_model(self):
     # make it a numpy array
     frame = frame.numpy()
 
-    out = sess.run([output_name], {input_name: frame})
+    out = self.sess.run([self.output_name], {self.input_name: frame})
     #end = time.time()
     output = out[0]
     output = output[0]

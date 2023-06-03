@@ -113,6 +113,17 @@ class EyeProcessor:
         self.use_gpu = self.settings.gui_use_gpu
         self.output = []
         self.calibrate_config = np.empty((1, 45))
+
+        self.opts = ort.SessionOptions()
+        self.opts.intra_op_num_threads = 1
+        self.opts.inter_op_num_threads = 1
+        self.opts.graph_optimization_level = ort.GraphOptimizationLevel.ORT_ENABLE_EXTENDED
+        if not self.use_gpu:
+            self.sess = ort.InferenceSession(self.model, self.opts, providers=['CPUExecutionProvider'])
+        else:
+            self.sess = ort.InferenceSession(self.model, self.opts, providers=['DmlExecutionProvider'])
+        self.input_name = self.sess.get_inputs()[0].name
+        self.output_name = self.sess.get_outputs()[0].name
         
 
         try:
