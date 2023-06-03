@@ -17,8 +17,8 @@ def run_model(self):
 
 
 
-    min_cutoff = self.config.gui_min_cutoff #15.5004
-    beta = self.config.gui_speed_coefficient #0.62
+    min_cutoff = float(self.settings.gui_min_cutoff) #15.5004
+    beta = float(self.settings.gui_speed_coefficient) #0.62
     noisy_point = np.array([45])
     filter = OneEuroFilter(
         noisy_point,
