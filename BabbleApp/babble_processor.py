@@ -3,9 +3,6 @@ from operator import truth
 from dataclasses import dataclass
 import sys
 import asyncio
-
-
-
 sys.path.append(".")
 from config import BabbleCameraConfig
 from config import BabbleSettingsConfig
@@ -21,7 +18,8 @@ from osc import Tab
 from osc_calibrate_filter import *
 from eye import CamInfo, EyeInfoOrigin
 from babble_model_loader import *
-
+import os
+os.environ["OMP_NUM_THREADS"] = "1"
 def run_once(f):
     def wrapper(*args, **kwargs):
         if not wrapper.has_run:
@@ -112,12 +110,14 @@ class EyeProcessor:
         self.model = self.settings.gui_model_file
         self.use_gpu = self.settings.gui_use_gpu
         self.output = []
+        self.val_list = []
         self.calibrate_config = np.empty((1, 45))
+        self.min_max_array = np.empty((2, 45))
 
         self.opts = ort.SessionOptions()
         self.opts.intra_op_num_threads = 1
         self.opts.inter_op_num_threads = 1
-        self.opts.graph_optimization_level = ort.GraphOptimizationLevel.ORT_ENABLE_EXTENDED
+        self.opts.graph_optimization_level = ort.GraphOptimizationLevel.ORT_ENABLE_ALL
         if not self.use_gpu:
             self.sess = ort.InferenceSession(self.model, self.opts, providers=['CPUExecutionProvider'])
         else:

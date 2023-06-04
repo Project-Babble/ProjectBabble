@@ -280,14 +280,11 @@ class CameraWidget:
             self.x1, self.y1 = values[self.gui_roi_selection]
 
         if event == self.gui_restart_calibration:
-            self.ransac.calibration_frame_counter = 300
+            self.ransac.calibration_frame_counter = 1500
             PlaySound('Audio/start.wav', SND_FILENAME | SND_ASYNC)
 
         if event == self.gui_stop_calibration:
             self.ransac.calibration_frame_counter = 0
-
-        if event == self.gui_recenter_eyes:
-            self.settings.gui_recenter_eyes = True
 
         needs_roi_set = self.config.roi_window_h <= 0 or self.config.roi_window_w <= 0
 
