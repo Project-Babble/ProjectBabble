@@ -38,8 +38,8 @@ class cal():
                 # Store the min and max values in the min_max_array
                 self.min_max_array[0, i] = min_value
                 self.min_max_array[1, i] = max_value
-
-                self.settings.calib_array = self.min_max_array
+            self.settings.calib_array = np.array2string(self.min_max_array, separator=',')
+            self.config_class.save()
             print("[INFO] Calibration completed.")
 
             PlaySound('Audio/completed.wav', SND_FILENAME | SND_ASYNC)
@@ -55,9 +55,11 @@ class cal():
            # np.append(self.calibrate_config, array.reshape(-1, 1), axis=1)
 
             self.calibration_frame_counter -= 1
-        varcount = 0
-        filtered_output = []
-        if self.settings.calib_array is not None and np.any(self.settings.calib_array):
+       # print(self.settings.calib_array)
+        if self.settings.calib_array is not None and self.config.use_calibration:
+            self.min_max_array = np.fromstring(self.settings.calib_array.replace('[', '').replace(']', ''), sep=',')
+            self.min_max_array = self.min_max_array.reshape((2, 45))
+
             calibrated_array = np.zeros_like(array)
             for i, value in enumerate(array):
                 min_value = self.min_max_array[0, i]
@@ -70,4 +72,6 @@ class cal():
 
                 calibrated_array[i] = calibrated_value
             array = calibrated_array
+
+
         return array

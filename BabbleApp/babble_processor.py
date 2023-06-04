@@ -4,8 +4,7 @@ from dataclasses import dataclass
 import sys
 import asyncio
 sys.path.append(".")
-from config import BabbleCameraConfig
-from config import BabbleSettingsConfig
+from config import BabbleCameraConfig, BabbleSettingsConfig, BabbleConfig
 import queue
 import threading
 import numpy as np
@@ -42,6 +41,7 @@ class EyeProcessor:
         self,
         config: "BabbleCameraConfig",
         settings: "BabbleSettingsConfig",
+        fullconfig: "BabbleConfig",
         cancellation_event: "threading.Event",
         capture_event: "threading.Event",
         capture_queue_incoming: "queue.Queue",
@@ -52,6 +52,7 @@ class EyeProcessor:
         self.config = config
         self.settings = settings
         self.eye_id = eye_id
+        self.config_class = fullconfig
         # Cross-thread communication management
         self.capture_queue_incoming = capture_queue_incoming
         self.image_queue_outgoing = image_queue_outgoing
@@ -270,10 +271,11 @@ class EyeProcessor:
 
 
             run_model(self)
-            if self.config.use_calibration:
-                cal.cal_osc(self, self.output)
-            else:
-                pass
+            #if self.config.use_calibration:
+            cal.cal_osc(self, self.output)
+
+            #else:
+             #   pass
             #print(self.output)
             self.output_images_and_update(self.thresh, CamInfo(self.current_algo, self.output))
 
