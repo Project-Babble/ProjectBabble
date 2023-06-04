@@ -3,7 +3,7 @@ from config import BabbleConfig
 from config import BabbleSettingsConfig
 from collections import deque
 from threading import Event, Thread
-from babble_processor import EyeProcessor, EyeInfoOrigin
+from babble_processor import BabbleProcessor, CamInfoOrigin
 from enum import Enum
 from queue import Queue, Empty
 from camera import Camera, CameraState
@@ -30,7 +30,6 @@ class CameraWidget:
         self.gui_output_graph = f"-OUTPUTGRAPH{widget_id}-"
         self.gui_restart_calibration = f"-RESTARTCALIBRATION{widget_id}-"
         self.gui_stop_calibration = f"-STOPCALIBRATION{widget_id}-"
-        self.gui_recenter_eyes = f"-RECENTEREYES{widget_id}-"
         self.gui_mode_readout = f"-APPMODE{widget_id}-"
         self.gui_roi_message = f"-ROIMESSAGE{widget_id}-"
         self.gui_vertical_flip = f"-VERTICALFLIP{widget_id}-"
@@ -38,11 +37,11 @@ class CameraWidget:
         self.use_calibration = f"-USECALIBRATION{widget_id}-"
         self.osc_queue = osc_queue
         self.main_config = main_config
-        self.eye_id = widget_id
+        self.cam_id = widget_id
         self.settings_config = main_config.settings
         self.config = main_config.cam
         self.settings = main_config.settings
-        if self.eye_id == Tab.CAM:
+        if self.cam_id == Tab.CAM:
             self.config = main_config.cam
         else:
             raise RuntimeError("\033[91m[WARN] Improper tab value!\033[0m")
@@ -56,7 +55,7 @@ class CameraWidget:
 
         self.image_queue = Queue()
 
-        self.ransac = EyeProcessor(
+        self.ransac = BabbleProcessor(
             self.config,
             self.settings_config,
             self.main_config,
@@ -64,7 +63,7 @@ class CameraWidget:
             self.capture_event,
             self.capture_queue,
             self.image_queue,
-            self.eye_id,
+            self.cam_id,
         )
 
         self.camera_status_queue = Queue()
@@ -152,8 +151,8 @@ class CameraWidget:
                 sg.Button("Save and Restart Tracking", key=self.gui_save_tracking_button, button_color='#539e8a'),
             ],
             [
-                sg.Button("Tracking Mode", key=self.gui_tracking_button, button_color='#539e8a', tooltip = "Go here to track your eye.",),
-                sg.Button("Cropping Mode", key=self.gui_roi_button, button_color='#539e8a', tooltip = "Go here to crop out your eye.",),
+                sg.Button("Tracking Mode", key=self.gui_tracking_button, button_color='#539e8a', tooltip = "Go here to track your mouth.",),
+                sg.Button("Cropping Mode", key=self.gui_roi_button, button_color='#539e8a', tooltip = "Go here to crop out your mouth.",),
             ],
             [
                 sg.Column(self.tracking_layout, key=self.gui_tracking_layout, background_color='#424042'),
@@ -301,7 +300,7 @@ class CameraWidget:
         elif self.camera.camera_status == CameraState.DISCONNECTED:
             window[self.gui_mode_readout].update("Camera Reconnecting...")
         elif needs_roi_set:
-            window[self.gui_mode_readout].update("Awaiting Eye Crop")
+            window[self.gui_mode_readout].update("Awaiting Mouth Crop")
         elif self.ransac.calibration_frame_counter != None:
             window[self.gui_mode_readout].update("Calibration")
         else:
@@ -335,13 +334,13 @@ class CameraWidget:
                 return
             try:
                 window[self.gui_roi_message].update(visible=False)
-                (maybe_image, eye_info) = self.image_queue.get(block=False)
+                (maybe_image, cam_info) = self.image_queue.get(block=False)
                 imgbytes = cv2.imencode(".ppm", maybe_image)[1].tobytes()
                 window[self.gui_tracking_image].update(data=imgbytes)
 
 
                 # Relay information to OSC
-                if eye_info.info_type != EyeInfoOrigin.FAILURE:
-                    self.osc_queue.put((self.eye_id, eye_info))
+                if cam_info.info_type != CamInfoOrigin.FAILURE:
+                    self.osc_queue.put((self.cam_id, cam_info))
             except Empty:
                 pass

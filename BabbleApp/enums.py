@@ -6,8 +6,7 @@ from typing import Any, ClassVar, Dict, List, Optional, TYPE_CHECKING, Tuple, Ty
 
 __all__ = (
     'Enum',
-    # 'EyeId',
-    'EyeLR',
+    'CamLR',
 )
 
 if TYPE_CHECKING:
@@ -149,28 +148,3 @@ def try_enum(cls: Type[E], val: Any) -> E:
     
 # The line above is based on the code in the following url
 # https://github.com/Rapptz/discord.py/blob/f7e97954950ffb0e34238d70813454caa6f1a3ae/discord/enums.py
-
-
-# class EyeId(Enum):
-#     # https://docs.python.org/3.9/library/enum.html#functional-api
-#     # > The reason for defaulting to 1 as the starting number and not 0 is that 0 is False in a boolean sense, but enum members all evaluate to True.
-#     RIGHT = 1
-#     LEFT = 2
-#     BOTH = 3
-#     SETTINGS = 4
-#
-#     def __str__(self) -> str:
-#         return self.name
-#
-#     def __int__(self) -> int:
-#         return self.value
-    
-class EyeLR(Enum):
-    LEFT = 1
-    RIGHT = 2
-
-    def __str__(self) -> str:
-        return self.name
-
-    def __int__(self) -> int:
-        return self.value

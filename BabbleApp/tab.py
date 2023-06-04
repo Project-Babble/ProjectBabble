@@ -7,12 +7,12 @@ class Tab(IntEnum):
     ALGOSETTINGS = 2
 
 
-class EyeInfoOrigin(Enum):
+class CamInfoOrigin(Enum):
     MODEL = 1
     FAILURE = 2
 
 
 @dataclass
 class CamInfo:
-    info_type: EyeInfoOrigin
+    info_type: CamInfoOrigin
     output: str

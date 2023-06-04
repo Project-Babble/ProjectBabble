@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "Project Babble"
 version = "0.2"
-description = "Opensource, affordable VR eye tracker for VRChat"
+description = "Affordable and Fully Opensource Mouth Tracker for VR"
 authors = ["SummerSigh", "RedHawk989"]
 license = "MIT"
 repository = "https://github.com/SummerSigh/ProjectBabble"

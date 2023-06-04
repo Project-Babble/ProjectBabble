@@ -15,7 +15,7 @@ from utils.misc_utils import PlaySound, SND_FILENAME, SND_ASYNC
 import importlib
 from osc import Tab
 from osc_calibrate_filter import *
-from eye import CamInfo, EyeInfoOrigin
+from tab import CamInfo, CamInfoOrigin
 from babble_model_loader import *
 import os
 os.environ["OMP_NUM_THREADS"] = "1"
@@ -36,7 +36,7 @@ async def delayed_setting_change(setting, value):
 
 
 
-class EyeProcessor:
+class BabbleProcessor:
     def __init__(
         self,
         config: "BabbleCameraConfig",
@@ -46,25 +46,19 @@ class EyeProcessor:
         capture_event: "threading.Event",
         capture_queue_incoming: "queue.Queue",
         image_queue_outgoing: "queue.Queue",
-        eye_id,
+        cam_id,
     ):
         self.main_config = BabbleSettingsConfig
         self.config = config
         self.settings = settings
-        self.eye_id = eye_id
+        self.cam_id = cam_id
         self.config_class = fullconfig
         # Cross-thread communication management
         self.capture_queue_incoming = capture_queue_incoming
         self.image_queue_outgoing = image_queue_outgoing
         self.cancellation_event = cancellation_event
         self.capture_event = capture_event
-        self.eye_id = eye_id
-
-        # Cross algo state
-        self.lkg_projected_sphere = None
-        self.xc = 20
-        self.yc = 20
-        self.cc_radius = 40
+        self.cam_id = cam_id
 
         # Image state
         self.previous_image = None
@@ -72,42 +66,15 @@ class EyeProcessor:
         self.current_image_gray = None
         self.current_frame_number = None
         self.current_fps = None
-        self.threshold_image = None
-        self.thresh = None
-        # Calibration Values
-        self.xoff = 1
-        self.yoff = 1
-        # Keep large in order to recenter correctly
-        self.calibration_frame_counter = None
-        self.eyeoffx = 1
 
-        self.xmax = -69420
-        self.xmin = 69420
-        self.ymax = -69420
-        self.ymin = 69420
-        self.blink_clear = False
-        self.cct = 200
+        self.calibration_frame_counter = None
+
         self.cccs = False
         self.ts = 10
         self.previous_rotation = self.config.rotation_angle
         self.roi_include_set = {"rotation_angle", "roi_window_x", "roi_window_y"}
 
-
-        self.out_y = 0.0
-        self.out_x = 0.0
-        self.rawx = 0.0
-        self.rawy = 0.0
-        self.eyeopen = 0.7
-        #blink
-        self.max_ints = []
-        self.max_int = 0
-        self.min_int = 4000000000000
-        self.frames = 0 
-
-        self.prev_x = None
-        self.prev_y = None
-        self.bd_blink = False
-        self.current_algo = EyeInfoOrigin.MODEL
+        self.current_algo = CamInfoOrigin.MODEL
         self.model = self.settings.gui_model_file
         self.use_gpu = self.settings.gui_use_gpu
         self.output = []
@@ -141,7 +108,7 @@ class EyeProcessor:
             beta=beta
         )
 
-    def output_images_and_update(self, threshold_image, output_information: CamInfo):
+    def output_images_and_update(self, output_information: CamInfo):
         try:
             image_stack = np.concatenate(
                 (
@@ -216,22 +183,9 @@ class EyeProcessor:
             pass
 
 
-    def UPDATE(self):
-
-        self.output_images_and_update(self.thresh, CamInfo(self.current_algo, self.out_x, self.out_y, 0, self.eyeopen))
-
-
-
-
-
     def run(self):
-        # Run the following somewhere
-        # self.daddy = External_Run_DADDY()
 
-
-        f = True
         while True:
-           # f = True
              # Check to make sure we haven't been requested to close
             if self.cancellation_event.is_set():
                 print("\033[94m[INFO] Exiting Tracking thread\033[0m")
@@ -277,5 +231,5 @@ class EyeProcessor:
             #else:
              #   pass
             #print(self.output)
-            self.output_images_and_update(self.thresh, CamInfo(self.current_algo, self.output))
+            self.output_images_and_update(CamInfo(self.current_algo, self.output))
 
