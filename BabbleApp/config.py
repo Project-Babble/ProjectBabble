@@ -19,6 +19,7 @@ class BabbleCameraConfig(BaseModel):
     use_calibration: bool = False
     gui_vertical_flip: bool = False
     gui_horizontal_flip: bool = False
+
 class BabbleSettingsConfig(BaseModel):
     gui_min_cutoff: str = "15.5004"
     gui_speed_coefficient: str = "0.62"
@@ -33,9 +34,6 @@ class BabbleSettingsConfig(BaseModel):
     gui_model_file: str = 'Models/EFV2300K45E100P2.onnx'
     gui_use_gpu: bool = False
     calib_array: str = None
-  #  gui_vertical_flip: bool = False
-   # gui_horizontal_flip: bool = False
-
 
 class BabbleConfig(BaseModel):
     version: int = 1
