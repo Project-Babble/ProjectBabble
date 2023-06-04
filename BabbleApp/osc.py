@@ -72,7 +72,7 @@ class VRChatOSC:
         self.client = udp_client.SimpleUDPClient(self.config.gui_osc_address, int(self.config.gui_osc_port)) # use OSC port and address that was set in the config
         self.cancellation_event = cancellation_event
         self.msg_queue = msg_queue
-        self.eye_id = Tab.CAM
+        self.cam = Tab.CAM
 
     def run(self):
         start = time.time()
@@ -82,19 +82,19 @@ class VRChatOSC:
                 print("\033[94m[INFO] Exiting OSC Queue\033[0m")
                 return
             try:
-                (self.eye_id, eye_info) = self.msg_queue.get(block=True, timeout=0.1)
+                (self.cam_id, cam_info) = self.msg_queue.get(block=True, timeout=0.1)
             except:
                 continue
 
-            output_osc(eye_info.output, self)
+            output_osc(cam_info.output, self)
 
 
 class VRChatOSCReceiver:
-    def __init__(self, cancellation_event: threading.Event, main_config: BabbleConfig, eyes: []):
+    def __init__(self, cancellation_event: threading.Event, main_config: BabbleConfig, cams: []):
         self.config = main_config.settings
         self.cancellation_event = cancellation_event
         self.dispatcher = dispatcher.Dispatcher()
-        self.eyes = eyes  # we cant import CameraWidget so any type it is
+        self.cams = cams  # we cant import CameraWidget so any type it is
         try:
             self.server = osc_server.OSCUDPServer((self.config.gui_osc_address, int(self.config.gui_osc_receiver_port)), self.dispatcher)
         except:
@@ -107,25 +107,18 @@ class VRChatOSCReceiver:
         except:
             pass
 
-    def recenter_eyes(self, address, osc_value):
+    def recalibrate_mouth(self, address, osc_value):
         if type(osc_value) != bool: return  # just incase we get anything other than bool
         if osc_value:
-            for eye in self.eyes:
-                eye.settings.gui_recenter_eyes = True
-
-    def recalibrate_eyes(self, address, osc_value):
-        if type(osc_value) != bool: return  # just incase we get anything other than bool
-        if osc_value:
-            for eye in self.eyes:
-                eye.ransac.calibration_frame_counter = 300
+            for cam in self.cams:
+                cam.ransac.calibration_frame_counter = 300
                 PlaySound('Audio/start.wav', SND_FILENAME | SND_ASYNC)
 
     def run(self):
         
         # bind what function to run when specified OSC message is received
         try:
-            self.dispatcher.map(self.config.gui_osc_recalibrate_address, self.recalibrate_eyes)
-            self.dispatcher.map(self.config.gui_osc_recenter_address, self.recenter_eyes)
+            self.dispatcher.map(self.config.gui_osc_recalibrate_address, self.recalibrate_cams)
             # start the server
             print("\033[92m[INFO] VRChatOSCReceiver serving on {}\033[0m".format(self.server.server_address))
             self.server.serve_forever()

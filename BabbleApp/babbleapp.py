@@ -1,5 +1,4 @@
 import os
-import os
 import PySimpleGUI as sg
 import queue
 import requests
@@ -7,7 +6,7 @@ import threading
 from babble_model_loader import *
 from camera_widget import CameraWidget
 from config import BabbleConfig
-from eye import CamInfo, Tab
+from tab import CamInfo, Tab
 from osc import VRChatOSCReceiver, VRChatOSC
 from general_settings_widget import SettingsWidget
 from algo_settings_widget import AlgoSettingsWidget
@@ -22,15 +21,11 @@ os.system('color')  # init ANSI color
 # https://github.com/opencv/opencv/issues/17687
 os.environ["OPENCV_VIDEOIO_MSMF_ENABLE_HW_TRANSFORMS"] = "0"
 
-WINDOW_NAME = "EyeTrackApp"
-RIGHT_EYE_NAME = "-RIGHTEYEWIDGET-"
-LEFT_EYE_NAME = "-LEFTEYEWIDGET-"
+WINDOW_NAME = "Babble sApp"
+CAM_NAME = "-CAMWIDGET-"
 SETTINGS_NAME = "-SETTINGSWIDGET-"
 ALGO_SETTINGS_NAME = "-ALGOSETTINGSWIDGET-"
-
-LEFT_EYE_RADIO_NAME = "-LEFTEYERADIO-"
-RIGHT_EYE_RADIO_NAME = "-RIGHTEYERADIO-"
-BOTH_EYE_RADIO_NAME = "-BOTHEYERADIO-"
+CAM_RADIO_NAME = "-CAMRADIO-"
 SETTINGS_RADIO_NAME = "-SETTINGSRADIO-"
 ALGO_SETTINGS_RADIO_NAME = "-ALGOSETTINGSRADIO-"
 
@@ -90,7 +85,7 @@ def main():
     # start worker threads
     osc_thread.start()
 
-    eyes = [
+    cams = [
         CameraWidget(Tab.CAM, config, osc_queue),
     ]
 
@@ -103,63 +98,62 @@ def main():
         [
             sg.Radio(
                 "Cam",
-                "EYESELECTRADIO",
+                "TABSELECTRADIO",
                 background_color="#292929",
-                default=(config.eye_display_id == Tab.CAM),
-                key=RIGHT_EYE_RADIO_NAME,
+                default=(config.cam_display_id == Tab.CAM),
+                key=CAM_RADIO_NAME,
             ),
             sg.Radio(
                 "Settings",
-                "EYESELECTRADIO",
+                "TABSELECTRADIO",
                 background_color="#292929",
-                default=(config.eye_display_id == Tab.SETTINGS),
+                default=(config.cam_display_id == Tab.SETTINGS),
                 key=SETTINGS_RADIO_NAME,
             ),
             sg.Radio(
                 "Algo Settings",
-                "EYESELECTRADIO",
+                "TABSELECTRADIO",
                 background_color="#292929",
-                default=(config.eye_display_id == Tab.ALGOSETTINGS),
+                default=(config.cam_display_id == Tab.ALGOSETTINGS),
                 key=ALGO_SETTINGS_RADIO_NAME,
             ),
         ],
         [
             sg.Column(
-                eyes[0].widget_layout,
+                cams[0].widget_layout,
                 vertical_alignment="top",
-                key=RIGHT_EYE_NAME,
-                visible=(config.eye_display_id in [Tab.CAM]),
+                key=CAM_NAME,
+                visible=(config.cam_display_id in [Tab.CAM]),
                 background_color="#424042",
             ),
             sg.Column(
                 settings[0].widget_layout,
                 vertical_alignment="top",
                 key=SETTINGS_NAME,
-                visible=(config.eye_display_id in [Tab.SETTINGS]),
+                visible=(config.cam_display_id in [Tab.SETTINGS]),
                 background_color="#424042",
             ),
             sg.Column(
                 settings[1].widget_layout,
                 vertical_alignment="top",
                 key=ALGO_SETTINGS_NAME,
-                visible=(config.eye_display_id in [Tab.ALGOSETTINGS]),
+                visible=(config.cam_display_id in [Tab.ALGOSETTINGS]),
                 background_color="#424042",
             ),
         ],
     ]
 
 
-    if config.eye_display_id in [Tab.CAM]:
-        eyes[0].start()
-    if config.eye_display_id in [Tab.SETTINGS]:
+    if config.cam_display_id in [Tab.CAM]:
+        cams[0].start()
+    if config.cam_display_id in [Tab.SETTINGS]:
         settings[0].start()
-    if config.eye_display_id in [Tab.ALGOSETTINGS]:
+    if config.cam_display_id in [Tab.ALGOSETTINGS]:
         settings[1].start()
-        # self.main_config.eye_display_id
 
-    # the eye's needs to be running before it is passed to the OSC
+    # the cam needs to be running before it is passed to the OSC
     if config.settings.gui_ROSC:
-        osc_receiver = VRChatOSCReceiver(cancellation_event, config, eyes)
+        osc_receiver = VRChatOSCReceiver(cancellation_event, config, cams)
         osc_receiver_thread = threading.Thread(target=osc_receiver.run)
         osc_receiver_thread.start()
         ROSC = True
@@ -176,8 +170,8 @@ def main():
 
         # If we're in either mode and someone hits q, quit immediately
         if event == "Exit" or event == sg.WIN_CLOSED:
-            for eye in eyes:
-                eye.stop()
+            for cam in cams: #yes we only have one cam page but im just gonna leave this incase
+                cam.stop()
             cancellation_event.set()
             # shut down worker threads
             osc_thread.join()
@@ -188,46 +182,46 @@ def main():
             if ROSC:
                 osc_receiver.shutdown()
                 osc_receiver_thread.join()
-            print("\033[94m[INFO] Exiting EyeTrackApp\033[0m")
+            print("\033[94m[INFO] Exiting BabbleApp\033[0m")
             return
 
-        if values[RIGHT_EYE_RADIO_NAME] and config.eye_display_id != Tab.CAM:
-            eyes[0].start()
+        if values[CAM_RADIO_NAME] and config.cam_display_id != Tab.CAM:
+            cams[0].start()
             settings[0].stop()
             settings[1].stop()
-            window[RIGHT_EYE_NAME].update(visible=True)
+            window[CAM_NAME].update(visible=True)
             window[SETTINGS_NAME].update(visible=False)
             window[ALGO_SETTINGS_NAME].update(visible=False)
-            config.eye_display_id = Tab.CAM
+            config.cam_display_id = Tab.CAM
             config.save()
 
 
 
-        elif values[SETTINGS_RADIO_NAME] and config.eye_display_id != Tab.SETTINGS:
-            eyes[0].stop()
+        elif values[SETTINGS_RADIO_NAME] and config.cam_display_id != Tab.SETTINGS:
+            cams[0].stop()
             settings[1].stop()
             settings[0].start()
-            window[RIGHT_EYE_NAME].update(visible=False)
+            window[CAM_NAME].update(visible=False)
             window[SETTINGS_NAME].update(visible=True)
             window[ALGO_SETTINGS_NAME].update(visible=False)
-            config.eye_display_id = Tab.SETTINGS
+            config.cam_display_id = Tab.SETTINGS
             config.save()
 
 
-        elif values[ALGO_SETTINGS_RADIO_NAME] and config.eye_display_id != Tab.ALGOSETTINGS:
-            eyes[0].stop()
+        elif values[ALGO_SETTINGS_RADIO_NAME] and config.cam_display_id != Tab.ALGOSETTINGS:
+            cams[0].stop()
             settings[0].stop()
             settings[1].start()
-            window[RIGHT_EYE_NAME].update(visible=False)
+            window[CAM_NAME].update(visible=False)
             window[SETTINGS_NAME].update(visible=False)
             window[ALGO_SETTINGS_NAME].update(visible=True)
-            config.eye_display_id = Tab.ALGOSETTINGS
+            config.cam_display_id = Tab.ALGOSETTINGS
             config.save()
 
         # Otherwise, render all
-        for eye in eyes:
-            if eye.started():
-                eye.render(window, event, values)
+        for cam in cams:
+            if cam.started():
+                cam.render(window, event, values)
         for setting in settings:
             if setting.started():
                 setting.render(window, event, values)

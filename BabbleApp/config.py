@@ -2,7 +2,7 @@ import json
 import os.path
 import shutil
 
-from eye import Tab
+from tab import Tab
 from pydantic import BaseModel
 from typing import Union
 
@@ -41,7 +41,7 @@ class BabbleConfig(BaseModel):
     version: int = 1
     cam: BabbleCameraConfig = BabbleCameraConfig()
     settings: BabbleSettingsConfig = BabbleSettingsConfig()
-    eye_display_id: Tab = Tab.CAM
+    cam_display_id: Tab = Tab.CAM
 
     @staticmethod
     def load():

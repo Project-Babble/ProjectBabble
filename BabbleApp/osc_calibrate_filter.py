@@ -3,7 +3,7 @@ import numpy as np
 from enum import IntEnum
 from utils.misc_utils import PlaySound, SND_FILENAME, SND_ASYNC
 
-class EyeId(IntEnum):
+class CamId(IntEnum):
     RIGHT = 0
     LEFT = 1
     BOTH = 2
