@@ -14,7 +14,6 @@ class Tab(IntEnum):
 
 def output_osc(array, self):
     location = self.config.gui_osc_location
-    print(self.config.gui_osc_location)
     multi = self.config.gui_multiply
     self.client.send_message(location + "/cheekPuffLeft", array[0] * multi)
     self.client.send_message(location + "/cheekPuffRight", array[1] * multi)
