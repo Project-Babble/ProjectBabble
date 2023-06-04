@@ -12,42 +12,62 @@ class EyeId(IntEnum):
 
 class cal():
     def cal_osc(self, array):
-
+        #print(self.calibration_frame_counter)
         if self.calibration_frame_counter == 0:
+
             self.calibration_frame_counter = None
-            lower_threshold = np.percentile(self.calibrate_config, 1)
-            upper_threshold = np.percentile(self.calibrate_config, 99)
-            self.calibrate_config = self.calibrate_config[(self.calibrate_config >= lower_threshold) & (self.calibrate_config <= upper_threshold)]
+            values = np.array(self.val_list)
 
-            # Find maximum and minimum values in the array
-            max_values = np.amax(self.calibrate_config, axis=1)
-            min_values = np.amin(self.calibrate_config, axis=1)
-            result = np.column_stack((min_values, max_values))
-            result_flat = result.flatten()
+            # Initialize the min_max_array with shape (2, num_outputs)
+            num_outputs = values.shape[1]
+            self.min_max_array = np.zeros((2, num_outputs))
 
+            # Iterate over each output index
+            for i in range(num_outputs):
+                # Calculate the lower and upper thresholds for the current index
+                lower_threshold = np.percentile(values[:, i], 1)
+                upper_threshold = np.percentile(values[:, i], 99)
+
+                # Filter out values within the thresholds for the current index
+                filtered_values = values[(values[:, i] >= lower_threshold) & (values[:, i] <= upper_threshold), i]
+
+                # Extract the minimum and maximum values for the current index
+                min_value = np.min(filtered_values)
+                max_value = np.max(filtered_values)
+
+                # Store the min and max values in the min_max_array
+                self.min_max_array[0, i] = min_value
+                self.min_max_array[1, i] = max_value
+
+                self.settings.calib_array = self.min_max_array
             print("[INFO] Calibration completed.")
-            #print(self.calibrate_config)
-            self.settings.calib_array = result_flat
+
             PlaySound('Audio/completed.wav', SND_FILENAME | SND_ASYNC)
         if self.calibration_frame_counter == 10:
 
             self.calibration_frame_counter -= 1
-
         elif self.calibration_frame_counter != None:
 
+            self.val_list.append(array)
 
-            self.calibrate_config = np.vstack((self.calibrate_config, array.T))
+
+           # self.calibrate_config = np.vstack((self.calibrate_config, array.T))
            # np.append(self.calibrate_config, array.reshape(-1, 1), axis=1)
 
             self.calibration_frame_counter -= 1
         varcount = 0
         filtered_output = []
-        if self.settings.calib_array != None:
-            for value in array:
-                low_v = self.settings.calib_array[varcount][0]
-                high_v = self.settings.calib_array[varcount][1]
-                filterv = (value - low_v) / (high_v - low_v)
-                filtered_output.append(filterv)
-                varcount += 1
-            array = filtered_output
+        if self.settings.calib_array is not None and np.any(self.settings.calib_array):
+            calibrated_array = np.zeros_like(array)
+            for i, value in enumerate(array):
+                min_value = self.min_max_array[0, i]
+                max_value = self.min_max_array[1, i]
+
+                if min_value == max_value:
+                    calibrated_value = 0.0  # Set to a default value (can be adjusted as needed)
+                else:
+                    calibrated_value = (value - min_value) / (max_value - min_value)
+
+                calibrated_array[i] = calibrated_value
+            array = calibrated_array
         return array
