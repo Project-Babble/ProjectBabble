@@ -1,5 +1,4 @@
 import PySimpleGUI as sg
-
 from config import BabbleSettingsConfig
 from osc import Tab
 from queue import Queue
@@ -195,6 +194,11 @@ class SettingsWidget:
         if self.config.gui_ROSC != values[self.gui_ROSC]:
             self.config.gui_ROSC = values[self.gui_ROSC]
             changed = True
+
+        if self.config.gui_osc_location != values[self.gui_osc_location]:
+            self.config.gui_osc_location = values[self.gui_osc_location]
+            changed = True
+
 
         if changed:
             self.main_config.save()

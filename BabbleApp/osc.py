@@ -1,8 +1,5 @@
-
-from pythonosc import udp_client
-from pythonosc import osc_server
-from pythonosc import dispatcher
-from utils.misc_utils import PlaySound,SND_FILENAME,SND_ASYNC
+from pythonosc import udp_client, osc_server, dispatcher
+from utils.misc_utils import PlaySound, SND_FILENAME, SND_ASYNC
 import queue
 import threading
 from enum import IntEnum
@@ -17,6 +14,7 @@ class Tab(IntEnum):
 
 def output_osc(array, self):
     location = self.config.gui_osc_location
+    print(self.config.gui_osc_location)
     multi = self.config.gui_multiply
     self.client.send_message(location + "/cheekPuffLeft", array[0] * multi)
     self.client.send_message(location + "/cheekPuffRight", array[1] * multi)
@@ -75,8 +73,6 @@ class VRChatOSC:
         self.cam = Tab.CAM
 
     def run(self):
-        start = time.time()
-        last_blink = time.time()
         while True:
             if self.cancellation_event.is_set():
                 print("\033[94m[INFO] Exiting OSC Queue\033[0m")

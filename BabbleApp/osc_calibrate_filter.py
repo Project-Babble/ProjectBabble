@@ -1,14 +1,10 @@
 import numpy as np
-
 from enum import IntEnum
 from utils.misc_utils import PlaySound, SND_FILENAME, SND_ASYNC
 
 class CamId(IntEnum):
-    RIGHT = 0
-    LEFT = 1
-    BOTH = 2
-    SETTINGS = 3
-
+    CAM = 0
+    SETTINGS = 1
 
 class cal():
     def cal_osc(self, array):
@@ -43,19 +39,12 @@ class cal():
             print("[INFO] Calibration completed.")
 
             PlaySound('Audio/completed.wav', SND_FILENAME | SND_ASYNC)
-        if self.calibration_frame_counter == 10:
 
-            self.calibration_frame_counter -= 1
         elif self.calibration_frame_counter != None:
 
             self.val_list.append(array)
-
-
-           # self.calibrate_config = np.vstack((self.calibrate_config, array.T))
-           # np.append(self.calibrate_config, array.reshape(-1, 1), axis=1)
-
             self.calibration_frame_counter -= 1
-       # print(self.settings.calib_array)
+
         if self.settings.calib_array is not None and self.config.use_calibration:
             self.min_max_array = np.fromstring(self.settings.calib_array.replace('[', '').replace(']', ''), sep=',')
             self.min_max_array = self.min_max_array.reshape((2, 45))
@@ -72,6 +61,5 @@ class cal():
 
                 calibrated_array[i] = calibrated_value
             array = calibrated_array
-
 
         return array
