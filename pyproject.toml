@@ -19,6 +19,7 @@ winotify = [
     { version = "^1.1.0", platform = 'win32' }
 ]
 onnxruntime = "^1.13.1"
+onnxruntime-directml = "^1.15.0"
 colorama = "^0.4.6"
 taskipy = "^1.10.4"
 torch = "~2.0.0"
