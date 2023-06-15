@@ -15,17 +15,6 @@ from one_euro_filter import OneEuroFilter
 
 def run_model(self):
 
-
-
-    min_cutoff = float(self.settings.gui_min_cutoff) #15.5004
-    beta = float(self.settings.gui_speed_coefficient) #0.62
-    noisy_point = np.array([45])
-    filter = OneEuroFilter(
-        noisy_point,
-        min_cutoff=min_cutoff,
-        beta=beta
-    )
-
     frame = cv2.resize(self.current_image_gray, (256, 256))
     # make it pil
     frame = Image.fromarray(frame)
@@ -42,7 +31,8 @@ def run_model(self):
     #end = time.time()
     output = out[0]
     output = output[0]
-    output = filter(output)
+    output = self.one_euro_filter(output)
     for i in range(len(output)):  # Clip values between 0 - 1
         output[i] = max(min(output[i], 1), 0)
+        print(output)
     self.output = output
