@@ -19,6 +19,8 @@ from tab import CamInfo, CamInfoOrigin
 from babble_model_loader import *
 import os
 os.environ["OMP_NUM_THREADS"] = "1"
+import onnxruntime as ort
+
 def run_once(f):
     def wrapper(*args, **kwargs):
         if not wrapper.has_run:
@@ -95,13 +97,13 @@ class BabbleProcessor:
         
 
         try:
-            min_cutoff = float(self.settings.gui_min_cutoff)  # 0.0004
-            beta = float(self.settings.gui_speed_coefficient)  # 0.9
+            min_cutoff = float(self.settings.gui_min_cutoff)  # 15.5004
+            beta = float(self.settings.gui_speed_coefficient)  # 0.62
         except:
             print('\033[93m[WARN] OneEuroFilter values must be a legal number.\033[0m')
-            min_cutoff = 0.0004
-            beta = 0.9
-        noisy_point = np.array([1, 1])
+            min_cutoff = 15.0004
+            beta = 0.62
+        noisy_point = np.array([45])
         self.one_euro_filter = OneEuroFilter(
             noisy_point,
             min_cutoff=min_cutoff,
