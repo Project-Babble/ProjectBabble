@@ -34,5 +34,4 @@ def run_model(self):
     output = self.one_euro_filter(output)
     for i in range(len(output)):  # Clip values between 0 - 1
         output[i] = max(min(output[i], 1), 0)
-        print(output)
     self.output = output
