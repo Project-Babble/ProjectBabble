@@ -33,26 +33,7 @@ class SettingsWidget:
                     tooltip = "Toggle update check on launch.",
                 ),
             ],
-            [
-                sg.Text("One Euro Filter Paramaters:", background_color='#242224'),
-            ],
-            [
-                
-                sg.Text("Min Frequency Cutoff", background_color='#424042'),
-                sg.InputText(
-                    self.config.gui_min_cutoff,
-                    key=self.gui_min_cutoff,
-                    size=(0,10),
-                ),
-            #],
-            #[
-                sg.Text("Speed Coefficient", background_color='#424042'),
-                sg.InputText(
-                    self.config.gui_speed_coefficient, 
-                    key=self.gui_speed_coefficient,
-                    size=(0,10),
-                ),
-            ],
+
              [
                 sg.Text("OSC Settings:", background_color='#242224'),
             ],
@@ -61,9 +42,11 @@ class SettingsWidget:
                 sg.InputText(
                     self.config.gui_osc_location,
                     key=self.gui_osc_location,
-                    size=(0, 30),
+                    size=(30),
                     tooltip="Prefix for OSC address.",
                 ),
+            ],
+            [
                 sg.Text("Address:", background_color='#424042'),
                 sg.InputText(
                     self.config.gui_osc_address, 
@@ -177,14 +160,6 @@ class SettingsWidget:
 
         if self.config.gui_osc_recalibrate_address != values[self.gui_osc_recalibrate_address]:
             self.config.gui_osc_recalibrate_address = values[self.gui_osc_recalibrate_address]
-            changed = True
-
-        if self.config.gui_min_cutoff != values[self.gui_min_cutoff]:
-            self.config.gui_min_cutoff = values[self.gui_min_cutoff]
-            changed = True
-            
-        if self.config.gui_speed_coefficient != values[self.gui_speed_coefficient]:
-            self.config.gui_speed_coefficient = values[self.gui_speed_coefficient]
             changed = True
         
         if self.config.gui_update_check != values[self.gui_update_check]:

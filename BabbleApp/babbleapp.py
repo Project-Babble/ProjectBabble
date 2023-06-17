@@ -1,3 +1,21 @@
+'''
+-------------------------------------------------------------------------------------------------------------
+██████╗ ██████╗  ██████╗      ██╗███████╗ ██████╗████████╗    ██████╗  █████╗ ██████╗ ██████╗ ██╗     ███████╗
+██╔══██╗██╔══██╗██╔═══██╗     ██║██╔════╝██╔════╝╚══██╔══╝    ██╔══██╗██╔══██╗██╔══██╗██╔══██╗██║     ██╔════╝
+██████╔╝██████╔╝██║   ██║     ██║█████╗  ██║        ██║       ██████╔╝███████║██████╔╝██████╔╝██║     █████╗
+██╔═══╝ ██╔══██╗██║   ██║██   ██║██╔══╝  ██║        ██║       ██╔══██╗██╔══██║██╔══██╗██╔══██╗██║     ██╔══╝
+██║     ██║  ██║╚██████╔╝╚█████╔╝███████╗╚██████╗   ██║       ██████╔╝██║  ██║██████╔╝██████╔╝███████╗███████╗
+╚═╝     ╚═╝  ╚═╝ ╚═════╝  ╚════╝ ╚══════╝ ╚═════╝   ╚═╝       ╚═════╝ ╚═╝  ╚═╝╚═════╝ ╚═════╝ ╚══════╝╚══════╝
+--------------------------------------------------------------------------------------------------------------
+GUI by: Prohurtz, qdot
+Model by: Summer
+App model implementation: Prohurtz, Summer
+
+Additional contributors: RamesTheGeneric (dataset synthesizer),
+
+Copyright (c) 2023 Project Babble <3
+'''
+
 import os
 import PySimpleGUI as sg
 import queue
@@ -10,9 +28,7 @@ from tab import CamInfo, Tab
 from osc import VRChatOSCReceiver, VRChatOSC
 from general_settings_widget import SettingsWidget
 from algo_settings_widget import AlgoSettingsWidget
-
 from utils.misc_utils import is_nt
-
 if is_nt:
     from winotify import Notification
 os.system('color')  # init ANSI color
@@ -30,7 +46,7 @@ SETTINGS_RADIO_NAME = "-SETTINGSRADIO-"
 ALGO_SETTINGS_RADIO_NAME = "-ALGOSETTINGSRADIO-"
 
 page_url = "https://github.com/SummerSigh/ProjectBabble/releases/latest"
-appversion = "Babble v0.2.0 BETA"
+appversion = "Babble v0.2.1"
 
 
 def main():
