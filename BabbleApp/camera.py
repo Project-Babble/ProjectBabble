@@ -133,9 +133,9 @@ class Camera:
                 raise RuntimeError("Problem while getting frame")
             frame_number = self.cv2_camera.get(cv2.CAP_PROP_POS_FRAMES)
             # Calculate the fps.
-            current_frame_time = time.time()
-            delta_time = current_frame_time - self.last_frame_time
-            self.last_frame_time = current_frame_time
+            yeah = time.time()
+            delta_time = yeah - self.last_frame_time
+            self.last_frame_time = yeah
             if delta_time > 0:
                 self.bps = len(image) / delta_time
             self.frame_number = self.frame_number + 1
@@ -198,9 +198,9 @@ class Camera:
                         conn.reset_input_buffer()
                         self.buffer = b''
                     # Calculate the fps.
-                    current_frame_time = time.time()
-                    delta_time = current_frame_time - self.last_frame_time
-                    self.last_frame_time = current_frame_time
+                    yeah = time.time()
+                    delta_time = yeah - self.last_frame_time
+                    self.last_frame_time = yeah
                     if delta_time > 0:
                         self.bps = len(jpeg) / delta_time
                     self.fps = (self.fps + self.pf_fps) / 2
