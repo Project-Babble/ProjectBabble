@@ -35,6 +35,7 @@ class CameraWidget:
         self.gui_vertical_flip = f"-VERTICALFLIP{widget_id}-"
         self.gui_horizontal_flip = f"-HORIZONTALFLIP{widget_id}-"
         self.use_calibration = f"-USECALIBRATION{widget_id}-"
+        self.use_n_calibration = f"-USENCALIBRATION{widget_id}-"
         self.osc_queue = osc_queue
         self.main_config = main_config
         self.cam_id = widget_id
@@ -106,8 +107,17 @@ class CameraWidget:
             [
                 sg.Button("Start Calibration", key=self.gui_restart_calibration, button_color='#539e8a', tooltip = "Start calibration. Look all arround to all extreams without blinking until sound is heard.",),
                 sg.Button("Stop Calibration", key=self.gui_stop_calibration, button_color='#539e8a', tooltip = "Stop calibration manualy.",),
+            ],
+            [
                 sg.Checkbox(
-                    "Use Calibration:",
+                    "Use Neurtal Calibration:",
+                    default=self.config.use_n_calibration,
+                    key=self.use_n_calibration,
+                    background_color='#424042',
+                    tooltip="Toggle use of calibration using minimum values found during a neutral pose calibration step.",
+                ),
+                sg.Checkbox(
+                    "Use Full Calibration:",
                     default=self.config.use_calibration,
                     key=self.use_calibration,
                     background_color='#424042',
@@ -239,6 +249,9 @@ class CameraWidget:
             self.config.use_calibration = values[self.use_calibration]
             changed = True
 
+        if self.config.use_n_calibration != values[self.use_n_calibration]:
+            self.config.use_n_calibration = values[self.use_n_calibration]
+            changed = True
 
         if changed:
             self.main_config.save()
