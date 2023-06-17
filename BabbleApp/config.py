@@ -28,7 +28,7 @@ class BabbleSettingsConfig(BaseModel):
     gui_osc_port: int = 9000
     gui_osc_receiver_port: int = 9001
     gui_osc_recalibrate_address: str = "/avatar/parameters/babble_recalibrate"
-    gui_update_check: bool = False
+    gui_update_check: bool = True
     gui_ROSC: bool = False
     gui_osc_location: str = "/avatar/parameters"
     gui_multiply: int = 1
