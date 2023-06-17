@@ -25,12 +25,12 @@ class BabbleSettingsConfig(BaseModel):
     gui_min_cutoff: str = "15.5004"
     gui_speed_coefficient: str = "0.62"
     gui_osc_address: str = "127.0.0.1"
-    gui_osc_port: int = 9000
+    gui_osc_port: int = 8888
     gui_osc_receiver_port: int = 9001
     gui_osc_recalibrate_address: str = "/avatar/parameters/babble_recalibrate"
     gui_update_check: bool = True
     gui_ROSC: bool = False
-    gui_osc_location: str = "/avatar/parameters"
+    gui_osc_location: str = ""
     gui_multiply: int = 1
     gui_model_file: str = 'Models/EFV2300K45E100P2.onnx'
     gui_use_gpu: bool = False
