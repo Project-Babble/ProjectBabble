@@ -13,6 +13,8 @@ class AlgoSettingsWidget:
         self.gui_multiply = f"-MULTIPLY{widget_id}-"
         self.gui_model_file = f"-MODLEFILE{widget_id}-"
         self.gui_use_gpu = f"USEGPU{widget_id}"
+        self.gui_speed_coefficient = f"-SPEEDCOEFFICIENT{widget_id}-"
+        self.gui_min_cutoff = f"-MINCUTOFF{widget_id}-"
         self.main_config = main_config
         self.config = main_config.settings
         self.osc_queue = osc_queue
@@ -20,19 +22,11 @@ class AlgoSettingsWidget:
         # Define the window's contents
         self.general_settings_layout = [
 
-            [sg.Text("Model output multiplier:", background_color='#424042'),
-                sg.InputText(
-                    self.config.gui_multiply,
-                    key=self.gui_multiply,
-                    size=(0,8),
-                    tooltip = "Model output modifier.",
-                ),
-             ],
             [sg.Text("Model file:", background_color='#424042'),
              sg.InputText(
                  self.config.gui_model_file,
                  key=self.gui_model_file,
-                 size=(0, 8),
+                 size=(32),
                  tooltip="Name of the model file.",
              ),
              ],
@@ -44,13 +38,42 @@ class AlgoSettingsWidget:
                 tooltip="Toggle GPU execution.",
             ),
             ],
+            [sg.Text("Model output multiplier:", background_color='#424042'),
+                sg.InputText(
+                    self.config.gui_multiply,
+                    key=self.gui_multiply,
+                    size=(4),
+                    tooltip = "Model output modifier.",
+                ),
+             ],
+            [
+                sg.Text("One Euro Filter Paramaters:", background_color='#242224'),
+            ],
+            [
+
+                sg.Text("Min Frequency Cutoff", background_color='#424042'),
+                sg.InputText(
+                    self.config.gui_min_cutoff,
+                    key=self.gui_min_cutoff,
+                    size=(7),
+                ),
+                # ],
+                # [
+                sg.Text("Speed Coefficient", background_color='#424042'),
+                sg.InputText(
+                    self.config.gui_speed_coefficient,
+                    key=self.gui_speed_coefficient,
+                    size=(5),
+                ),
+            ],
+
 
         ]
 
         
         self.widget_layout = [
             [   
-                sg.Text("Tracking Algorithm Settings:", background_color='#242224'),
+                sg.Text("Model Settings:", background_color='#242224'),
             ],
             [
                 sg.Column(self.general_settings_layout, key=self.gui_general_settings_layout, background_color='#424042' ),
@@ -91,6 +114,14 @@ class AlgoSettingsWidget:
 
         if self.config.gui_use_gpu != values[self.gui_use_gpu]:
             self.config.gui_use_gpu = values[self.gui_use_gpu]
+            changed = True
+
+        if self.config.gui_min_cutoff != values[self.gui_min_cutoff]:
+            self.config.gui_min_cutoff = values[self.gui_min_cutoff]
+            changed = True
+
+        if self.config.gui_speed_coefficient != values[self.gui_speed_coefficient]:
+            self.config.gui_speed_coefficient = values[self.gui_speed_coefficient]
             changed = True
 
         if changed:
