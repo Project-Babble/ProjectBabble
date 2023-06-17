@@ -17,6 +17,7 @@ class BabbleCameraConfig(BaseModel):
     roi_window_h: int = 0
     capture_source: Union[int, str, None] = None
     use_calibration: bool = False
+    use_n_calibration: bool = True
     gui_vertical_flip: bool = False
     gui_horizontal_flip: bool = False
 

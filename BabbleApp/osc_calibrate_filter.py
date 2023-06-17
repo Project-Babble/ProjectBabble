@@ -62,4 +62,18 @@ class cal():
                 calibrated_array[i] = calibrated_value
             array = calibrated_array
 
+        if self.settings.calib_array is not None and self.config.use_n_calibration:
+            self.min_max_array = np.fromstring(self.settings.calib_array.replace('[', '').replace(']', ''), sep=',')
+            self.min_max_array = self.min_max_array.reshape((2, 45))
+
+            calibrated_array = np.zeros_like(array)
+            for i, value in enumerate(array):
+                min_value = self.min_max_array[0, i]
+
+
+                calibrated_value = (value - min_value) / (1.0 - min_value)
+
+                calibrated_array[i] = calibrated_value
+            array = calibrated_array
+
         return array
