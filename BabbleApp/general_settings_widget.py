@@ -133,7 +133,6 @@ class SettingsWidget:
 
         try:
             if self.config.gui_osc_port != int(values[self.gui_osc_port]):
-                print(self.config.gui_osc_port, values[self.gui_osc_port])
                 try:
                     int(values[self.gui_osc_port])
                     if len(values[self.gui_osc_port]) <= 5:
