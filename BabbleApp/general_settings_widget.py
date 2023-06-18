@@ -131,28 +131,34 @@ class SettingsWidget:
         # If anything has changed in our configuration settings, change/update those.
         changed = False
 
-        if self.config.gui_osc_port != int(values[self.gui_osc_port]):
-            print(self.config.gui_osc_port, values[self.gui_osc_port])
-            try: 
-                int(values[self.gui_osc_port])
-                if len(values[self.gui_osc_port]) <= 5:
-                    self.config.gui_osc_port = int(values[self.gui_osc_port])
-                    changed = True
-                else:
+        try:
+            if self.config.gui_osc_port != int(values[self.gui_osc_port]):
+                print(self.config.gui_osc_port, values[self.gui_osc_port])
+                try:
+                    int(values[self.gui_osc_port])
+                    if len(values[self.gui_osc_port]) <= 5:
+                        self.config.gui_osc_port = int(values[self.gui_osc_port])
+                        changed = True
+                    else:
+                        print("\033[91m[ERROR] OSC port value must be an integer 0-65535\033[0m")
+                except:
                     print("\033[91m[ERROR] OSC port value must be an integer 0-65535\033[0m")
-            except:
-                print("\033[91m[ERROR] OSC port value must be an integer 0-65535\033[0m")
+        except:
+            print("\033[91m[ERROR] OSC port value cannot be empty and must be an integer 0-65535\033[0m")
 
-        if self.config.gui_osc_receiver_port != int(values[self.gui_osc_receiver_port]):
-            try: 
-                int(values[self.gui_osc_receiver_port])
-                if len(values[self.gui_osc_receiver_port]) <= 5:
-                    self.config.gui_osc_receiver_port = int(values[self.gui_osc_receiver_port])
-                    changed = True
-                else:
+        try:
+            if self.config.gui_osc_receiver_port != int(values[self.gui_osc_receiver_port]):
+                try:
+                    int(values[self.gui_osc_receiver_port])
+                    if len(values[self.gui_osc_receiver_port]) <= 5:
+                        self.config.gui_osc_receiver_port = int(values[self.gui_osc_receiver_port])
+                        changed = True
+                    else:
+                        print("\033[91m[ERROR] OSC receive port value must be an integer 0-65535\033[0m")
+                except:
                     print("\033[91m[ERROR] OSC receive port value must be an integer 0-65535\033[0m")
-            except:
-                print("\033[91m[ERROR] OSC receive port value must be an integer 0-65535\033[0m")
+        except:
+            print("\033[91m[ERROR] OSC receive port value cannot be empty and must be an integer 0-65535\033[0m")
 
         if self.config.gui_osc_address != values[self.gui_osc_address]:
             self.config.gui_osc_address = values[self.gui_osc_address]
