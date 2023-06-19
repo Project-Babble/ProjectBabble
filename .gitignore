@@ -1,3 +1,9 @@
-
-*.onnx
+**/__pycache__/**
+**/*.pyc
+*.cfg
+*.log
+BabbleApp/babble_settings.json
+BabbleApp/babble_settings.backup
+BabbleApp/build
+BabbleApp/dist
 /vivetest
