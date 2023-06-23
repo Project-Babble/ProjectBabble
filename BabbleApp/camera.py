@@ -7,7 +7,7 @@ import threading
 import time
 
 from colorama import Fore
-from config import BabbleConfig
+from config import BabbleConfig, BabbleSettingsConfig
 from enum import Enum
 
 WAIT_TIME = 0.1
@@ -37,9 +37,11 @@ class Camera:
             capture_event: "threading.Event",
             camera_status_outgoing: "queue.Queue[CameraState]",
             camera_output_outgoing: "queue.Queue",
+            settings: BabbleSettingsConfig,
     ):
         self.camera_status = CameraState.CONNECTING
         self.config = config
+        self.settings = settings
         self.camera_index = camera_index
         self.camera_address = config.capture_source
         self.camera_status_outgoing = camera_status_outgoing
@@ -105,6 +107,9 @@ class Camera:
                             return
                         self.current_capture_source = self.config.capture_source
                         self.cv2_camera = cv2.VideoCapture(self.current_capture_source)
+                        if not self.settings.gui_cam_resolution_x == 0: self.cv2_camera.set(cv2.CAP_PROP_FRAME_WIDTH, self.settings.gui_cam_resolution_x)
+                        if not self.settings.gui_cam_resolution_y == 0: self.cv2_camera.set(cv2.CAP_PROP_FRAME_HEIGHT, self.settings.gui_cam_resolution_y)
+                        if not self.settings.gui_cam_framerate == 0: self.cv2_camera.set(cv2.CAP_PROP_FPS, self.settings.gui_cam_framerate)
                         should_push = False
             else:
                 # We don't have a capture source to try yet, wait for one to show up in the GUI.

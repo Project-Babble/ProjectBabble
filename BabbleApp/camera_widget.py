@@ -75,6 +75,7 @@ class CameraWidget:
             self.capture_event,
             self.camera_status_queue,
             self.capture_queue,
+            self.settings
         )
 
         self.roi_layout = [
