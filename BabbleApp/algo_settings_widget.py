@@ -15,6 +15,7 @@ class AlgoSettingsWidget:
         self.gui_use_gpu = f"USEGPU{widget_id}"
         self.gui_speed_coefficient = f"-SPEEDCOEFFICIENT{widget_id}-"
         self.gui_min_cutoff = f"-MINCUTOFF{widget_id}-"
+        self.gui_inference_threads = f"-THREADS{widget_id}-"
         self.main_config = main_config
         self.config = main_config.settings
         self.osc_queue = osc_queue
@@ -36,6 +37,13 @@ class AlgoSettingsWidget:
                 key=self.gui_use_gpu,
                 background_color='#424042',
                 tooltip="Toggle GPU execution.",
+            ),
+            sg.Text("Inference Threads:", background_color='#424042'),
+                sg.InputText(
+                    self.config.gui_inference_threads,
+                    key=self.gui_inference_threads,
+                    size=(4),
+                    tooltip = "How many threads to use for processing the model.",
             ),
             ],
             [sg.Text("Model output multiplier:", background_color='#424042'),
@@ -114,6 +122,10 @@ class AlgoSettingsWidget:
 
         if self.config.gui_use_gpu != values[self.gui_use_gpu]:
             self.config.gui_use_gpu = values[self.gui_use_gpu]
+            changed = True
+        
+        if self.config.gui_inference_threads != int(values[self.gui_inference_threads]):
+            self.config.gui_inference_threads = int(values[self.gui_inference_threads]) 
             changed = True
 
         if self.config.gui_min_cutoff != values[self.gui_min_cutoff]:

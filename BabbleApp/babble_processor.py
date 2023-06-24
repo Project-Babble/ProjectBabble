@@ -85,8 +85,8 @@ class BabbleProcessor:
         self.min_max_array = np.empty((2, 45))
 
         self.opts = ort.SessionOptions()
-        self.opts.intra_op_num_threads = 1
-        self.opts.inter_op_num_threads = 1
+        self.opts.intra_op_num_threads = settings.gui_inference_threads
+        self.opts.inter_op_num_threads = settings.gui_inference_threads
         self.opts.graph_optimization_level = ort.GraphOptimizationLevel.ORT_ENABLE_ALL
         if not self.use_gpu:
             self.sess = ort.InferenceSession(self.model, self.opts, providers=['CPUExecutionProvider'])

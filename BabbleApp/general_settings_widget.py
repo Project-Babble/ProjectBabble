@@ -98,7 +98,7 @@ class SettingsWidget:
                     ),
             ],
             [
-                sg.Text("Camera Settings:", background_color='#242224'),
+                sg.Text("UVC Camera Settings:", background_color='#242224'),
             ],
             [
                 sg.Text("X Resolution:", background_color='#424042'),
@@ -214,16 +214,16 @@ class SettingsWidget:
             self.config.gui_osc_location = values[self.gui_osc_location]
             changed = True
 
-        if self.config.gui_cam_resolution_x != values[self.gui_cam_resolution_x]:
-            self.config.gui_cam_resolution_x = values[self.gui_cam_resolution_x]
+        if self.config.gui_cam_resolution_x != int(values[self.gui_cam_resolution_x]):
+            self.config.gui_cam_resolution_x = int(values[self.gui_cam_resolution_x])
             changed = True
 
-        if self.config.gui_cam_resolution_y != values[self.gui_cam_resolution_y]:
-            self.config.gui_cam_resolution_y = values[self.gui_cam_resolution_y]
+        if self.config.gui_cam_resolution_y != int(values[self.gui_cam_resolution_y]):
+            self.config.gui_cam_resolution_y = int(values[self.gui_cam_resolution_y])
             changed = True
 
-        if self.config.gui_cam_framerate != values[self.gui_cam_framerate]:
-            self.config.gui_cam_framerate = values[self.gui_cam_framerate]
+        if self.config.gui_cam_framerate != int(values[self.gui_cam_framerate]):
+            self.config.gui_cam_framerate = int(values[self.gui_cam_framerate])
             changed = True
 
         if changed:
