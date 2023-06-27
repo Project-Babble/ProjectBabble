@@ -89,11 +89,15 @@ class BabbleProcessor:
         self.opts.inter_op_num_threads = settings.gui_inference_threads
         self.opts.graph_optimization_level = ort.GraphOptimizationLevel.ORT_ENABLE_ALL
         if not self.use_gpu:
-            self.sess = ort.InferenceSession(self.model, self.opts, providers=['CPUExecutionProvider'])
+            ie = IECore()
+            net = ie.read_network(model=f'{self.model}openvino/model.xml', weights=f'{self.model}openvino/model.bin')
+            self.sess = ie.load_network(network=net, device_name='CPU')
+            self.input_name = next(iter(net.input_info))
+            self.output_name = next(iter(net.outputs))
         else:
-            self.sess = ort.InferenceSession(self.model, self.opts, providers=['DmlExecutionProvider'])
-        self.input_name = self.sess.get_inputs()[0].name
-        self.output_name = self.sess.get_outputs()[0].name
+            self.sess = ort.InferenceSession(f'{self.model}onnx/model.onnx', self.opts, providers=['DmlExecutionProvider'])
+            self.input_name = self.sess.get_inputs()[0].name
+            self.output_name = self.sess.get_outputs()[0].name
         
 
         try:
