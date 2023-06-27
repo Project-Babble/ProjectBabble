@@ -16,6 +16,9 @@ class SettingsWidget:
         self.gui_ROSC = f"-ROSC{widget_id}-"
         self.gui_update_check = f"-UPDATECHECK{widget_id}-"
         self.gui_osc_location = f"-OSCLOCATION{widget_id}-"
+        self.gui_cam_resolution_x = f"-CAMRESX{widget_id}-"
+        self.gui_cam_resolution_y = f"-CAMRESY{widget_id}-"
+        self.gui_cam_framerate = f"-CAMFRAMERATE{widget_id}-"
         self.main_config = main_config
         self.config = main_config.settings
         self.osc_queue = osc_queue
@@ -93,7 +96,39 @@ class SettingsWidget:
                     size=(0,10),
                     tooltip = "OSC address we use for recalibrating.",
                     ),
-            ]
+            ],
+            [
+                sg.Text("UVC Camera Settings:", background_color='#242224'),
+            ],
+            [
+                sg.Text("X Resolution:", background_color='#424042'),
+                sg.InputText(
+                    self.config.gui_cam_resolution_x, 
+                    key=self.gui_cam_resolution_x,
+                    size=(0,20),
+                    tooltip = "X capture resolution. Default = 0",
+                ),
+                
+          #  ],
+          #  [
+                sg.Text("Y Resolution:", background_color='#424042'),
+                sg.InputText(
+                    self.config.gui_cam_resolution_y, 
+                    key=self.gui_cam_resolution_y,
+                    size=(0,10),
+                    tooltip = "Y capture resolution. Default = 0",
+                ),
+                          
+          #  ],
+          #  [
+                sg.Text("Framerate:", background_color='#424042'),
+                sg.InputText(
+                    self.config.gui_cam_framerate, 
+                    key=self.gui_cam_framerate,
+                    size=(0,10),
+                    tooltip = "Capture framerate. Default = 0",
+                ),
+            ],
 
         ]
 
@@ -179,6 +214,17 @@ class SettingsWidget:
             self.config.gui_osc_location = values[self.gui_osc_location]
             changed = True
 
+        if self.config.gui_cam_resolution_x != int(values[self.gui_cam_resolution_x]):
+            self.config.gui_cam_resolution_x = int(values[self.gui_cam_resolution_x])
+            changed = True
+
+        if self.config.gui_cam_resolution_y != int(values[self.gui_cam_resolution_y]):
+            self.config.gui_cam_resolution_y = int(values[self.gui_cam_resolution_y])
+            changed = True
+
+        if self.config.gui_cam_framerate != int(values[self.gui_cam_framerate]):
+            self.config.gui_cam_framerate = int(values[self.gui_cam_framerate])
+            changed = True
 
         if changed:
             self.main_config.save()

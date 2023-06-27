@@ -7,3 +7,5 @@ BabbleApp/babble_settings.backup
 BabbleApp/build
 BabbleApp/dist
 /vivetest
+/training
+.vscode

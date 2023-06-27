@@ -34,7 +34,11 @@ class BabbleSettingsConfig(BaseModel):
     gui_multiply: int = 1
     gui_model_file: str = 'Models/EFV2300K45E100P2.onnx'
     gui_use_gpu: bool = False
+    gui_inference_threads: int = 1
     calib_array: str = None
+    gui_cam_resolution_x: int = 0    
+    gui_cam_resolution_y: int = 0
+    gui_cam_framerate: int = 0
 
 class BabbleConfig(BaseModel):
     version: int = 1
