@@ -1,7 +1,7 @@
 # ProjectBabble
 A Mouth tracking system for VR, 100% Opensource!
 
-Currently the architecture is a modified efficientnetv2-b0 training on blenshapes from ARKit! The model outputs 31 blenshapes of which most cross over with SRanipals blendshapes.
+Currently the architecture is a modified efficientnetv2-b0 training on blenshapes from ARKit! The model outputs 45 blenshapes of which most cross over with SRanipals blendshapes.
 
 ### One thing to note
 1. This model is not a 1 to 1 translation to SRanipal blenshapes. While most blendshapes do cross over with SRanipal cheek and tounge movements are limited.
