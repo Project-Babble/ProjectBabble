@@ -9,3 +9,7 @@ BabbleApp/dist
 /vivetest
 /training
 .vscode
+/testing
+scripts/example_build_app_and_installer.bat
+scripts/example_build_app_and_installer.bat
+scripts/installer.iss
