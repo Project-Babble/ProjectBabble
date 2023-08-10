@@ -46,7 +46,7 @@ SETTINGS_RADIO_NAME = "-SETTINGSRADIO-"
 ALGO_SETTINGS_RADIO_NAME = "-ALGOSETTINGSRADIO-"
 
 page_url = "https://github.com/SummerSigh/ProjectBabble/releases/latest"
-appversion = "Babble v2.0.3"
+appversion = "Babble v2.0.4 DEV"
 
 
 def main():
@@ -133,6 +133,7 @@ def main():
                 default=(config.cam_display_id == Tab.ALGOSETTINGS),
                 key=ALGO_SETTINGS_RADIO_NAME,
             ),
+            
         ],
         [
             sg.Column(
@@ -156,6 +157,7 @@ def main():
                 visible=(config.cam_display_id in [Tab.ALGOSETTINGS]),
                 background_color="#424042",
             ),
+            
         ],
     ]
 
@@ -166,6 +168,10 @@ def main():
         settings[0].start()
     if config.cam_display_id in [Tab.ALGOSETTINGS]:
         settings[1].start()
+    '''
+    if config.cam_display_id in [Tab.CALIBSETTINGS]:
+        settings[2].start()
+    '''
 
     # the cam needs to be running before it is passed to the OSC
     if config.settings.gui_ROSC:
@@ -233,6 +239,7 @@ def main():
             window[ALGO_SETTINGS_NAME].update(visible=True)
             config.cam_display_id = Tab.ALGOSETTINGS
             config.save()
+        
 
         # Otherwise, render all
         for cam in cams:

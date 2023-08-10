@@ -22,7 +22,7 @@ class BabbleCameraConfig(BaseModel):
     gui_horizontal_flip: bool = False
 
 class BabbleSettingsConfig(BaseModel):
-    gui_min_cutoff: str = "15.5004"
+    gui_min_cutoff: str = "10.5004"
     gui_speed_coefficient: str = "0.62"
     gui_osc_address: str = "127.0.0.1"
     gui_osc_port: int = 8888
@@ -32,9 +32,10 @@ class BabbleSettingsConfig(BaseModel):
     gui_ROSC: bool = False
     gui_osc_location: str = ""
     gui_multiply: int = 1
-    gui_model_file: str = 'Models/Effv2E44TA/'
+    gui_model_file: str = 'Models/MOS3E26MCJPEG/'
     gui_use_gpu: bool = False
     gui_inference_threads: int = 1
+    gui_use_red_channel: bool = False
     calib_array: str = None
     gui_cam_resolution_x: int = 0    
     gui_cam_resolution_y: int = 0

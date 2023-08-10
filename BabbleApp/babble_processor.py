@@ -223,7 +223,12 @@ class BabbleProcessor:
             if not self.capture_crop_rotate_image():
                 continue
 
-            
+            if self.settings.gui_use_red_channel:     # Make G and B channels equal to red.
+                blue_channel, green_channel, red_channel = cv2.split(self.current_image)
+                new_blue_channel = red_channel
+                new_green_channel = red_channel
+                self.current_image = cv2.merge((new_blue_channel, new_green_channel, red_channel))
+
             self.current_image_gray = cv2.cvtColor(
             self.current_image, cv2.COLOR_BGR2GRAY
             )
