@@ -33,10 +33,12 @@ class BabbleSettingsConfig(BaseModel):
     gui_osc_location: str = ""
     gui_multiply: int = 1
     gui_model_file: str = 'Models/MOS3E26MCJPEG/'
+    gui_backend: int = 0
     gui_use_gpu: bool = False
+    gui_gpu_index: int = 0
     gui_inference_threads: int = 1
     gui_use_red_channel: bool = False
-    calib_array: str = None
+    calib_array: str = ""
     gui_cam_resolution_x: int = 0    
     gui_cam_resolution_y: int = 0
     gui_cam_framerate: int = 0

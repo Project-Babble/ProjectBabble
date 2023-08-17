@@ -16,6 +16,8 @@ class AlgoSettingsWidget:
         self.gui_speed_coefficient = f"-SPEEDCOEFFICIENT{widget_id}-"
         self.gui_min_cutoff = f"-MINCUTOFF{widget_id}-"
         self.gui_inference_threads = f"-THREADS{widget_id}-"
+        self.gui_backend = f"-BACKEND{widget_id}"
+        self.gui_gpu_index = f"GPUINDEX{widget_id}"
         self.main_config = main_config
         self.config = main_config.settings
         self.osc_queue = osc_queue
@@ -30,20 +32,34 @@ class AlgoSettingsWidget:
                  size=(32),
                  tooltip="Name of the model file.",
              ),
+            sg.Text("Inference Threads:", background_color='#424042'),
+            sg.InputText(
+                self.config.gui_inference_threads,
+                key=self.gui_inference_threads,
+                size=(4),
+                tooltip = "How many threads to use for processing the model.",
+            ),
              ],
-            [sg.Checkbox(
-                "Use GPU (DirectML)",
+            [sg.Text("Backend:", background_color='#424042'),   # Replace with Dropdown once I have internet to view docs. 
+                sg.InputText(
+                    self.config.gui_backend,
+                    key=self.gui_backend,
+                    size=(4),
+                    tooltip = "Method to run the model.",
+            ),
+            sg.Text("GPU Index:", background_color='#424042'),   # Replace with Dropdown once I have internet to view docs. 
+                sg.InputText(
+                    self.config.gui_gpu_index,
+                    key=self.gui_gpu_index,
+                    size=(4),
+                    tooltip = "Select which device to run inference.",
+            ),
+            sg.Checkbox(
+                "Use GPU",
                 default=self.config.gui_use_gpu,
                 key=self.gui_use_gpu,
                 background_color='#424042',
                 tooltip="Toggle GPU execution.",
-            ),
-            sg.Text("Inference Threads:", background_color='#424042'),
-                sg.InputText(
-                    self.config.gui_inference_threads,
-                    key=self.gui_inference_threads,
-                    size=(4),
-                    tooltip = "How many threads to use for processing the model.",
             ),
             ],
             [sg.Text("Model output multiplier:", background_color='#424042'),
@@ -122,6 +138,14 @@ class AlgoSettingsWidget:
 
         if self.config.gui_use_gpu != values[self.gui_use_gpu]:
             self.config.gui_use_gpu = values[self.gui_use_gpu]
+            changed = True
+
+        if self.config.gui_gpu_index != int(values[self.gui_gpu_index]):
+            self.config.gui_gpu_index = int(values[self.gui_gpu_index])
+            changed = True
+
+        if self.config.gui_backend != int(values[self.gui_backend]):
+            self.config.gui_backend = int(values[self.gui_backend])
             changed = True
         
         if self.config.gui_inference_threads != int(values[self.gui_inference_threads]):

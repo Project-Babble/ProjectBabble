@@ -6,3 +6,7 @@ PySimpleGUI
 python_osc
 torch
 torchvision
+pydantic
+pyserial
+colorama
+winotify
