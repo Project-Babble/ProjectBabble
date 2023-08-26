@@ -5,6 +5,7 @@ from osc import Tab
 from queue import Queue
 from threading import Event
 
+
 class AlgoSettingsWidget:
     def __init__(self, widget_id: Tab, main_config: BabbleSettingsConfig, osc_queue: Queue):
 
@@ -21,6 +22,7 @@ class AlgoSettingsWidget:
         self.main_config = main_config
         self.config = main_config.settings
         self.osc_queue = osc_queue
+        self.backend_list = "OpenVino", "ONNX"
 
         # Define the window's contents
         self.general_settings_layout = [
@@ -41,12 +43,19 @@ class AlgoSettingsWidget:
             ),
              ],
             [sg.Text("Backend:", background_color='#424042'),   # Replace with Dropdown once I have internet to view docs. 
-                sg.InputText(
+                sg.OptionMenu(
+                    self.backend_list,
                     self.config.gui_backend,
                     key=self.gui_backend,
-                    size=(4),
-                    tooltip = "Method to run the model.",
-            ),
+                ),
+                #sg.InputText(
+                #    self.config.gui_backend,
+                #    key=self.gui_backend,
+                #    size=(4),
+                #    tooltip = "Method to run the model.",
+            
+            #),
+            
             sg.Text("GPU Index:", background_color='#424042'),   # Replace with Dropdown once I have internet to view docs. 
                 sg.InputText(
                     self.config.gui_gpu_index,
@@ -54,6 +63,7 @@ class AlgoSettingsWidget:
                     size=(4),
                     tooltip = "Select which device to run inference.",
             ),
+            
             sg.Checkbox(
                 "Use GPU",
                 default=self.config.gui_use_gpu,
@@ -144,8 +154,8 @@ class AlgoSettingsWidget:
             self.config.gui_gpu_index = int(values[self.gui_gpu_index])
             changed = True
 
-        if self.config.gui_backend != int(values[self.gui_backend]):
-            self.config.gui_backend = int(values[self.gui_backend])
+        if self.config.gui_backend != str(values[self.gui_backend]):
+            self.config.gui_backend = str(values[self.gui_backend])
             changed = True
         
         if self.config.gui_inference_threads != int(values[self.gui_inference_threads]):

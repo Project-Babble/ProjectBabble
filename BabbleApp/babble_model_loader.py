@@ -16,7 +16,7 @@ from one_euro_filter import OneEuroFilter
 
 
 def run_model(self):
-    if self.backend == 0:
+    if self.backend == "OpenVino":
         frame = cv2.resize(self.current_image_gray, (256, 256))
         # make it pil
         frame = Image.fromarray(frame)
@@ -38,7 +38,7 @@ def run_model(self):
             output[i] = max(min(output[i], 1), 0)
         self.output = output
 
-    if self.backend == 1:
+    if self.backend == "ONNX":
         frame = cv2.resize(self.current_image_gray, (256, 256))
         # make it pil
         frame = Image.fromarray(frame)

@@ -90,15 +90,15 @@ class BabbleProcessor:
         self.opts.intra_op_num_threads = settings.gui_inference_threads
         self.opts.inter_op_num_threads = settings.gui_inference_threads # Figure out how to set openvino threads
         self.opts.graph_optimization_level = ort.GraphOptimizationLevel.ORT_ENABLE_ALL
-        if self.backend == 0:   # OpenVino
-            if self.use_gpu: provider = f'GPU{self.gpu_index}'
+        if self.backend == "OpenVino":   # OpenVino
+            if self.use_gpu: provider = f'GPU.{self.gpu_index}'
             else: provider = 'CPU'
             ie = IECore()
             net = ie.read_network(model=f'{self.model}openvino/model.xml', weights=f'{self.model}openvino/model.bin')
             self.sess = ie.load_network(network=net, device_name=provider)
             self.input_name = next(iter(net.input_info))
             self.output_name = next(iter(net.outputs))
-        if self.backend == 1:    # ONNX 
+        if self.backend == "ONNX":    # ONNX 
             if self.use_gpu: provider = 'DmlExecutionProvider' # Figure out how to set ONNX gpu index
             else: provider = "CPUExecutionProvider" 
             self.sess = ort.InferenceSession(f'{self.model}onnx/model.onnx', self.opts, providers=[provider]) 
