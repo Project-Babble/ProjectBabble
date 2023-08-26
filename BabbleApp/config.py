@@ -32,7 +32,7 @@ class BabbleSettingsConfig(BaseModel):
     gui_ROSC: bool = False
     gui_osc_location: str = ""
     gui_multiply: int = 1
-    gui_model_file: str = 'Models/MOS3E26MCJPEG/'
+    gui_model_file: str = 'Models/ENEXTXXE100D4/'
     gui_backend: str = "OpenVino"
     gui_use_gpu: bool = False
     gui_gpu_index: int = 0
