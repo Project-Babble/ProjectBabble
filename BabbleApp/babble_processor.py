@@ -78,7 +78,9 @@ class BabbleProcessor:
 
         self.current_algo = CamInfoOrigin.MODEL
         self.model = self.settings.gui_model_file
+        self.backend = self.settings.gui_backend
         self.use_gpu = self.settings.gui_use_gpu
+        self.gpu_index = self.settings.gui_gpu_index
         self.output = []
         self.val_list = []
         self.calibrate_config = np.empty((1, 45))
@@ -86,16 +88,20 @@ class BabbleProcessor:
 
         self.opts = ort.SessionOptions()
         self.opts.intra_op_num_threads = settings.gui_inference_threads
-        self.opts.inter_op_num_threads = settings.gui_inference_threads
+        self.opts.inter_op_num_threads = settings.gui_inference_threads # Figure out how to set openvino threads
         self.opts.graph_optimization_level = ort.GraphOptimizationLevel.ORT_ENABLE_ALL
-        if not self.use_gpu:
+        if self.backend == "OpenVino":   # OpenVino
+            if self.use_gpu: provider = f'GPU.{self.gpu_index}'
+            else: provider = 'CPU'
             ie = IECore()
             net = ie.read_network(model=f'{self.model}openvino/model.xml', weights=f'{self.model}openvino/model.bin')
-            self.sess = ie.load_network(network=net, device_name='CPU')
+            self.sess = ie.load_network(network=net, device_name=provider)
             self.input_name = next(iter(net.input_info))
             self.output_name = next(iter(net.outputs))
-        else:
-            self.sess = ort.InferenceSession(f'{self.model}onnx/model.onnx', self.opts, providers=['DmlExecutionProvider'])
+        if self.backend == "ONNX":    # ONNX 
+            if self.use_gpu: provider = 'DmlExecutionProvider' # Figure out how to set ONNX gpu index
+            else: provider = "CPUExecutionProvider" 
+            self.sess = ort.InferenceSession(f'{self.model}onnx/model.onnx', self.opts, providers=[provider]) 
             self.input_name = self.sess.get_inputs()[0].name
             self.output_name = self.sess.get_outputs()[0].name
         
@@ -105,7 +111,7 @@ class BabbleProcessor:
             beta = float(self.settings.gui_speed_coefficient)  # 0.62
         except:
             print('\033[93m[WARN] OneEuroFilter values must be a legal number.\033[0m')
-            min_cutoff = 15.0004
+            min_cutoff = 10.0004
             beta = 0.62
         noisy_point = np.array([45])
         self.one_euro_filter = OneEuroFilter(
@@ -223,7 +229,12 @@ class BabbleProcessor:
             if not self.capture_crop_rotate_image():
                 continue
 
-            
+            if self.settings.gui_use_red_channel:     # Make G and B channels equal to red.
+                blue_channel, green_channel, red_channel = cv2.split(self.current_image)
+                new_blue_channel = red_channel
+                new_green_channel = red_channel
+                self.current_image = cv2.merge((new_blue_channel, new_green_channel, red_channel))
+
             self.current_image_gray = cv2.cvtColor(
             self.current_image, cv2.COLOR_BGR2GRAY
             )

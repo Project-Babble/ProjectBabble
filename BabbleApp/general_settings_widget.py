@@ -19,6 +19,7 @@ class SettingsWidget:
         self.gui_cam_resolution_x = f"-CAMRESX{widget_id}-"
         self.gui_cam_resolution_y = f"-CAMRESY{widget_id}-"
         self.gui_cam_framerate = f"-CAMFRAMERATE{widget_id}-"
+        self.gui_use_red_channel = f"-REDCHANNEL{widget_id}-"
         self.main_config = main_config
         self.config = main_config.settings
         self.osc_queue = osc_queue
@@ -101,6 +102,16 @@ class SettingsWidget:
                 sg.Text("UVC Camera Settings:", background_color='#242224'),
             ],
             [
+                sg.Text("Use Red Channel", background_color='#424042'),
+                sg.Checkbox(
+                    "",
+                    default=self.config.gui_use_red_channel,
+                    key=self.gui_use_red_channel,
+                    background_color='#424042',
+                    size=(0,10),
+                    tooltip = "Uses only the red channel for Omnicept capture.",
+                ),
+                
                 sg.Text("X Resolution:", background_color='#424042'),
                 sg.InputText(
                     self.config.gui_cam_resolution_x, 
@@ -224,6 +235,10 @@ class SettingsWidget:
 
         if self.config.gui_cam_framerate != int(values[self.gui_cam_framerate]):
             self.config.gui_cam_framerate = int(values[self.gui_cam_framerate])
+            changed = True
+
+        if self.config.gui_use_red_channel != bool(values[self.gui_use_red_channel]):
+            self.config.gui_use_red_channel = bool(values[self.gui_use_red_channel])
             changed = True
 
         if changed:

@@ -20,6 +20,8 @@ winotify = [
 ]
 onnxruntime = "^1.13.1"
 onnxruntime-directml = "^1.15.0"
+openvino = "^2023.0.1"
+
 colorama = "^0.4.6"
 taskipy = "^1.10.4"
 torch = [

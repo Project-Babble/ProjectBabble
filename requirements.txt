@@ -1,4 +1,5 @@
 onnxruntime
+openvino
 opencv_python
 Pillow
 PySimpleGUI

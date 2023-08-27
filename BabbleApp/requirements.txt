@@ -1,7 +1,12 @@
 onnxruntime
+openvino
 opencv_python
 Pillow
 PySimpleGUI
 python_osc
 torch
 torchvision
+pydantic
+pyserial
+colorama
+winotify
