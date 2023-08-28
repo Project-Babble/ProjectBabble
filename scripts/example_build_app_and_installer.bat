@@ -5,7 +5,7 @@ pyinstaller babbleapp.spec --noconfirm
 cd C:\Users\epicm\Desktop\Build
 cd 'C:\Program Files (x86)\Inno Setup 6'
 ./ISCC X:\Documents\GitHub\ProjectBabble\scripts\installer.iss
-cls
+::cls
 @echo off
 color 0A
 echo -------------------------------
