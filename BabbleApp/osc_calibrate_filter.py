@@ -76,4 +76,9 @@ class cal():
                 calibrated_array[i] = calibrated_value
             array = calibrated_array
 
+        for i, value in enumerate(array):   # Clamp output between 0-1
+            min_value = self.min_max_array[0, i]
+            calibrated_value = (value - 0) / (1.0 - 0)
+            array[i] = calibrated_value
+
         return array

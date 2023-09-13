@@ -224,18 +224,18 @@ class SettingsWidget:
         if self.config.gui_osc_location != values[self.gui_osc_location]:
             self.config.gui_osc_location = values[self.gui_osc_location]
             changed = True
-
-        if self.config.gui_cam_resolution_x != int(values[self.gui_cam_resolution_x]):
-            self.config.gui_cam_resolution_x = int(values[self.gui_cam_resolution_x])
-            changed = True
-
-        if self.config.gui_cam_resolution_y != int(values[self.gui_cam_resolution_y]):
-            self.config.gui_cam_resolution_y = int(values[self.gui_cam_resolution_y])
-            changed = True
-
-        if self.config.gui_cam_framerate != int(values[self.gui_cam_framerate]):
-            self.config.gui_cam_framerate = int(values[self.gui_cam_framerate])
-            changed = True
+        if values[self.gui_cam_resolution_x] != '':
+            if self.config.gui_cam_resolution_x != int(values[self.gui_cam_resolution_x]):
+                self.config.gui_cam_resolution_x = int(values[self.gui_cam_resolution_x])
+                changed = True
+        if values[self.gui_cam_resolution_y] != '':
+            if self.config.gui_cam_resolution_y != int(values[self.gui_cam_resolution_y]):
+                self.config.gui_cam_resolution_y = int(values[self.gui_cam_resolution_y])
+                changed = True
+        if values[self.gui_cam_framerate] != '':
+            if self.config.gui_cam_framerate != int(values[self.gui_cam_framerate]):
+                self.config.gui_cam_framerate = int(values[self.gui_cam_framerate])
+                changed = True
 
         if self.config.gui_use_red_channel != bool(values[self.gui_use_red_channel]):
             self.config.gui_use_red_channel = bool(values[self.gui_use_red_channel])

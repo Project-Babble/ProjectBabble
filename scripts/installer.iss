@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "Project Babble"
-#define MyAppVersion "2.0.4 DEV"
+#define MyAppVersion "2.0.4"
 #define MyAppPublisher "Project Babble Team"
 #define MyAppURL "https://github.com/SummerSigh/ProjectBabble/tree/main"
 #define MyAppExeName "Babble_App.exe"
@@ -20,11 +20,11 @@ AppSupportURL={#MyAppURL}
 AppUpdatesURL={#MyAppURL}
 DefaultDirName={autopf}\{#MyAppName}
 DisableProgramGroupPage=yes
-OutputDir=C:\Users\epicm\Desktop\Build\
+OutputDir=C:\Users\epicm\OneDrive\Desktop\build
 ; Uncomment the following line to run in non administrative install mode (install for current user only.)
 ;PrivilegesRequired=lowest
 OutputBaseFilename=Project_Babble-Setup
-SetupIconFile=X:\Documents\GitHub\ProjectBabble\BabbleApp\Images\logo.ico
+SetupIconFile=C:\Users\epicm\OneDrive\Documents\Github\ProjectBabble\BabbleApp\Images\logo.ico
 Compression=lzma/ultra64
 
 SolidCompression=yes
@@ -37,8 +37,8 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}";
 
 [Files]
-Source: "X:\Documents\GitHub\ProjectBabble\BabbleApp\dist\Babble_App\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
-Source: "X:\Documents\GitHub\ProjectBabble\BabbleApp\dist\Babble_App\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "C:\Users\epicm\OneDrive\Documents\Github\ProjectBabble\BabbleApp\dist\Babble_App\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\Users\epicm\OneDrive\Documents\Github\ProjectBabble\BabbleApp\dist\Babble_App\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Dirs]

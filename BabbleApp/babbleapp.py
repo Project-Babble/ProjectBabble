@@ -168,10 +168,6 @@ def main():
         settings[0].start()
     if config.cam_display_id in [Tab.ALGOSETTINGS]:
         settings[1].start()
-    '''
-    if config.cam_display_id in [Tab.CALIBSETTINGS]:
-        settings[2].start()
-    '''
 
     # the cam needs to be running before it is passed to the OSC
     if config.settings.gui_ROSC:
