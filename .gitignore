@@ -11,8 +11,14 @@ BabbleApp/dist
 .vscode
 /testing
 /old_models
+/Lib
+/scripts
+/share
+
+
 scripts/example_build_app_and_installer.bat
 scripts/example_build_app_and_installer.bat
 scripts/installer.iss
 Glia_cap.py
 lazyass_minecraft_script.py
+scripts/example_build_app_and_installer.bat
