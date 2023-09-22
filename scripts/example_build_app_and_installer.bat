@@ -1,8 +1,8 @@
 :: Example script to auto build app and make an installer
 :: File paths will all need to be updated to your setup
-cd C:\Users\epicm\OneDrive\Documents\Github\ProjectBabble\BabbleApp
+cd X:\Documents\GitHub\ProjectBabble\BabbleApp
 pyinstaller babbleapp.spec --noconfirm
-cd C:\Users\epicm\OneDrive\Desktop\build
+cd X:\Documents\GitHub\ProjectBabble\BabbleApp
 cd 'C:\Program Files (x86)\Inno Setup 6'
 ./ISCC X:\Documents\GitHub\ProjectBabble\scripts\installer.iss
 ::cls

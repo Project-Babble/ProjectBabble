@@ -24,7 +24,7 @@ OutputDir=C:\Users\epicm\OneDrive\Desktop\build
 ; Uncomment the following line to run in non administrative install mode (install for current user only.)
 ;PrivilegesRequired=lowest
 OutputBaseFilename=Project_Babble-Setup
-SetupIconFile=C:\Users\epicm\OneDrive\Documents\Github\ProjectBabble\BabbleApp\Images\logo.ico
+SetupIconFile=X:\Documents\GitHub\ProjectBabble\BabbleApp\Images\logo.ico
 Compression=lzma/ultra64
 
 SolidCompression=yes
@@ -37,8 +37,8 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}";
 
 [Files]
-Source: "C:\Users\epicm\OneDrive\Documents\Github\ProjectBabble\BabbleApp\dist\Babble_App\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Users\epicm\OneDrive\Documents\Github\ProjectBabble\BabbleApp\dist\Babble_App\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "X:\Documents\GitHub\ProjectBabble\BabbleApp\dist\Babble_App\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
+Source: "X:\Documents\GitHub\ProjectBabble\BabbleApp\dist\Babble_App\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Dirs]

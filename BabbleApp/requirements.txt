@@ -1,6 +1,5 @@
 onnxruntime
-onnxruntime-gpu
-onnxruntime-openvino
+onnxruntime-directml
 opencv_python
 Pillow
 pysimplegui

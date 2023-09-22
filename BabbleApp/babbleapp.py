@@ -161,7 +161,6 @@ def main():
         ],
     ]
 
-
     if config.cam_display_id in [Tab.CAM]:
         cams[0].start()
     if config.cam_display_id in [Tab.SETTINGS]:
