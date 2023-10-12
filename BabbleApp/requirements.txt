@@ -1,8 +1,8 @@
 onnxruntime
-openvino
+onnxruntime-directml
 opencv_python
 Pillow
-PySimpleGUI
+pysimplegui
 python_osc
 torch
 torchvision
@@ -10,3 +10,4 @@ pydantic
 pyserial
 colorama
 winotify
+poetry

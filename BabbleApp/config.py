@@ -32,11 +32,11 @@ class BabbleSettingsConfig(BaseModel):
     gui_ROSC: bool = False
     gui_osc_location: str = ""
     gui_multiply: int = 1
-    gui_model_file: str = 'Models/ENEXTXXE100D4/'
-    gui_backend: str = "OpenVino"
+    gui_model_file: str = 'Models/EFFB0MVE99TIMM/'
+    gui_runtime: str = "ONNX"
     gui_use_gpu: bool = False
     gui_gpu_index: int = 0
-    gui_inference_threads: int = 1
+    gui_inference_threads: int = 2
     gui_use_red_channel: bool = False
     calib_array: str = "[[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]]"
     gui_cam_resolution_x: int = 0    

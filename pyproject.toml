@@ -18,9 +18,7 @@ pyserial = "^3.5"
 winotify = [ 
     { version = "^1.1.0", platform = 'win32' }
 ]
-onnxruntime = "^1.13.1"
 onnxruntime-directml = "^1.15.0"
-openvino = "^2023.0.1"
 
 colorama = "^0.4.6"
 taskipy = "^1.10.4"
@@ -32,6 +30,7 @@ torchvision = [
   {url = "https://download.pytorch.org/whl/cpu/torchvision-0.15.1%2Bcpu-cp310-cp310-linux_x86_64.whl", markers = "sys_platform == 'linux'"},
   {url = "https://download.pytorch.org/whl/cpu/torchvision-0.15.1%2Bcpu-cp310-cp310-win_amd64.whl", markers = "sys_platform == 'win32'" }
 ]
+
 
 [tool.poetry.group.dev.dependencies]
 black = "^22.10.0"

@@ -17,12 +17,12 @@ class AlgoSettingsWidget:
         self.gui_speed_coefficient = f"-SPEEDCOEFFICIENT{widget_id}-"
         self.gui_min_cutoff = f"-MINCUTOFF{widget_id}-"
         self.gui_inference_threads = f"-THREADS{widget_id}-"
-        self.gui_backend = f"-BACKEND{widget_id}"
+        self.gui_runtime = f"-RUNTIME{widget_id}"
         self.gui_gpu_index = f"GPUINDEX{widget_id}"
         self.main_config = main_config
         self.config = main_config.settings
         self.osc_queue = osc_queue
-        self.backend_list = "OpenVino", "ONNX"
+        self.runtime_list = ("Default (ONNX)", "ONNX")
 
         # Define the window's contents
         self.general_settings_layout = [
@@ -42,15 +42,15 @@ class AlgoSettingsWidget:
                 tooltip = "How many threads to use for processing the model.",
             ),
              ],
-            [sg.Text("Backend:", background_color='#424042'),   # Replace with Dropdown once I have internet to view docs. 
+            [sg.Text("Runtime:", background_color='#424042'),   # Replace with Dropdown once I have internet to view docs. 
                 sg.OptionMenu(
-                    self.backend_list,
-                    self.config.gui_backend,
-                    key=self.gui_backend,
+                    self.runtime_list,
+                    self.config.gui_runtime,
+                    key=self.gui_runtime,
                 ),
                 #sg.InputText(
-                #    self.config.gui_backend,
-                #    key=self.gui_backend,
+                #    self.config.gui_runtime,
+                #    key=self.gui_runtime,
                 #    size=(4),
                 #    tooltip = "Method to run the model.",
             
@@ -149,26 +149,27 @@ class AlgoSettingsWidget:
         if self.config.gui_use_gpu != values[self.gui_use_gpu]:
             self.config.gui_use_gpu = values[self.gui_use_gpu]
             changed = True
+        if values[self.gui_gpu_index] != '':
+            if self.config.gui_gpu_index != int(values[self.gui_gpu_index]):
+                self.config.gui_gpu_index = int(values[self.gui_gpu_index])
+                changed = True
 
-        if self.config.gui_gpu_index != int(values[self.gui_gpu_index]):
-            self.config.gui_gpu_index = int(values[self.gui_gpu_index])
-            changed = True
-
-        if self.config.gui_backend != str(values[self.gui_backend]):
-            self.config.gui_backend = str(values[self.gui_backend])
+        if self.config.gui_runtime != str(values[self.gui_runtime]):
+            self.config.gui_runtime = str(values[self.gui_runtime])
             changed = True
         
-        if self.config.gui_inference_threads != int(values[self.gui_inference_threads]):
-            self.config.gui_inference_threads = int(values[self.gui_inference_threads]) 
-            changed = True
-
-        if self.config.gui_min_cutoff != values[self.gui_min_cutoff]:
-            self.config.gui_min_cutoff = values[self.gui_min_cutoff]
-            changed = True
-
-        if self.config.gui_speed_coefficient != values[self.gui_speed_coefficient]:
-            self.config.gui_speed_coefficient = values[self.gui_speed_coefficient]
-            changed = True
+        if values[self.gui_inference_threads] != '':
+            if self.config.gui_inference_threads != int(values[self.gui_inference_threads]):
+                self.config.gui_inference_threads = int(values[self.gui_inference_threads]) 
+                changed = True
+        if values[self.gui_min_cutoff] != '':
+            if self.config.gui_min_cutoff != values[self.gui_min_cutoff]:
+                self.config.gui_min_cutoff = values[self.gui_min_cutoff]
+                changed = True
+        if values[self.gui_speed_coefficient] != '':
+            if self.config.gui_speed_coefficient != values[self.gui_speed_coefficient]:
+                self.config.gui_speed_coefficient = values[self.gui_speed_coefficient]
+                changed = True
 
         if changed:
             self.main_config.save()

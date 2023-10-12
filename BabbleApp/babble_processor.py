@@ -78,7 +78,7 @@ class BabbleProcessor:
 
         self.current_algo = CamInfoOrigin.MODEL
         self.model = self.settings.gui_model_file
-        self.backend = self.settings.gui_backend
+        self.runtime = self.settings.gui_runtime
         self.use_gpu = self.settings.gui_use_gpu
         self.gpu_index = self.settings.gui_gpu_index
         self.output = []
@@ -88,24 +88,13 @@ class BabbleProcessor:
 
         self.opts = ort.SessionOptions()
         self.opts.intra_op_num_threads = settings.gui_inference_threads
-        self.opts.inter_op_num_threads = settings.gui_inference_threads # Figure out how to set openvino threads
         self.opts.graph_optimization_level = ort.GraphOptimizationLevel.ORT_ENABLE_ALL
-        if self.backend == "OpenVino":   # OpenVino
-            if self.use_gpu: provider = f'GPU.{self.gpu_index}'
-            else: provider = 'CPU'
-            ie = IECore()
-            net = ie.read_network(model=f'{self.model}openvino/model.xml', weights=f'{self.model}openvino/model.bin')
-            self.sess = ie.load_network(network=net, device_name=provider)
-            self.input_name = next(iter(net.input_info))
-            self.output_name = next(iter(net.outputs))
-        if self.backend == "ONNX":    # ONNX 
-            if self.use_gpu: provider = 'DmlExecutionProvider' # Figure out how to set ONNX gpu index
-            else: provider = "CPUExecutionProvider" 
-            self.sess = ort.InferenceSession(f'{self.model}onnx/model.onnx', self.opts, providers=[provider]) 
+        if self.runtime == "ONNX" or self.runtime == "Default (ONNX)":    # ONNX 
+            if self.use_gpu: provider = 'DmlExecutionProvider' 
+            else: provider = "CPUExecutionProvider"  # Build onnxruntime to get both DML and OpenVINO
+            self.sess = ort.InferenceSession(f'{self.model}onnx/model.onnx', self.opts, providers=[provider], provider_options=[{'device_id': self.gpu_index}]) 
             self.input_name = self.sess.get_inputs()[0].name
             self.output_name = self.sess.get_outputs()[0].name
-        
-
         try:
             min_cutoff = float(self.settings.gui_min_cutoff)  # 15.5004
             beta = float(self.settings.gui_speed_coefficient)  # 0.62
