@@ -97,6 +97,5 @@ class cal():
 
                 calibrated_array[i] = calibrated_value
             array = calibrated_array
-        print(array[4])
         #array[4] = log((np.clip(array[4]*10,0,10))+1.0, 11) Log Filter: Move to filter system. 
         return np.clip(array,0,1)   # Clamp outputs between 0-1
