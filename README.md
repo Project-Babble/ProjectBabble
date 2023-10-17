@@ -1,18 +1,25 @@
-# ProjectBabble
-A Mouth tracking system for VR, 100% Opensource!
 
-Currently, the architecture is a modified efficientnetv2-b0 model (although we actively look into other architectures and models) training on blendshapes from ARKit (with some of our own modifcations to the ARKit standard)!  The model outputs 45 blenshapes of which most cross over with SRanipals blendshapes.
+![Babble Logo](https://github.com/SummerSigh/ProjectBabble/blob/SummerSigh-patch-4/Babble.png?raw=true)
 
-### How to run
-Go to the releases tab, download the latest exe. Run the exe installer and enjoy!
+# Table of Contents
+- [What is Babble?](#what-is-babble)
+- [Features](#features)
+- [Usefull Links](#useful-links)
+  
 
-### Warranty
-Lol 
+## What is Babble?
 
-### Credit 
+<p align="center">
+Babble is an open mouth tracking project desgined to work with any existing VR headset. We strive to make our models robust to different lighting, cameras, image qualities, and facial structures!
+</p>
 
-Thank you to dfgHiatus#7426 for providing the unity demo as well as the intergrations with other apps!
+## Features
+- 100% Opensource! 🌟
+- Fast and robust! 🚀
+- Works with most existing blendshape standards! ⚙️
+- Constantly updated and modified! 🔧
 
-Thank you to Rames The Generic#3540 who made the dataset, tested and evaluated the performence for the models, and for being awesome!
+## Useful links
+- [Our Discord!](https://discord.gg/XAMZmjBktk)
+- [Wandb Runs](https://wandb.ai/summerai/ProjectBabble)
 
-Copyright (c) 2022 Sameer Suri
