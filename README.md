@@ -21,7 +21,7 @@ Babble is an opensource mouth tracking project designed to work with any existin
 - Constantly updated and modified! 🔧
 
 ## Setup (More detailed wiki and setup video coming soon!) 
-To install babble is fairly simple! Head over to the releases tab and download the EXE located there. Run the EXE and install babble! After that you can test by doing the following steps: 
+To install babble is fairly simple! Head over to the releases tab and download the EXE located there. Run the EXE and install babble! After that, you can test with a USB WEBCAM by doing the following steps: 
 
 - Run the babble app
 - Enter 0 into the camera address bar
@@ -29,7 +29,7 @@ To install babble is fairly simple! Head over to the releases tab and download t
 - Crop your mouth out of the frame
 - Open VRCFT
 - Install the babble module
-- Test in VRC with a VRCFT compatible avatar
+- Test in VRC with a VRCFT-compatible avatar
 
 
 ## Useful links
