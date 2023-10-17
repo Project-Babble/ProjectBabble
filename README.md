@@ -1,21 +1,38 @@
-# ProjectBabble
-A Mouth tracking system for VR, 100% Opensource!
 
-Currently the architecture is a modified efficientnetv2-b0 training on blenshapes from ARKit! The model outputs 45 blenshapes of which most cross over with SRanipals blendshapes.
+![Babble Logo](https://github.com/SummerSigh/ProjectBabble/blob/SummerSigh-patch-4/Babble.png?raw=true)
 
-### How to run
-Go to the releases tab, download the latest exe. Clone this repo, and then move the calibration file (calib.json) to the same location as the exe. Next get the .onnx model in the repo and move it to the same location as the exe. Run the exe and enjoy!
+# Table of Contents
+- [What is Babble?](#what-is-babble)
+- [Features](#features)
+- [How do I set it up?](#setup-more-detailed-wiki-and-setup-video-coming-soon)
+- [Useful Links](#useful-links)
+  
 
-### PLEASE HIT THE TURN OFF CALIBRATION BUTTON UNTILL FURTHER NOTICE
-It ruins the model's quality 
+## What is Babble?
 
-### Warranty
-Lol 
+<p align="center">
+Babble is an opensource mouth tracking project designed to work with any existing VR headset. We strive to make our models robust to different lighting, cameras, image qualities, and facial structures!
+</p>
 
-### Credit 
+## Features
+- 100% Opensource! 🌟
+- Fast and robust! 🚀
+- Works with most existing blendshape standards! ⚙️
+- Constantly updated and modified! 🔧
 
-Thank you to dfgHiatus#7426 for providing the unity demo as well as the intergrations with other apps!
+## Setup (More detailed wiki and setup video coming soon!) 
+To install babble is fairly simple! Head over to the releases tab and download the EXE located there. Run the EXE and install babble! After that, you can test with a USB WEBCAM by doing the following steps: 
 
-Thank you to Rames The Generic#3540 who made the dataset, tested and evaluated the performence for the models, and for being awesome!
+- Run the babble app
+- Enter 0 into the camera address bar
+- Enter cropping mode where your camera feed should be
+- Crop your mouth out of the frame
+- Open VRCFT
+- Install the babble module
+- Test in VRC with a VRCFT-compatible avatar
 
-Copyright (c) 2022 Sameer Suri
+
+## Useful links
+- [Our Discord!](https://discord.gg/XAMZmjBktk)
+- [Wandb Runs](https://wandb.ai/summerai/ProjectBabble)
+
