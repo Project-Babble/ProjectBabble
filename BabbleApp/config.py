@@ -22,8 +22,8 @@ class BabbleCameraConfig(BaseModel):
     gui_horizontal_flip: bool = False
 
 class BabbleSettingsConfig(BaseModel):
-    gui_min_cutoff: str = "10.5004"
-    gui_speed_coefficient: str = "0.62"
+    gui_min_cutoff: str = "0.9"
+    gui_speed_coefficient: str = "0.9"
     gui_osc_address: str = "127.0.0.1"
     gui_osc_port: int = 8888
     gui_osc_receiver_port: int = 9001
