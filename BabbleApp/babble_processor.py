@@ -46,8 +46,8 @@ class BabbleProcessor:
         fullconfig: "BabbleConfig",
         cancellation_event: "threading.Event",
         capture_event: "threading.Event",
-        capture_queue_incoming: "queue.Queue",
-        image_queue_outgoing: "queue.Queue",
+        capture_queue_incoming: "queue.Queue(maxsize=2)",
+        image_queue_outgoing: "queue.Queue(maxsize=2)",
         cam_id,
     ):
         self.main_config = BabbleSettingsConfig
@@ -100,8 +100,8 @@ class BabbleProcessor:
             beta = float(self.settings.gui_speed_coefficient)  # 0.62
         except:
             print('\033[93m[WARN] OneEuroFilter values must be a legal number.\033[0m')
-            min_cutoff = 10.0004
-            beta = 0.62
+            min_cutoff = 0.9
+            beta = 0.9
         noisy_point = np.array([45])
         self.one_euro_filter = OneEuroFilter(
             noisy_point,

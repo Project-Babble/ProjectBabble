@@ -36,7 +36,7 @@ class Camera:
             cancellation_event: "threading.Event",
             capture_event: "threading.Event",
             camera_status_outgoing: "queue.Queue[CameraState]",
-            camera_output_outgoing: "queue.Queue",
+            camera_output_outgoing: "queue.Queue(maxsize=2)",
             settings: BabbleSettingsConfig,
     ):
         self.camera_status = CameraState.CONNECTING
@@ -83,7 +83,7 @@ class Camera:
             if (
                     self.config.capture_source != None and self.config.capture_source != ""
             ):
-
+                self.current_capture_source = self.config.capture_source
                 if ("COM" in str(self.config.capture_source)):
                     if (
                             self.serial_connection is None

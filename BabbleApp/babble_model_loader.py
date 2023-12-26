@@ -13,26 +13,18 @@ from torchvision import transforms
 from threading import Thread
 from one_euro_filter import OneEuroFilter
 
-
 def run_model(self):
     if self.runtime == "ONNX" or self.runtime == "Default (ONNX)":
         frame = cv2.resize(self.current_image_gray, (256, 256))
-        # make it pil
-        frame = Image.fromarray(frame)
-        # make it grayscale
-        frame = to_grayscale(frame)
-        # make it a tensor
-        frame = transforms.ToTensor()(frame)
-        # make it a batch
-        frame = frame.unsqueeze(0)
-        # make it a numpy array
-        frame = frame.numpy()
-
+        frame = transforms.ToTensor()(frame).unsqueeze(0).numpy()
         out = self.sess.run([self.output_name], {self.input_name: frame})
         #end = time.time()
         output = out[0]
         output = output[0]
+
         output = self.one_euro_filter(output)
+
         for i in range(len(output)):  # Clip values between 0 - 1
             output[i] = max(min(output[i], 1), 0)
+
         self.output = output
