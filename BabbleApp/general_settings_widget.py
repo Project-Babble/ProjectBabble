@@ -155,7 +155,7 @@ class SettingsWidget:
 
         self.cancellation_event = Event() # Set the event until start is called, otherwise we can block if shutdown is called.
         self.cancellation_event.set()
-        self.image_queue = Queue()
+        self.image_queue = Queue(maxsize=1)
 
 
     def started(self):
