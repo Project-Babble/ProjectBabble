@@ -1,4 +1,4 @@
-# -*- mode: py -3.10 ; coding: utf-8 -*-
+# -*- mode: py -3.11 ; coding: utf-8 -*-
 
 block_cipher = None
 
@@ -6,7 +6,7 @@ block_cipher = None
 a = Analysis(['babbleapp.py'],
              pathex=[],
              binaries=[],
-             datas=[("Audio/*", "Audio"), ("Images/*", "Images/"), ("Models/*", "Models/")],
+             datas=[("Audio/*", "Audio"), ("Images/*", "Images/"), ("Models/*/*/*", "Models/")],
              hiddenimports=[],
              hookspath=[],
              hooksconfig={},

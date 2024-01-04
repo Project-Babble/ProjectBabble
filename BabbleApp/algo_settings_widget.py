@@ -19,6 +19,7 @@ class AlgoSettingsWidget:
         self.gui_inference_threads = f"-THREADS{widget_id}-"
         self.gui_runtime = f"-RUNTIME{widget_id}"
         self.gui_gpu_index = f"GPUINDEX{widget_id}"
+        self.calib_deadzone = f"CALIBDEADZONE{widget_id}"
         self.main_config = main_config
         self.config = main_config.settings
         self.osc_queue = osc_queue
@@ -80,6 +81,14 @@ class AlgoSettingsWidget:
                     tooltip = "Model output modifier.",
                 ),
              ],
+            [sg.Text("Calibration Deadzone:", background_color='#424042'),
+                sg.InputText(
+                    self.config.calib_deadzone,
+                    key=self.calib_deadzone,
+                    size=(4),
+                    tooltip = "Offset the minimum calibrated values.",
+                ),
+             ],
             [
                 sg.Text("One Euro Filter Paramaters:", background_color='#242224'),
             ],
@@ -138,12 +147,16 @@ class AlgoSettingsWidget:
         # If anything has changed in our configuration settings, change/update those.
         changed = False
 
-        if self.config.gui_multiply != int(values[self.gui_multiply]):
-            self.config.gui_multiply = int(values[self.gui_multiply])
+        if self.config.gui_multiply != float(values[self.gui_multiply]):
+            self.config.gui_multiply = float(values[self.gui_multiply])
             changed = True
 
         if self.config.gui_model_file != values[self.gui_model_file]:
             self.config.gui_model_file = values[self.gui_model_file]
+            changed = True
+        
+        if self.config.calib_deadzone != float(values[self.calib_deadzone]):
+            self.config.calib_deadzone = float(values[self.calib_deadzone])
             changed = True
 
         if self.config.gui_use_gpu != values[self.gui_use_gpu]:
