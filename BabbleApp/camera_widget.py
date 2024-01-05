@@ -51,10 +51,10 @@ class CameraWidget:
         # Set the event until start is called, otherwise we can block if shutdown is called.
         self.cancellation_event.set()
         self.capture_event = Event()
-        self.capture_queue = Queue(maxsize=1)
-        self.roi_queue = Queue(maxsize=1)
+        self.capture_queue = Queue(maxsize=2)
+        self.roi_queue = Queue(maxsize=2)
 
-        self.image_queue = Queue(maxsize=1)
+        self.image_queue = Queue(maxsize=2)
 
         self.ransac = BabbleProcessor(
             self.config,
@@ -67,7 +67,7 @@ class CameraWidget:
             self.cam_id,
         )
 
-        self.camera_status_queue = Queue(maxsize=1)
+        self.camera_status_queue = Queue(maxsize=2)
         self.camera = Camera(
             self.config,
             0,

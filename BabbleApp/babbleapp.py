@@ -95,7 +95,7 @@ def main():
     # Check to see if we have an ROI. If not, bring up ROI finder GUI.
 
     # Spawn worker threads
-    osc_queue: queue.Queue[tuple[bool, int, int]] = queue.Queue(maxsize=5)
+    osc_queue: queue.Queue[tuple[bool, int, int]] = queue.Queue(maxsize=2)
     osc = VRChatOSC(cancellation_event, osc_queue, config)
     osc_thread = threading.Thread(target=osc.run)
     # start worker threads
