@@ -22,14 +22,6 @@ onnxruntime-directml = "^1.15.0"
 
 colorama = "^0.4.6"
 taskipy = "^1.10.4"
-torch = [
-  {url = "https://download.pytorch.org/whl/cpu/torch-2.0.0%2Bcpu-cp311-cp311-linux_x86_64.whl", markers = "sys_platform == 'linux'"},
-  {url = "https://download.pytorch.org/whl/cpu/torch-2.0.0%2Bcpu-cp311-cp311-win_amd64.whl", markers = "sys_platform == 'win32'" }
-]
-torchvision = [
-  {url = "https://download.pytorch.org/whl/cpu/torchvision-0.15.1%2Bcpu-cp311-cp311-linux_x86_64.whl", markers = "sys_platform == 'linux'"},
-  {url = "https://download.pytorch.org/whl/cpu/torchvision-0.15.1%2Bcpu-cp311-cp311-win_amd64.whl", markers = "sys_platform == 'win32'" }
-]
 
 
 [tool.poetry.group.dev.dependencies]

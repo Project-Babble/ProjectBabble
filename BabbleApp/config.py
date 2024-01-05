@@ -31,13 +31,14 @@ class BabbleSettingsConfig(BaseModel):
     gui_update_check: bool = True
     gui_ROSC: bool = False
     gui_osc_location: str = ""
-    gui_multiply: int = 1
-    gui_model_file: str = 'Models/EFFB0MVE99TIMM/'
+    gui_multiply: float = 1
+    gui_model_file: str = 'Models/3MEFFB0E7MSE/'
     gui_runtime: str = "ONNX"
     gui_use_gpu: bool = False
     gui_gpu_index: int = 0
     gui_inference_threads: int = 2
     gui_use_red_channel: bool = False
+    calib_deadzone: float = -0.1
     calib_array: str = "[[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]]"
     gui_cam_resolution_x: int = 0    
     gui_cam_resolution_y: int = 0

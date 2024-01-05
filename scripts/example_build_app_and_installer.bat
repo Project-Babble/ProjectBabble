@@ -4,7 +4,7 @@ cd X:\Documents\GitHub\ProjectBabble\BabbleApp
 pyinstaller babbleapp.spec --noconfirm
 cd X:\Documents\GitHub\ProjectBabble\BabbleApp
 cd 'C:\Program Files (x86)\Inno Setup 6'
-./ISCC X:\Documents\GitHub\ProjectBabble\scripts\installer.iss
+.\ISCC X:\Documents\GitHub\ProjectBabble\scripts\installer.iss
 ::cls
 @echo off
 color 0A

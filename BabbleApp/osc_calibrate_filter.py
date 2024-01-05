@@ -45,7 +45,7 @@ class cal():
             if self.config.use_n_calibration:
                 self.calibration_frame_counter = None
                 values = np.array(self.val_list)
-                deadzone_value = -0.01   # Maybe adjust from app????
+                deadzone_value = self.settings.calib_deadzone
                 # Initialize the min_max_array with shape (2, num_outputs)
                 num_outputs = values.shape[1]
                 self.min_max_array = np.zeros((2, num_outputs))

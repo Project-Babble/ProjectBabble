@@ -46,7 +46,7 @@ SETTINGS_RADIO_NAME = "-SETTINGSRADIO-"
 ALGO_SETTINGS_RADIO_NAME = "-ALGOSETTINGSRADIO-"
 
 page_url = "https://github.com/SummerSigh/ProjectBabble/releases/latest"
-appversion = "Babble v2.0.4"
+appversion = "Babble v2.0.5"
 
 
 def main():
@@ -243,8 +243,6 @@ def main():
         for setting in settings:
             if setting.started():
                 setting.render(window, event, values)
-    #    settings[0].render(window, event, values)
-      #  settings[1].render(window, event, values)
 
 
 if __name__ == "__main__":
