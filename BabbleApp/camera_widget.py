@@ -51,10 +51,9 @@ class CameraWidget:
         # Set the event until start is called, otherwise we can block if shutdown is called.
         self.cancellation_event.set()
         self.capture_event = Event()
-        self.capture_queue = Queue(maxsize=1)
-        self.roi_queue = Queue(maxsize=1)
-
-        self.image_queue = Queue(maxsize=1)
+        self.capture_queue = Queue(maxsize=2)
+        self.roi_queue = Queue(maxsize=2)
+        self.image_queue = Queue(maxsize=500)
 
         self.ransac = BabbleProcessor(
             self.config,
@@ -67,7 +66,7 @@ class CameraWidget:
             self.cam_id,
         )
 
-        self.camera_status_queue = Queue(maxsize=1)
+        self.camera_status_queue = Queue(maxsize=2)
         self.camera = Camera(
             self.config,
             0,
@@ -211,6 +210,11 @@ class CameraWidget:
         self.camera_thread.join()
 
     def render(self, window, event, values):
+        if self.image_queue.qsize() > 2:
+            with self.image_queue.mutex:
+                self.image_queue.queue.clear()
+        else:
+            pass
         changed = False
         # If anything has changed in our configuration settings, change/update those.
         if (
