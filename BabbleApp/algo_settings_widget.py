@@ -43,7 +43,7 @@ class AlgoSettingsWidget:
                 tooltip = "How many threads to use for processing the model.",
             ),
              ],
-            [sg.Text("Runtime:", background_color='#424042'),   # Replace with Dropdown once I have internet to view docs. 
+            [sg.Text("Runtime:", background_color='#424042'), 
                 sg.OptionMenu(
                     self.runtime_list,
                     self.config.gui_runtime,

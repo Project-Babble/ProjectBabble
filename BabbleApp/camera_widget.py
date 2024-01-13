@@ -22,6 +22,7 @@ class CameraWidget:
         self.gui_roi_layout = f"-ROILAYOUT{widget_id}-"
         self.gui_roi_selection = f"-GRAPH{widget_id}-"
         self.gui_tracking_button = f"-TRACKINGMODE{widget_id}-"
+        self.gui_autoroi = f"-AUTOROI{widget_id}-"
         self.gui_save_tracking_button = f"-SAVETRACKINGBUTTON{widget_id}-"
         self.gui_tracking_layout = f"-TRACKINGLAYOUT{widget_id}-"
         self.gui_tracking_image = f"-IMAGE{widget_id}-"
@@ -79,14 +80,17 @@ class CameraWidget:
 
         self.roi_layout = [
             [
-                sg.Graph( 
-                    (640, 480),
-                    (0, 480),
-                    (640, 0),
-                    key=self.gui_roi_selection,
-                    drag_submits=True,
-                    enable_events=True,
-                    background_color='#424042',
+            sg.Button("Auto ROI", key=self.gui_autoroi, button_color='#539e8a', tooltip = "Automatically set ROI",),
+            ],
+            [
+            sg.Graph( 
+                (640, 480),
+                (0, 480),
+                (640, 0),
+                key=self.gui_roi_selection,
+                drag_submits=True,
+                enable_events=True,
+                background_color='#424042',
                 )
             ]
         ]
@@ -288,7 +292,17 @@ class CameraWidget:
                 self.config.roi_window_w = abs(self.x0 - self.x1)
                 self.config.roi_window_h = abs(self.y0 - self.y1)
                 self.main_config.save()
-                
+        if event == self.gui_autoroi:
+            print("Auto ROI")
+            self.x1 = 120
+            self.y1 = 120
+            self.x0 = 20
+            self.y0 = 20
+            self.config.roi_window_x = min([self.x0, self.x1])
+            self.config.roi_window_y = min([self.y0, self.y1])
+            self.config.roi_window_w = abs(self.x0 - self.x1)
+            self.config.roi_window_h = abs(self.y0 - self.y1)
+            self.main_config.save()
 
         if event == self.gui_roi_selection:
             # Event for mouse button down or mouse drag in ROI mode
@@ -327,7 +341,7 @@ class CameraWidget:
             window[self.gui_tracking_bps].update(self._movavg_bps(self.camera.bps))
 
         if self.in_roi_mode:
-            try:
+            try:    
                 if self.roi_queue.empty():
                     self.capture_event.set()
                 maybe_image = self.roi_queue.get(block=False)

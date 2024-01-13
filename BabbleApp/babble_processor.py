@@ -96,8 +96,8 @@ class BabbleProcessor:
             self.input_name = self.sess.get_inputs()[0].name
             self.output_name = self.sess.get_outputs()[0].name
         try:
-            min_cutoff = float(self.settings.gui_min_cutoff)  # 15.5004
-            beta = float(self.settings.gui_speed_coefficient)  # 0.62
+            min_cutoff = float(self.settings.gui_min_cutoff)
+            beta = float(self.settings.gui_speed_coefficient)
         except:
             print('\033[93m[WARN] OneEuroFilter values must be a legal number.\033[0m')
             min_cutoff = 0.9
