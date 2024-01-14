@@ -4,6 +4,7 @@ from config import BabbleSettingsConfig
 from collections import deque
 from threading import Event, Thread
 from babble_processor import BabbleProcessor, CamInfoOrigin
+from landmark_processor import LandmarkProcessor
 from enum import Enum
 from queue import Queue, Empty
 from camera import Camera, CameraState
@@ -56,7 +57,18 @@ class CameraWidget:
         self.roi_queue = Queue(maxsize=2)
         self.image_queue = Queue(maxsize=500)
 
-        self.ransac = BabbleProcessor(
+        self.babble_cnn = BabbleProcessor(
+            self.config,
+            self.settings_config,
+            self.main_config,
+            self.cancellation_event,
+            self.capture_event,
+            self.capture_queue,
+            self.image_queue,
+            self.cam_id,
+        )
+
+        self.babble_landmark = LandmarkProcessor(
             self.config,
             self.settings_config,
             self.main_config,
@@ -114,7 +126,7 @@ class CameraWidget:
             ],
             [
                 sg.Checkbox(
-                    "Use Neurtal Calibration:",
+                    "Use Neutral Calibration:",
                     default=self.config.use_n_calibration,
                     key=self.use_n_calibration,
                     background_color='#424042',
@@ -200,8 +212,10 @@ class CameraWidget:
         if not self.cancellation_event.is_set():
             return
         self.cancellation_event.clear()
-        self.ransac_thread = Thread(target=self.ransac.run)
-        self.ransac_thread.start()
+        self.babble_cnn_thread = Thread(target=self.babble_cnn.run)
+        self.babble_cnn_thread.start()
+        self.babble_landmark_thread = Thread(target=self.babble_landmark.run)
+        self.babble_landmark_thread.start()
         self.camera_thread = Thread(target=self.camera.run)
         self.camera_thread.start()
 
@@ -210,7 +224,8 @@ class CameraWidget:
         if self.cancellation_event.is_set():
             return
         self.cancellation_event.set()
-        self.ransac_thread.join()
+        self.babble_cnn_thread.join()
+        self.babble_landmark_thread.join()
         self.camera_thread.join()
 
     def render(self, window, event, values):
@@ -292,12 +307,22 @@ class CameraWidget:
                 self.config.roi_window_w = abs(self.x0 - self.x1)
                 self.config.roi_window_h = abs(self.y0 - self.y1)
                 self.main_config.save()
+
         if event == self.gui_autoroi:
             print("Auto ROI")
-            self.x1 = 120
-            self.y1 = 120
-            self.x0 = 20
-            self.y0 = 20
+            #image = self.image_queue.get()
+            #image = self.babble_landmark.get_frame()    # Get image for pfld 
+            #print(image)
+            #print(len(image))
+            #print(image)
+            #cv2.imwrite("yeah.png", image)
+            self.babble_landmark.infer_frame()
+            output = self.babble_landmark.output
+            print(f"Output: {output}")
+            self.x1 = output[2]
+            self.y1 = output[3]
+            self.x0 = output[0]
+            self.y0 = output[1]
             self.config.roi_window_x = min([self.x0, self.x1])
             self.config.roi_window_y = min([self.y0, self.y1])
             self.config.roi_window_w = abs(self.x0 - self.x1)
@@ -312,11 +337,11 @@ class CameraWidget:
             self.x1, self.y1 = values[self.gui_roi_selection]
 
         if event == self.gui_restart_calibration:
-            self.ransac.calibration_frame_counter = 1500
+            self.babble_cnn.calibration_frame_counter = 1500
             PlaySound('Audio/start.wav', SND_FILENAME | SND_ASYNC)
 
         if event == self.gui_stop_calibration:
-            self.ransac.calibration_frame_counter = 0
+            self.babble_cnn.calibration_frame_counter = 0
 
         needs_roi_set = self.config.roi_window_h <= 0 or self.config.roi_window_w <= 0
 
@@ -333,7 +358,7 @@ class CameraWidget:
             window[self.gui_mode_readout].update("Camera Reconnecting...")
         elif needs_roi_set:
             window[self.gui_mode_readout].update("Awaiting Mouth Crop")
-        elif self.ransac.calibration_frame_counter != None:
+        elif self.babble_cnn.calibration_frame_counter != None:
             window[self.gui_mode_readout].update("Calibration")
         else:
             window[self.gui_mode_readout].update("Tracking")
