@@ -12,11 +12,11 @@ import cv2
 from enum import Enum
 from one_euro_filter import OneEuroFilter
 from utils.misc_utils import PlaySound, SND_FILENAME, SND_ASYNC
-import importlib
-from osc import Tab
+#import importlib
+#from osc import Tab
 from osc_calibrate_filter import *
 from tab import CamInfo, CamInfoOrigin
-from babble_model_loader import *
+from landmark_model_loader import *
 import os
 os.environ["OMP_NUM_THREADS"] = "1"
 import onnxruntime as ort
@@ -38,7 +38,7 @@ async def delayed_setting_change(setting, value):
 
 
 
-class BabbleProcessor:
+class LandmarkProcessor:
     def __init__(
         self,
         config: "BabbleCameraConfig",
@@ -65,9 +65,11 @@ class BabbleProcessor:
         # Image state
         self.previous_image = None
         self.current_image = None
+        self.current_image_gray_clean = None
         self.current_image_gray = None
         self.current_frame_number = None
         self.current_fps = None
+        self.infer = False
 
         self.calibration_frame_counter = None
 
@@ -83,8 +85,9 @@ class BabbleProcessor:
         self.gpu_index = self.settings.gui_gpu_index
         self.output = []
         self.val_list = []
-        self.calibrate_config = np.empty((1, 45))
-        self.min_max_array = np.empty((2, 45))
+        #self.calibrate_config = np.empty((1, 45))
+        #self.min_max_array = np.empty((2, 45))
+
 
         self.opts = ort.SessionOptions()
         self.opts.intra_op_num_threads = settings.gui_inference_threads
@@ -92,7 +95,7 @@ class BabbleProcessor:
         if self.runtime == "ONNX" or self.runtime == "Default (ONNX)":    # ONNX 
             if self.use_gpu: provider = 'DmlExecutionProvider' 
             else: provider = "CPUExecutionProvider"  # Build onnxruntime to get both DML and OpenVINO
-            self.sess = ort.InferenceSession(f'{self.model}onnx/model.onnx', self.opts, providers=[provider], provider_options=[{'device_id': self.gpu_index}]) 
+            self.sess = ort.InferenceSession(f'{self.model}onnx/model.onnx', self.opts, providers=[provider, ], provider_options=[{'device_id': self.gpu_index}]) # Load Babble CNN until PFLD has been converted
             self.input_name = self.sess.get_inputs()[0].name
             self.output_name = self.sess.get_outputs()[0].name
         try:
@@ -108,6 +111,12 @@ class BabbleProcessor:
             min_cutoff=min_cutoff,
             beta=beta
         )
+
+    def get_frame(self):
+        return self.current_image_gray_clean
+    
+    def infer_frame(self):
+        return write_image(self)
 
     def output_images_and_update(self, output_information: CamInfo):
         try:
@@ -228,14 +237,17 @@ class BabbleProcessor:
             self.current_image, cv2.COLOR_BGR2GRAY
             )
             self.current_image_gray_clean = self.current_image_gray.copy() #copy this frame to have a clean image for blink algo
-
-
-            run_model(self)
-            if self.config.use_calibration:
-                self.output = cal.cal_osc(self, self.output)
+            if self.infer == True:   
+                '''
+                run_model(self)
+                if self.config.use_calibration:
+                    self.output = cal.cal_osc(self, self.output)
+                '''
+                self.output = write_image(self)
+            
 
             #else:
              #   pass
             #print(self.output)
-            self.output_images_and_update(CamInfo(self.current_algo, self.output))
+            #self.output_images_and_update(CamInfo(self.current_algo, self.output))
 

@@ -46,7 +46,7 @@ SETTINGS_RADIO_NAME = "-SETTINGSRADIO-"
 ALGO_SETTINGS_RADIO_NAME = "-ALGOSETTINGSRADIO-"
 
 page_url = "https://github.com/SummerSigh/ProjectBabble/releases/latest"
-appversion = "Babble v2.0.5"
+appversion = "Babble v2.0.6 Alpha"
 
 
 def main():
