@@ -115,8 +115,8 @@ class LandmarkProcessor:
     def get_frame(self):
         return self.current_image_gray_clean
     
-    def infer_frame(self):
-        return write_image(self)
+    def infer_frame(self, image):
+        return write_image(self, image)
 
     def output_images_and_update(self, output_information: CamInfo):
         try:

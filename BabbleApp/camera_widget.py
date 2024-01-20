@@ -44,6 +44,7 @@ class CameraWidget:
         self.settings_config = main_config.settings
         self.config = main_config.cam
         self.settings = main_config.settings
+        self.maybe_image = None
         if self.cam_id == Tab.CAM:
             self.config = main_config.cam
         else:
@@ -255,7 +256,7 @@ class CameraWidget:
             changed = True
 
 
-
+        
         if self.config.rotation_angle != values[self.gui_rotation_slider]:
             self.config.rotation_angle = int(values[self.gui_rotation_slider])
             changed = True
@@ -310,19 +311,17 @@ class CameraWidget:
 
         if event == self.gui_autoroi:
             print("Auto ROI")
-            #image = self.image_queue.get()
-            #image = self.babble_landmark.get_frame()    # Get image for pfld 
-            #print(image)
-            #print(len(image))
-            #print(image)
-            #cv2.imwrite("yeah.png", image)
-            self.babble_landmark.infer_frame()
-            output = self.babble_landmark.output
+            #needs_roi_set = self.config.roi_window_h <= 0 or self.config.roi_window_w <= 0
+            self.babble_landmark.infer_frame(image = self.maybe_image[0])
+            output = self.babble_landmark.output[0]
+            rotation = self.babble_landmark.output[1]
+            print(f'Rotation: {rotation}')
             print(f"Output: {output}")
             self.x1 = output[2]
             self.y1 = output[3]
             self.x0 = output[0]
             self.y0 = output[1]
+            window[self.gui_rotation_slider].update(value = rotation)
             self.config.roi_window_x = min([self.x0, self.x1])
             self.config.roi_window_y = min([self.y0, self.y1])
             self.config.roi_window_w = abs(self.x0 - self.x1)
@@ -370,6 +369,7 @@ class CameraWidget:
                 if self.roi_queue.empty():
                     self.capture_event.set()
                 maybe_image = self.roi_queue.get(block=False)
+                self.maybe_image = maybe_image
                 imgbytes = cv2.imencode(".ppm", maybe_image[0])[1].tobytes()
                 graph = window[self.gui_roi_selection]
                 if self.figure:

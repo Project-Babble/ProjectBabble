@@ -5,6 +5,7 @@ import threading
 from enum import IntEnum
 import time
 from config import BabbleConfig
+import traceback
 
 class Tab(IntEnum):
     CAM = 0
@@ -90,6 +91,7 @@ class VRChatOSCReceiver:
         self.cancellation_event = cancellation_event
         self.dispatcher = dispatcher.Dispatcher()
         self.cams = cams  # we cant import CameraWidget so any type it is
+        print("OSC_INIT")
         try:
             self.server = osc_server.OSCUDPServer((self.config.gui_osc_address, int(self.config.gui_osc_receiver_port)), self.dispatcher)
         except:
@@ -106,17 +108,18 @@ class VRChatOSCReceiver:
         if type(osc_value) != bool: return  # just incase we get anything other than bool
         if osc_value:
             for cam in self.cams:
-                cam.ransac.calibration_frame_counter = 300
+                cam.babble_cnn.calibration_frame_counter = 300
                 PlaySound('Audio/start.wav', SND_FILENAME | SND_ASYNC)
 
     def run(self):
         
         # bind what function to run when specified OSC message is received
         try:
-            self.dispatcher.map(self.config.gui_osc_recalibrate_address, self.recalibrate_cams)
+            self.dispatcher.map(self.config.gui_osc_recalibrate_address, self.recalibrate_mouth)
             # start the server
             print("\033[92m[INFO] VRChatOSCReceiver serving on {}\033[0m".format(self.server.server_address))
             self.server.serve_forever()
             
         except:
+            traceback.print_exc()
             print(f"\033[91m[ERROR] OSC Receive port: {self.config.gui_osc_receiver_port} occupied.\033[0m")
