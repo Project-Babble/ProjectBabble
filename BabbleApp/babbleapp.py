@@ -28,6 +28,7 @@ from tab import CamInfo, Tab
 from osc import VRChatOSCReceiver, VRChatOSC
 from general_settings_widget import SettingsWidget
 from algo_settings_widget import AlgoSettingsWidget
+from calib_settings_widget import CalibSettingsWidget
 from utils.misc_utils import is_nt
 if is_nt:
     from winotify import Notification
@@ -41,9 +42,11 @@ WINDOW_NAME = "Babble sApp"
 CAM_NAME = "-CAMWIDGET-"
 SETTINGS_NAME = "-SETTINGSWIDGET-"
 ALGO_SETTINGS_NAME = "-ALGOSETTINGSWIDGET-"
+CALIB_SETTINGS_NAME = "-CALIBSETTINGSWIDGET-"
 CAM_RADIO_NAME = "-CAMRADIO-"
 SETTINGS_RADIO_NAME = "-SETTINGSRADIO-"
 ALGO_SETTINGS_RADIO_NAME = "-ALGOSETTINGSRADIO-"
+CALIB_SETTINGS_RADIO_NAME = "-CALIBSETTINGSRADIO-"
 
 page_url = "https://github.com/SummerSigh/ProjectBabble/releases/latest"
 appversion = "Babble v2.0.6 Alpha"
@@ -108,6 +111,7 @@ def main():
     settings = [
         SettingsWidget(Tab.SETTINGS, config, osc_queue),
         AlgoSettingsWidget(Tab.ALGOSETTINGS, config, osc_queue),
+        CalibSettingsWidget(Tab.CALIBRATION, config, osc_queue),
     ]
 
     layout = [
@@ -133,6 +137,13 @@ def main():
                 default=(config.cam_display_id == Tab.ALGOSETTINGS),
                 key=ALGO_SETTINGS_RADIO_NAME,
             ),
+            sg.Radio(
+                "Calibration",
+                "TABSELECTRADIO",
+                background_color="#292929",
+                default=(config.cam_display_id == Tab.CALIBRATION),
+                key=CALIB_SETTINGS_RADIO_NAME,
+            ),
             
         ],
         [
@@ -157,6 +168,13 @@ def main():
                 visible=(config.cam_display_id in [Tab.ALGOSETTINGS]),
                 background_color="#424042",
             ),
+            sg.Column(
+                settings[2].widget_layout,
+                vertical_alignment="top",
+                key=CALIB_SETTINGS_NAME,
+                visible=(config.cam_display_id in [Tab.CALIBRATION]),
+                background_color="#424042",
+            ),
             
         ],
     ]
@@ -167,6 +185,8 @@ def main():
         settings[0].start()
     if config.cam_display_id in [Tab.ALGOSETTINGS]:
         settings[1].start()
+    if config.cam_display_id in [Tab.CALIBRATION]:
+        settings[2].start()
 
     # the cam needs to be running before it is passed to the OSC
     if config.settings.gui_ROSC:
@@ -206,9 +226,11 @@ def main():
             cams[0].start()
             settings[0].stop()
             settings[1].stop()
+            settings[2].stop()
             window[CAM_NAME].update(visible=True)
             window[SETTINGS_NAME].update(visible=False)
             window[ALGO_SETTINGS_NAME].update(visible=False)
+            window[CALIB_SETTINGS_NAME].update(visible=False)
             config.cam_display_id = Tab.CAM
             config.save()
 
@@ -217,10 +239,12 @@ def main():
         elif values[SETTINGS_RADIO_NAME] and config.cam_display_id != Tab.SETTINGS:
             cams[0].stop()
             settings[1].stop()
+            settings[2].stop()
             settings[0].start()
             window[CAM_NAME].update(visible=False)
             window[SETTINGS_NAME].update(visible=True)
             window[ALGO_SETTINGS_NAME].update(visible=False)
+            window[CALIB_SETTINGS_NAME].update(visible=False)
             config.cam_display_id = Tab.SETTINGS
             config.save()
 
@@ -228,11 +252,25 @@ def main():
         elif values[ALGO_SETTINGS_RADIO_NAME] and config.cam_display_id != Tab.ALGOSETTINGS:
             cams[0].stop()
             settings[0].stop()
+            settings[2].stop()
             settings[1].start()
             window[CAM_NAME].update(visible=False)
             window[SETTINGS_NAME].update(visible=False)
             window[ALGO_SETTINGS_NAME].update(visible=True)
+            window[CALIB_SETTINGS_NAME].update(visible=False)
             config.cam_display_id = Tab.ALGOSETTINGS
+            config.save()
+
+        elif values[CALIB_SETTINGS_RADIO_NAME] and config.cam_display_id != Tab.CALIBRATION:
+            cams[0].stop()
+            settings[0].stop()
+            settings[1].stop()
+            settings[2].start()
+            window[CAM_NAME].update(visible=False)
+            window[SETTINGS_NAME].update(visible=False)
+            window[ALGO_SETTINGS_NAME].update(visible=False)
+            window[CALIB_SETTINGS_NAME].update(visible=True)
+            config.cam_display_id = Tab.CALIBRATION
             config.save()
         
 

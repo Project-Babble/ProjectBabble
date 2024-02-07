@@ -231,7 +231,7 @@ class BabbleProcessor:
 
 
             run_model(self)
-            if self.config.use_calibration:
+            if self.settings.use_calibration:
                 self.output = cal.cal_osc(self, self.output)
 
             #else:

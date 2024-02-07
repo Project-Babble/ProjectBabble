@@ -11,6 +11,7 @@ class Tab(IntEnum):
     CAM = 0
     SETTINGS = 1
     ALGOSETTINGS = 2
+    CALIBRATION = 3
 
 
 def output_osc(array, self):

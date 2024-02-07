@@ -37,7 +37,6 @@ class CameraWidget:
         self.gui_vertical_flip = f"-VERTICALFLIP{widget_id}-"
         self.gui_horizontal_flip = f"-HORIZONTALFLIP{widget_id}-"
         self.use_calibration = f"-USECALIBRATION{widget_id}-"
-        self.use_n_calibration = f"-USENCALIBRATION{widget_id}-"
         self.osc_queue = osc_queue
         self.main_config = main_config
         self.cam_id = widget_id
@@ -127,18 +126,11 @@ class CameraWidget:
             ],
             [
                 sg.Checkbox(
-                    "Use Neutral Calibration:",
-                    default=self.config.use_n_calibration,
-                    key=self.use_n_calibration,
-                    background_color='#424042',
-                    tooltip="Toggle use of calibration using minimum values found during a neutral pose calibration step.",
-                ),
-                sg.Checkbox(
-                    "Use Full Calibration:",
-                    default=self.config.use_calibration,
+                    "Enable Calibration:",
+                    default=self.settings_config.use_calibration,
                     key=self.use_calibration,
                     background_color='#424042',
-                    tooltip="Toggle use of calibration.",
+                    tooltip="Checked = Calibrated model output. Unchecked = Raw model output",
                 ),
             ],
             [
@@ -270,12 +262,8 @@ class CameraWidget:
             self.config.gui_horizontal_flip = values[self.gui_horizontal_flip]
             changed = True
 
-        if self.config.use_calibration != values[self.use_calibration]:
-            self.config.use_calibration = values[self.use_calibration]
-            changed = True
-
-        if self.config.use_n_calibration != values[self.use_n_calibration]:
-            self.config.use_n_calibration = values[self.use_n_calibration]
+        if self.settings_config.use_calibration != values[self.use_calibration]:
+            self.settings_config.use_calibration = values[self.use_calibration]
             changed = True
 
         if changed:
