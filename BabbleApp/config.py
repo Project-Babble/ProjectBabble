@@ -20,6 +20,7 @@ class BabbleCameraConfig(BaseModel):
     use_n_calibration: bool = True
     gui_vertical_flip: bool = False
     gui_horizontal_flip: bool = False
+    use_ffmpeg: bool = False
 
 class BabbleSettingsConfig(BaseModel):
     gui_min_cutoff: str = "0.9"

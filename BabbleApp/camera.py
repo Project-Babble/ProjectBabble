@@ -106,7 +106,10 @@ class Camera:
                         if self.cancellation_event.wait(WAIT_TIME):
                             return
                         self.current_capture_source = self.config.capture_source
-                        self.cv2_camera = cv2.VideoCapture(self.current_capture_source)
+                        if self.config.use_ffmpeg == True:
+                            self.cv2_camera = cv2.VideoCapture(self.current_capture_source, cv2.CAP_FFMPEG)
+                        else:
+                            self.cv2_camera = cv2.VideoCapture(self.current_capture_source)
                         if not self.settings.gui_cam_resolution_x == 0: self.cv2_camera.set(cv2.CAP_PROP_FRAME_WIDTH, self.settings.gui_cam_resolution_x)
                         if not self.settings.gui_cam_resolution_y == 0: self.cv2_camera.set(cv2.CAP_PROP_FRAME_HEIGHT, self.settings.gui_cam_resolution_y)
                         if not self.settings.gui_cam_framerate == 0: self.cv2_camera.set(cv2.CAP_PROP_FPS, self.settings.gui_cam_framerate)
