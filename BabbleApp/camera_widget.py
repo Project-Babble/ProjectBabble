@@ -242,14 +242,18 @@ class CameraWidget:
         ):
             print("\033[94m[INFO] New value: {}\033[0m".format(values[self.gui_camera_addr]))
             try:
+                self.config.use_ffmpeg = False
                 # Try storing ints as ints, for those using wired cameras.
                 self.config.capture_source = int(values[self.gui_camera_addr])
             except ValueError:
                 if values[self.gui_camera_addr] == "":
                     self.config.capture_source = None
                 else:
-                    if len(values[self.gui_camera_addr]) > 5 and "http" not in values[self.gui_camera_addr] and ".mp4" not in values[self.gui_camera_addr]: # If http is not in camera address, add it.
-                        self.config.capture_source = f"http://{values[self.gui_camera_addr]}/"   
+                    if len(values[self.gui_camera_addr]) > 5 and "http" not in values[self.gui_camera_addr] and ".mp4" not in values[self.gui_camera_addr] and "udp" not in values[self.gui_camera_addr]: # If http is not in camera address, add it.
+                        self.config.capture_source = f"http://{values[self.gui_camera_addr]}/"
+                    elif "udp" in values[self.gui_camera_addr]:
+                        self.config.use_ffmpeg = True
+                        self.config.capture_source = values[self.gui_camera_addr]
                     else:
                         self.config.capture_source = values[self.gui_camera_addr]
             changed = True
