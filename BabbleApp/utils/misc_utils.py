@@ -3,10 +3,10 @@ import typing
 from pygrabber.dshow_graph import FilterGraph
 
 is_nt = True if os.name == "nt" else False
+graph = FilterGraph()
 
 
 def list_camera_names():
-    graph = FilterGraph()
     cam_list = graph.get_input_devices()
     cam_names = []
     for index, name in enumerate(cam_list):
@@ -15,7 +15,6 @@ def list_camera_names():
 
 
 def get_camera_index_by_name(name):
-    graph = FilterGraph()
     cam_list = graph.get_input_devices()
 
     for i, device_name in enumerate(cam_list):
