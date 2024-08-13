@@ -207,8 +207,8 @@ class CameraWidget:
         self.cancellation_event.clear()
         self.babble_cnn_thread = Thread(target=self.babble_cnn.run)
         self.babble_cnn_thread.start()
-        self.babble_landmark_thread = Thread(target=self.babble_landmark.run)
-        self.babble_landmark_thread.start()
+        #self.babble_landmark_thread = Thread(target=self.babble_landmark.run)
+        #self.babble_landmark_thread.start()
         self.camera_thread = Thread(target=self.camera.run)
         self.camera_thread.start()
 
@@ -218,7 +218,7 @@ class CameraWidget:
             return
         self.cancellation_event.set()
         self.babble_cnn_thread.join()
-        self.babble_landmark_thread.join()
+        #self.babble_landmark_thread.join()
         self.camera_thread.join()
 
     def render(self, window, event, values):
@@ -296,25 +296,6 @@ class CameraWidget:
                 self.config.roi_window_w = abs(self.x0 - self.x1)
                 self.config.roi_window_h = abs(self.y0 - self.y1)
                 self.main_config.save()
-
-        if event == self.gui_autoroi:
-            print("Auto ROI")
-            #needs_roi_set = self.config.roi_window_h <= 0 or self.config.roi_window_w <= 0
-            self.babble_landmark.infer_frame(image = self.maybe_image[0])
-            output = self.babble_landmark.output[0]
-            rotation = self.babble_landmark.output[1]
-            print(f'Rotation: {rotation}')
-            print(f"Output: {output}")
-            self.x1 = output[2]
-            self.y1 = output[3]
-            self.x0 = output[0]
-            self.y0 = output[1]
-            window[self.gui_rotation_slider].update(value = rotation)
-            self.config.roi_window_x = min([self.x0, self.x1])
-            self.config.roi_window_y = min([self.y0, self.y1])
-            self.config.roi_window_w = abs(self.x0 - self.x1)
-            self.config.roi_window_h = abs(self.y0 - self.y1)
-            self.main_config.save()
 
         if event == self.gui_roi_selection:
             # Event for mouse button down or mouse drag in ROI mode

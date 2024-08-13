@@ -195,9 +195,12 @@ class CalibSettingsWidget:
         for count1, element1 in enumerate(self.shape):
             for count2, element2 in enumerate(element1):
                 if values[element2] != '':
-                    if float(self.array[count1][count2]) != float(values[element2]):
-                        self.array[count1][count2] = float(values[element2])
-                        changed = True
+                    try: 
+                        float(values[element2])
+                        if float(self.array[count1][count2]) != float(values[element2]):
+                            self.array[count1][count2] = float(values[element2])
+                            changed = True
+                    except: print("Not a float")
         
         if event == self.gui_reset_min:
             for count1, element1 in enumerate(self.shape):

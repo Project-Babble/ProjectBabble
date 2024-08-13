@@ -223,9 +223,8 @@ class BabbleProcessor:
                 new_blue_channel = red_channel
                 new_green_channel = red_channel
                 self.current_image = cv2.merge((new_blue_channel, new_green_channel, red_channel))
-
             self.current_image_gray = cv2.cvtColor(
-            self.current_image, cv2.COLOR_BGR2GRAY
+                self.current_image, cv2.COLOR_BGR2GRAY
             )
             self.current_image_gray_clean = self.current_image_gray.copy() #copy this frame to have a clean image for blink algo
 
