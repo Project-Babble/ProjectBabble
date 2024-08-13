@@ -8,6 +8,7 @@ import time
 
 from colorama import Fore
 from config import BabbleConfig, BabbleSettingsConfig
+from utils.misc_utils import get_camera_index_by_name, list_camera_names
 from enum import Enum
 
 WAIT_TIME = 0.1
@@ -39,11 +40,14 @@ class Camera:
             camera_output_outgoing: "queue.Queue(maxsize=2)",
             settings: BabbleSettingsConfig,
     ):
+        self.current_capture_sourc = None
         self.camera_status = CameraState.CONNECTING
         self.config = config
         self.settings = settings
         self.camera_index = camera_index
-        self.camera_address = config.capture_source
+        self.camera_list = list_camera_names()
+        # The variable is not used
+        # self.camera_address = config.capture_source
         self.camera_status_outgoing = camera_status_outgoing
         self.camera_output_outgoing = camera_output_outgoing
         self.capture_event = capture_event
@@ -81,10 +85,11 @@ class Camera:
             # If things aren't open, retry until they are. Don't let read requests come in any earlier
             # than this, otherwise we can deadlock ourselves.
             if (
-                    self.config.capture_source != None and self.config.capture_source != ""
+                    self.config.capture_source is not None and self.config.capture_source != ""
             ):
                 self.current_capture_source = self.config.capture_source
-                if ("COM" in str(self.config.capture_source)):
+
+                if "COM" in str(self.config.capture_source) and self.config.capture_source not in self.camera_list:
                     if (
                             self.serial_connection is None
                             or self.camera_status == CameraState.DISCONNECTED
@@ -105,14 +110,23 @@ class Camera:
                         # firmware. Fickle things.
                         if self.cancellation_event.wait(WAIT_TIME):
                             return
-                        self.current_capture_source = self.config.capture_source
-                        if self.config.use_ffmpeg == True:
+
+                        if self.config.capture_source not in self.camera_list:
+                            self.current_capture_source = self.config.capture_source
+                        else:
+                            self.current_capture_source = get_camera_index_by_name(self.current_capture_source)
+
+                        if self.config.use_ffmpeg:
                             self.cv2_camera = cv2.VideoCapture(self.current_capture_source, cv2.CAP_FFMPEG)
                         else:
                             self.cv2_camera = cv2.VideoCapture(self.current_capture_source)
-                        if not self.settings.gui_cam_resolution_x == 0: self.cv2_camera.set(cv2.CAP_PROP_FRAME_WIDTH, self.settings.gui_cam_resolution_x)
-                        if not self.settings.gui_cam_resolution_y == 0: self.cv2_camera.set(cv2.CAP_PROP_FRAME_HEIGHT, self.settings.gui_cam_resolution_y)
-                        if not self.settings.gui_cam_framerate == 0: self.cv2_camera.set(cv2.CAP_PROP_FPS, self.settings.gui_cam_framerate)
+
+                        if not self.settings.gui_cam_resolution_x == 0: self.cv2_camera.set(cv2.CAP_PROP_FRAME_WIDTH,
+                                                                                            self.settings.gui_cam_resolution_x)
+                        if not self.settings.gui_cam_resolution_y == 0: self.cv2_camera.set(cv2.CAP_PROP_FRAME_HEIGHT,
+                                                                                            self.settings.gui_cam_resolution_y)
+                        if not self.settings.gui_cam_framerate == 0: self.cv2_camera.set(cv2.CAP_PROP_FPS,
+                                                                                         self.settings.gui_cam_framerate)
                         should_push = False
             else:
                 # We don't have a capture source to try yet, wait for one to show up in the GUI.
@@ -124,8 +138,8 @@ class Camera:
             # python event as a context-less, resettable one-shot channel.
             if should_push and not self.capture_event.wait(timeout=0.02):
                 continue
-            if self.config.capture_source != None:
-                if ("COM" in str(self.config.capture_source)):
+            if self.config.capture_source is not None:
+                if "COM" in str(self.config.capture_source):
                     self.get_serial_camera_picture(should_push)
                 else:
                     self.get_cv2_camera_picture(should_push)
@@ -162,7 +176,8 @@ class Camera:
             if should_push:
                 self.push_image_to_queue(image, frame_number, self.fps)
         except:
-            print(f"{Fore.YELLOW}[WARN] Capture source problem, assuming camera disconnected, waiting for reconnect.{Fore.RESET}")
+            print(
+                f"{Fore.YELLOW}[WARN] Capture source problem, assuming camera disconnected, waiting for reconnect.{Fore.RESET}")
             self.camera_status = CameraState.DISCONNECTED
             pass
 
@@ -182,8 +197,8 @@ class Camera:
 
     def get_next_jpeg_frame(self):
         beg, end = self.get_next_packet_bounds()
-        jpeg = self.buffer[beg+ETVR_HEADER_LEN:end+ETVR_HEADER_LEN]
-        self.buffer = self.buffer[end+ETVR_HEADER_LEN:]
+        jpeg = self.buffer[beg + ETVR_HEADER_LEN:end + ETVR_HEADER_LEN]
+        self.buffer = self.buffer[end + ETVR_HEADER_LEN:]
         return jpeg
 
     def get_serial_camera_picture(self, should_push):
@@ -226,7 +241,8 @@ class Camera:
                     if should_push:
                         self.push_image_to_queue(image, self.frame_number, self.fps)
         except Exception:
-            print(f"{Fore.YELLOW}[WARN] Serial capture source problem, assuming camera disconnected, waiting for reconnect.{Fore.RESET}")
+            print(
+                f"{Fore.YELLOW}[WARN] Serial capture source problem, assuming camera disconnected, waiting for reconnect.{Fore.RESET}")
             conn.close()
             self.camera_status = CameraState.DISCONNECTED
             pass
@@ -244,13 +260,13 @@ class Camera:
             return
         try:
             conn = serial.Serial(
-                baudrate = 3000000,
-                port = port,
+                baudrate=3000000,
+                port=port,
                 xonxoff=False,
                 dsrdtr=False,
                 rtscts=False)
             # Set explicit buffer size for serial.
-            conn.set_buffer_size(rx_size = 32768, tx_size = 32768)
+            conn.set_buffer_size(rx_size=32768, tx_size=32768)
 
             print(f"{Fore.CYAN}[INFO] ETVR Serial Tracker device connected on {port}{Fore.RESET}")
             self.serial_connection = conn

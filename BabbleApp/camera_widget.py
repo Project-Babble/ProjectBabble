@@ -1,19 +1,17 @@
-import PySimpleGUI as sg
-from config import BabbleConfig
-from config import BabbleSettingsConfig
 from collections import deque
-from threading import Event, Thread
-from babble_processor import BabbleProcessor, CamInfoOrigin
-from landmark_processor import LandmarkProcessor
-from enum import Enum
 from queue import Queue, Empty
-from camera import Camera, CameraState
-from osc import Tab
+from threading import Event, Thread
+
+import PySimpleGUI as sg
+
 import cv2
-import sys
-from utils.misc_utils import PlaySound,SND_FILENAME,SND_ASYNC
-import traceback
-import numpy as np
+from babble_processor import BabbleProcessor, CamInfoOrigin
+from camera import Camera, CameraState
+from config import BabbleConfig
+from landmark_processor import LandmarkProcessor
+from osc import Tab
+from utils.misc_utils import PlaySound, SND_FILENAME, SND_ASYNC, list_camera_names
+
 
 class CameraWidget:
     def __init__(self, widget_id: Tab, main_config: BabbleConfig, osc_queue: Queue):
@@ -44,6 +42,7 @@ class CameraWidget:
         self.settings_config = main_config.settings
         self.config = main_config.cam
         self.settings = main_config.settings
+        self.camera_list = list_camera_names()
         if self.cam_id == Tab.CAM:
             self.config = main_config.cam
         else:
@@ -92,17 +91,17 @@ class CameraWidget:
 
         self.roi_layout = [
             [
-            sg.Button("Auto ROI", key=self.gui_autoroi, button_color='#539e8a', tooltip = "Automatically set ROI",),
+                sg.Button("Auto ROI", key=self.gui_autoroi, button_color='#539e8a', tooltip="Automatically set ROI", ),
             ],
             [
-            sg.Graph( 
-                (640, 480),
-                (0, 480),
-                (640, 0),
-                key=self.gui_roi_selection,
-                drag_submits=True,
-                enable_events=True,
-                background_color='#424042',
+                sg.Graph(
+                    (640, 480),
+                    (0, 480),
+                    (640, 0),
+                    key=self.gui_roi_selection,
+                    drag_submits=True,
+                    enable_events=True,
+                    background_color='#424042',
                 )
             ]
         ]
@@ -117,12 +116,14 @@ class CameraWidget:
                     orientation="h",
                     key=self.gui_rotation_slider,
                     background_color='#424042',
-                    tooltip = "Adjust the rotation of your cameras, make them level.",
+                    tooltip="Adjust the rotation of your cameras, make them level.",
                 ),
             ],
             [
-                sg.Button("Start Calibration", key=self.gui_restart_calibration, button_color='#539e8a', tooltip = "Start calibration. Look all arround to all extreams without blinking until sound is heard.",),
-                sg.Button("Stop Calibration", key=self.gui_stop_calibration, button_color='#539e8a', tooltip = "Stop calibration manualy.",),
+                sg.Button("Start Calibration", key=self.gui_restart_calibration, button_color='#539e8a',
+                          tooltip="Start calibration. Look all arround to all extreams without blinking until sound is heard.", ),
+                sg.Button("Stop Calibration", key=self.gui_stop_calibration, button_color='#539e8a',
+                          tooltip="Stop calibration manualy.", ),
             ],
             [
                 sg.Checkbox(
@@ -152,7 +153,7 @@ class CameraWidget:
                     default=self.config.gui_vertical_flip,
                     key=self.gui_vertical_flip,
                     background_color='#424042',
-                    tooltip = "Vertically flip camera feed.",
+                    tooltip="Vertically flip camera feed.",
                 ),
                 sg.Checkbox(
                     "Horizontal Flip:",
@@ -171,14 +172,19 @@ class CameraWidget:
         self.widget_layout = [
             [
                 sg.Text("Camera Address", background_color='#424042'),
-                sg.InputText(self.config.capture_source, key=self.gui_camera_addr, tooltip = "Enter the IP address or UVC port of your camera. (Include the 'http://')",),
+                sg.InputCombo(self.camera_list, default_value=self.config.capture_source,
+                              key=self.gui_camera_addr,
+                              tooltip="Enter the IP address or UVC port of your camera. (Include the 'http://')",
+                              enable_events=True)
             ],
             [
                 sg.Button("Save and Restart Tracking", key=self.gui_save_tracking_button, button_color='#539e8a'),
             ],
             [
-                sg.Button("Tracking Mode", key=self.gui_tracking_button, button_color='#539e8a', tooltip = "Go here to track your mouth.",),
-                sg.Button("Cropping Mode", key=self.gui_roi_button, button_color='#539e8a', tooltip = "Go here to crop out your mouth.",),
+                sg.Button("Tracking Mode", key=self.gui_tracking_button, button_color='#539e8a',
+                          tooltip="Go here to track your mouth.", ),
+                sg.Button("Cropping Mode", key=self.gui_roi_button, button_color='#539e8a',
+                          tooltip="Go here to crop out your mouth.", ),
             ],
             [
                 sg.Column(self.tracking_layout, key=self.gui_tracking_layout, background_color='#424042'),
@@ -237,28 +243,38 @@ class CameraWidget:
         changed = False
         # If anything has changed in our configuration settings, change/update those.
         if (
-            event == self.gui_save_tracking_button
-            and values[self.gui_camera_addr] != self.config.capture_source
+                event == self.gui_save_tracking_button
+                and values[self.gui_camera_addr] != self.config.capture_source
         ):
-            print("\033[94m[INFO] New value: {}\033[0m".format(values[self.gui_camera_addr]))
+            value = values[self.gui_camera_addr]
+            print("\033[94m[INFO] New value: {}\033[0m".format(value))
             try:
                 self.config.use_ffmpeg = False
                 # Try storing ints as ints, for those using wired cameras.
-                self.config.capture_source = int(values[self.gui_camera_addr])
+                if value not in self.camera_list:
+                    self.config.capture_source = int(value)
+                else:
+                    self.config.capture_source = value
             except ValueError:
-                if values[self.gui_camera_addr] == "":
+                if value == "":
                     self.config.capture_source = None
                 else:
-                    if len(values[self.gui_camera_addr]) > 5 and "http" not in values[self.gui_camera_addr] and ".mp4" not in values[self.gui_camera_addr] and "udp" not in values[self.gui_camera_addr]: # If http is not in camera address, add it.
-                        self.config.capture_source = f"http://{values[self.gui_camera_addr]}/"
-                    elif "udp" in values[self.gui_camera_addr]:
+                    # If http is not in camera address, add it.
+                    self.config.capture_source = value
+
+                    if "udp" in value:
                         self.config.use_ffmpeg = True
-                        self.config.capture_source = values[self.gui_camera_addr]
-                    else:
-                        self.config.capture_source = values[self.gui_camera_addr]
+                    elif (
+                            "http" not in value
+                            and ".mp4" not in value
+                            and "udp" not in value
+                            and "COM" not in value
+                            and "/dev/tty" not in value
+                            and value not in self.camera_list
+                    ):  # If http is not in camera address, add it.
+                        self.config.capture_source = f"http://{values[self.gui_camera_addr]}/"
+
             changed = True
-
-
 
         if self.config.rotation_angle != values[self.gui_rotation_slider]:
             self.config.rotation_angle = int(values[self.gui_rotation_slider])
@@ -302,9 +318,9 @@ class CameraWidget:
             # Event for mouse button up in ROI mode
             self.is_mouse_up = True
             if self.x1 < 0:
-                    self.x1 = 0
+                self.x1 = 0
             if self.y1 < 0:
-                    self.y1 = 0 
+                self.y1 = 0
             if abs(self.x0 - self.x1) != 0 and abs(self.y0 - self.y1) != 0:
                 self.config.roi_window_x = min([self.x0, self.x1])
                 self.config.roi_window_y = min([self.y0, self.y1])
@@ -370,7 +386,7 @@ class CameraWidget:
             window[self.gui_tracking_bps].update(self._movavg_bps(self.camera.bps))
 
         if self.in_roi_mode:
-            try:    
+            try:
                 if self.roi_queue.empty():
                     self.capture_event.set()
                 maybe_image = self.roi_queue.get(block=False)
@@ -398,7 +414,6 @@ class CameraWidget:
                 (maybe_image, cam_info) = self.image_queue.get(block=False)
                 imgbytes = cv2.imencode(".ppm", maybe_image)[1].tobytes()
                 window[self.gui_tracking_image].update(data=imgbytes)
-
 
                 # Relay information to OSC
                 if cam_info.info_type != CamInfoOrigin.FAILURE:
