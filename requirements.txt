@@ -11,3 +11,4 @@ pyserial
 colorama
 winotify
 poetry
+pygrabber
