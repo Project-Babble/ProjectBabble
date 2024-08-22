@@ -10,7 +10,7 @@ from camera import Camera, CameraState
 from config import BabbleConfig
 from landmark_processor import LandmarkProcessor
 from osc import Tab
-from utils.misc_utils import PlaySound, SND_FILENAME, SND_ASYNC, list_camera_names
+from utils.misc_utils import PlaySound, SND_FILENAME, SND_ASYNC, list_camera_names, get_camera_index_by_name
 
 
 class CameraWidget:
@@ -245,9 +245,13 @@ class CameraWidget:
                 self.config.use_ffmpeg = False
                 # Try storing ints as ints, for those using wired cameras.
                 if value not in self.camera_list:
-                    self.config.capture_source = int(value)
-                else:
                     self.config.capture_source = value
+                else:
+                    #if "COM" not in value:
+                    ports = ("COM", "/dev/tty")
+                    if any(x in str(self.config.capture_source) for x in ports):
+                        self.config.capture_source = get_camera_index_by_name(value)
+                    else: self.config.capture_source = value
             except ValueError:
                 if value == "":
                     self.config.capture_source = None

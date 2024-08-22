@@ -87,9 +87,7 @@ class Camera:
             if (
                     self.config.capture_source is not None and self.config.capture_source != ""
             ):
-                self.current_capture_source = self.config.capture_source
-
-                if "COM" in str(self.config.capture_source) and self.config.capture_source not in self.camera_list:
+                if "COM" in str(self.config.capture_source):
                     if (
                             self.serial_connection is None
                             or self.camera_status == CameraState.DISCONNECTED
@@ -114,7 +112,7 @@ class Camera:
                         if self.config.capture_source not in self.camera_list:
                             self.current_capture_source = self.config.capture_source
                         else:
-                            self.current_capture_source = get_camera_index_by_name(self.current_capture_source)
+                            self.current_capture_source = get_camera_index_by_name(self.config.capture_source)
 
                         if self.config.use_ffmpeg:
                             self.cv2_camera = cv2.VideoCapture(self.current_capture_source, cv2.CAP_FFMPEG)
@@ -139,7 +137,8 @@ class Camera:
             if should_push and not self.capture_event.wait(timeout=0.02):
                 continue
             if self.config.capture_source is not None:
-                if "COM" in str(self.config.capture_source):
+                ports = ("COM", "/dev/tty")
+                if any(x in str(self.config.capture_source) for x in ports):
                     self.get_serial_camera_picture(should_push)
                 else:
                     self.get_cv2_camera_picture(should_push)
