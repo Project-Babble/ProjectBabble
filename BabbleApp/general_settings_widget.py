@@ -225,17 +225,23 @@ class SettingsWidget:
             self.config.gui_osc_location = values[self.gui_osc_location]
             changed = True
         if values[self.gui_cam_resolution_x] != '':
-            if self.config.gui_cam_resolution_x != int(values[self.gui_cam_resolution_x]):
-                self.config.gui_cam_resolution_x = int(values[self.gui_cam_resolution_x])
-                changed = True
+            if str(self.config.gui_cam_resolution_x) != values[self.gui_cam_resolution_x]:
+                try: 
+                    self.config.gui_cam_resolution_x = int(values[self.gui_cam_resolution_x])
+                    changed = True
+                except: print("Not an Int")
         if values[self.gui_cam_resolution_y] != '':
-            if self.config.gui_cam_resolution_y != int(values[self.gui_cam_resolution_y]):
-                self.config.gui_cam_resolution_y = int(values[self.gui_cam_resolution_y])
-                changed = True
+            if str(self.config.gui_cam_resolution_y) != values[self.gui_cam_resolution_y]:
+                try: 
+                    self.config.gui_cam_resolution_y = int(values[self.gui_cam_resolution_y])
+                    changed = True
+                except: print("Not an Int")
         if values[self.gui_cam_framerate] != '':
-            if self.config.gui_cam_framerate != int(values[self.gui_cam_framerate]):
-                self.config.gui_cam_framerate = int(values[self.gui_cam_framerate])
-                changed = True
+            if str(self.config.gui_cam_framerate) != values[self.gui_cam_framerate]:
+                try: 
+                    self.config.gui_cam_framerate = int(values[self.gui_cam_framerate])
+                    changed = True
+                except: print("Not an Int")
 
         if self.config.gui_use_red_channel != bool(values[self.gui_use_red_channel]):
             self.config.gui_use_red_channel = bool(values[self.gui_use_red_channel])

@@ -196,7 +196,6 @@ class CalibSettingsWidget:
             for count2, element2 in enumerate(element1):
                 if values[element2] != '':
                     try: 
-                        float(values[element2])
                         if float(self.array[count1][count2]) != float(values[element2]):
                             self.array[count1][count2] = float(values[element2])
                             changed = True

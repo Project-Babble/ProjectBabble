@@ -147,34 +147,42 @@ class AlgoSettingsWidget:
         # If anything has changed in our configuration settings, change/update those.
         changed = False
 
-        if self.config.gui_multiply != float(values[self.gui_multiply]):
-            self.config.gui_multiply = float(values[self.gui_multiply])
-            changed = True
+        if str(self.config.gui_multiply) != values[self.gui_multiply]:
+            try: 
+                self.config.gui_multiply = float(values[self.gui_multiply])
+                changed = True
+            except: print("Not a Float")
 
         if self.config.gui_model_file != values[self.gui_model_file]:
             self.config.gui_model_file = values[self.gui_model_file]
             changed = True
         
-        if self.config.calib_deadzone != float(values[self.calib_deadzone]):
-            self.config.calib_deadzone = float(values[self.calib_deadzone])
-            changed = True
+        if str(self.config.calib_deadzone) != values[self.calib_deadzone]:
+            try: 
+                self.config.calib_deadzone = float(values[self.calib_deadzone])
+                changed = True
+            except: print("Not a Float")
 
         if self.config.gui_use_gpu != values[self.gui_use_gpu]:
             self.config.gui_use_gpu = values[self.gui_use_gpu]
             changed = True
         if values[self.gui_gpu_index] != '':
-            if self.config.gui_gpu_index != int(values[self.gui_gpu_index]):
-                self.config.gui_gpu_index = int(values[self.gui_gpu_index])
-                changed = True
+            if str(self.config.gui_gpu_index) != values[self.gui_gpu_index]:
+                try:
+                    self.config.gui_gpu_index = int(values[self.gui_gpu_index])
+                    changed = True
+                except: print("Not an Int")
 
         if self.config.gui_runtime != str(values[self.gui_runtime]):
             self.config.gui_runtime = str(values[self.gui_runtime])
             changed = True
         
         if values[self.gui_inference_threads] != '':
-            if self.config.gui_inference_threads != int(values[self.gui_inference_threads]):
-                self.config.gui_inference_threads = int(values[self.gui_inference_threads]) 
-                changed = True
+            if str(self.config.gui_inference_threads) != values[self.gui_inference_threads]:
+                try: 
+                    self.config.gui_inference_threads = int(values[self.gui_inference_threads]) 
+                    changed = True
+                except: print("Not an Int")
         if values[self.gui_min_cutoff] != '':
             if self.config.gui_min_cutoff != values[self.gui_min_cutoff]:
                 self.config.gui_min_cutoff = values[self.gui_min_cutoff]
