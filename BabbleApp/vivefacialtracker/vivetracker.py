@@ -453,8 +453,25 @@ class ViveTracker:
         Keyword arguments:
         data --- Frame to process
         """
-        data = cv.medianBlur(data, 5)
-        return data
+        lum = cv.split(data)[0]
+
+        """
+        gamma = 2.2
+        inv_gamma = 1.0 / gamma
+        lut = np.array([((i / 255.0) ** inv_gamma) * 255
+                        for i in np.arange(0, 256)]).astype("uint8")
+        lum = cv.LUT(lum, lut)
+        """
+
+        lum = lum[:, 0:200]
+
+        lum = cv.resize(lum, (400, 400))
+
+        """
+        lum = cv.medianBlur(lum, 5)
+        """
+
+        return cv.merge((lum, lum, lum))
 
     if not isLinux:
         def _open_controller(self: 'ViveTracker') -> None:
