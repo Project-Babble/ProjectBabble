@@ -22,3 +22,4 @@ Glia_cap.py
 lazyass_minecraft_script.py
 scripts/example_build_app_and_installer.bat
 *.kdev*
+*.code-workspace
