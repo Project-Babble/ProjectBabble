@@ -430,13 +430,16 @@ class FTCamera:
         FTCamera._logger.info("FTCamera.start_read: start read task")
         if isLinux:
             if self._has_asyncio_loop():
+                FTCamera._logger.info("FTCamera.start_read: Linux: using aio")
                 self._task_read = aio.create_task(self._async_read())
             else:
+                FTCamera._logger.info("FTCamera.start_read: Linux: using thread")
                 self._thread_read_stop = False
                 self._thread_lock = threading.Lock()
                 self._thread_read = threading.Thread(target=self._async_read_thread)
                 self._thread_read.start()
         else:
+            FTCamera._logger.info("FTCamera.start_read: Windows")
             self._has_frame = False
             self._read_frame = None
             self._thread_read_stop = False
@@ -453,12 +456,15 @@ class FTCamera:
         FTCamera._logger.info("FTCamera.stop_read: stop read task")
         if isLinux:
             if self._thread_read is not None:
+                FTCamera._logger.info("FTCamera.start_read: Linux: stop thread")
                 with self._thread_lock:
                     self._thread_read_stop = True
                 self._thread_read.join(1)
+                FTCamera._logger.info("FTCamera.start_read: Linux: thread stopped")
                 self._thread_read = None
                 self._thread_lock = None
             else:
+                FTCamera._logger.info("FTCamera.start_read: Linux: aio stop")
                 self._task_read.cancel()
                 try:
                     await self._task_read
