@@ -394,21 +394,25 @@ class ViveTracker:
                 self.dispose()
 
     def _init_common(self: 'ViveTracker') -> None:
-        self._bufferSend: list[ctypes.c_uint8] = (ctypes.c_uint8 * 384)()
-        self._bufferReceive: list[ctypes.c_uint8] = (ctypes.c_uint8 * 384)()
+        self._dataBufLen = 384
+        self._resize_data_buf()
         self._bufferRegister: list[ctypes.c_uint8] = (ctypes.c_uint8 * 17)()
-
-        self._dataTest: list[ctypes.c_uint8] = (ctypes.c_uint8 * 384)()
-        self._dataTest[0] = 0x51
-        self._dataTest[1] = 0x52
-        self._dataTest[254] = 0x53
-        self._dataTest[255] = 0x54
 
         self._debug = False
 
         self._detect_vive_tracker()
         self._activate_tracker()
 
+    def _resize_data_buf(self: 'ViveTracker') -> None:
+        self._bufferSend: list[ctypes.c_uint8] = (ctypes.c_uint8 * self._dataBufLen)()
+        self._bufferReceive: list[ctypes.c_uint8] = (ctypes.c_uint8 * self._dataBufLen)()
+
+        self._dataTest: list[ctypes.c_uint8] = (ctypes.c_uint8 * self._dataBufLen)()
+        self._dataTest[0] = 0x51
+        self._dataTest[1] = 0x52
+        if self._dataBufLen >= 256:
+            self._dataTest[254] = 0x53
+            self._dataTest[255] = 0x54
     if isLinux:
         @staticmethod
         def is_camera_vive_tracker(device: 'v4l.Device') -> bool:
@@ -787,8 +791,13 @@ class ViveTracker:
         else:
             length = _control_propery_request_len(
                 self._xu_control, 2, self._xu_node_index)
-        if length != 384:
-            raise Exception("length check failed: {} instead of 384".
+        if length == 384:
+            pass
+        elif length == 64:
+            self._dataBufLen = 64
+            self._resize_data_buf()
+        else:
+            raise Exception("length check failed: {} instead of 384/64".
                             format(length))
         ViveTracker._logger.info("vive tracker detected")
 
