@@ -50,8 +50,8 @@ appversion = "Babble v2.0.6 Alpha"
 
 
 def main():
-    import logging
-    logging.basicConfig(filename='BabbleApp.log', filemode='w', encoding='utf-8', level=logging.INFO)
+    # import logging
+    # logging.basicConfig(filename='BabbleApp.log', filemode='w', encoding='utf-8', level=logging.INFO)
     # Get Configuration
     config: BabbleConfig = BabbleConfig.load()
     config.save()
