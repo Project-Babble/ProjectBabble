@@ -22,13 +22,14 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+from timeit import default_timer as timer
+
 import platform
 import logging
 import ctypes
 import time
 import cv2 as cv
 import numpy as np
-from timeit import default_timer as timer
 
 isLinux = platform.system() == 'Linux'
 
@@ -413,6 +414,7 @@ class ViveTracker:
         if self._dataBufLen >= 256:
             self._dataTest[254] = 0x53
             self._dataTest[255] = 0x54
+
     if isLinux:
         @staticmethod
         def is_camera_vive_tracker(device: 'v4l.Device') -> bool:

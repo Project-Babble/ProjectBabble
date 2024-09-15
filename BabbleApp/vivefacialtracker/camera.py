@@ -22,16 +22,14 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-import platform
-import numpy as np
-import PIL
 import asyncio as aio
-import cv2 as cv
 import traceback
 import time
-import logging
+import platform
 import threading
+import logging
 from enum import Enum
+import numpy as np
 
 isLinux = platform.system() == 'Linux'
 
@@ -47,9 +45,9 @@ class FTCamera:
     """Opens a camera grabbing frames as numpy arrays."""
     class ControlType(Enum):
         """Type of the control."""
-        Integer = 'int'
-        Boolean = 'bool'
-        Select = 'select'
+        INTEGER = 'int'
+        BOOLEAN = 'bool'
+        SELECT = 'select'
 
     if isLinux:
         class Control:
@@ -67,23 +65,24 @@ class FTCamera:
                 self.choices: dict[int: str] = {}
                 match control.type:
                     case v4ld.ControlType.INTEGER:
-                        self.type = FTCamera.ControlType.Integer
+                        self.type = FTCamera.ControlType.INTEGER
                         self.minimum = control.minimum
                         self.maximum = control.maximum
                         self.step = control.step
                         self.default = control.default
                         self.clipping = control.clipping
                     case v4ld.ControlType.BOOLEAN:
-                        self.type = FTCamera.ControlType.Boolean
+                        self.type = FTCamera.ControlType.BOOLEAN
                         self.default = control.default
 
                     case v4ld.ControlType.MENU:
-                        self.type = FTCamera.ControlType.Select
+                        self.type = FTCamera.ControlType.SELECT
                         self.choices = dict(control.data)
                         self.default = control.default
 
             @property
             def value(self: "FTCamera.ControlInfo") -> int | bool:
+                """Control value."""
                 return self._control.value
 
             @value.setter
@@ -92,15 +91,17 @@ class FTCamera:
 
             @property
             def is_writeable(self: "FTCamera.ControlInfo") -> bool:
+                """Control is writeable."""
                 return self._control.is_writeable
     else:
         class Control:
             """Control defined by the hardware."""
             def __init__(self: "FTCamera.ControlInfo") -> None:
-                raise Exception("Not supported")
+                raise RuntimeError("Not supported")
 
             @property
             def value(self: "FTCamera.ControlInfo") -> int | bool:
+                """Control value"""
                 return 0
 
             @value.setter
@@ -109,9 +110,11 @@ class FTCamera:
 
             @property
             def is_writeable(self: "FTCamera.ControlInfo") -> bool:
+                """Control is writeable."""
                 pass
 
         class FrameSize:
+            """Frame size."""
             def __init__(self: 'FTCamera.FrameSize', index: int,
                          width: int, height: int, min_fps: int) -> None:
                 self.index = index
@@ -124,6 +127,7 @@ class FTCamera:
                     self.width, self.height, self.min_fps)
 
         class FrameFormat:
+            """Frame format."""
             def __init__(self: 'FTCamera.FrameFormat', pixel_format: str,
                          description: str) -> None:
                 self.pixel_format = pixel_format
@@ -150,15 +154,31 @@ class FTCamera:
             self._device: v4l.Device = None
         else:
             self._device: pgdsg.VideoInput = None
+            self._filter_graph: pgdsg.FilterGraph = None
+            self._filter_video = None
+            self._filter_grabber = None
 
-        self._controls: "list[FRCamera.Control]" = []
+        self._controls: "list[FTCamera.Control]" = []
         self._task_read: aio.Task = None
         self._thread_read: threading.Thread = None
         self._thread_lock: threading.Lock = None
+        self._thread_read_stop: bool = False
+        self._task_process: aio.Task = None
+        self._task_lock: threading.Lock = None
+        self._has_frame: bool = False
+        self._read_frame: np.ndarray = None
         self._arr_data: np.ndarray = None
         self._arr_c2: np.ndarray = None
         self._arr_c3: np.ndarray = None
         self._arr_merge: np.ndarray = None
+        self._format: FTCamera.FrameFormat = None
+        self._frame_size: FTCamera.FrameSize = None
+        self._frame_width: int = 0
+        self._frame_height: int = 0
+        self._pixel_count: int = 0
+        self._half_pixel_count: int = 0
+        self._half_frame_width: int = 0
+        self._half_frame_height: int = 0
 
         self.callback_frame = None
         """Callback to send captured frame data to.
@@ -283,21 +303,24 @@ class FTCamera:
             self._filter_video.set_format(self._frame_size.index)
 
             # make grabber accept YUV2 not RGB24
-            guidYUV2 = '{32595559-0000-0010-8000-00AA00389B71}'
+            guid_yuv2 = '{32595559-0000-0010-8000-00AA00389B71}'
             self._filter_grabber.set_media_type(
-                pgdsg.MediaTypes.Video, guidYUV2)
+                pgdsg.MediaTypes.Video, guid_yuv2)
 
             # by changing the format we have to replace the callback
             # handler too. this is required since the original callback
             # handler expects a 3-channel image and YUV2 delivers
             # 2 channels. this crashes python_grabber
             class SampleGrabberYUV2(pgdsg.SampleGrabberCallback):
+                """Sample grabber using YUV2."""
                 def __init__(self: 'SampleGrabberYUV2',
                              callback: pgdsg.Callable[[pgdsg.Mat], None]):
-                    super(SampleGrabberYUV2, self).__init__(callback)
+                    super().__init__(callback)
+                    self.keep_photo: bool = False
 
                 def BufferCB(self: 'SampleGrabberYUV2', this, SampleTime,
                              pBuffer: pgdsg.NPBUFFER, BufferLen: int) -> int:
+                    """Buffer callback."""
                     if self.keep_photo:
                         self.keep_photo = False
                         w = self.image_resolution[0]
@@ -336,6 +359,7 @@ class FTCamera:
 
     @property
     def device_index(self: 'FTCamera') -> int:
+        """Device index."""
         return self._index
 
     if isLinux:
@@ -414,6 +438,7 @@ class FTCamera:
         self._device = None
 
     def close_sync(self: 'FTCamera') -> None:
+        """Close (synchronous call)."""
         aio.run(self.close())
 
     def _has_asyncio_loop(self: 'FTCamera') -> bool:
@@ -451,7 +476,7 @@ class FTCamera:
 
     async def stop_read(self: 'FTCamera') -> None:
         """Stop capturing frames if capturing."""
-        if not self._task_read or not self._device:
+        if (not self._task_read and not self._thread_read) or not self._device:
             return
         FTCamera._logger.info("FTCamera.stop_read: stop read task")
         if isLinux:
@@ -463,6 +488,7 @@ class FTCamera:
                 FTCamera._logger.info("FTCamera.start_read: Linux: thread stopped")
                 self._thread_read = None
                 self._thread_lock = None
+                self._thread_read_stop = False
             else:
                 FTCamera._logger.info("FTCamera.start_read: Linux: aio stop")
                 self._task_read.cancel()
@@ -486,13 +512,17 @@ class FTCamera:
 
     if isLinux:
         async def _async_read(self: 'FTCamera') -> None:
+            FTCamera._logger.info("FRCamera.async_read: ENTER")
             async for frame in self._device:
                 if not self._process_frame(frame):
                     break
+            FTCamera._logger.info("FRCamera.async_read: EXIT")
 
         def _async_read_thread(self: 'FTCamera') -> None:
+            FTCamera._logger.info("FRCamera.async_read_thread: ENTER")
             try:
                 for frame in self._device:
+                    # FTCamera._logger.info("FRCamera.async_read_thread: READ")
                     with self._thread_lock:
                         if self._thread_read_stop:
                             return
@@ -500,6 +530,7 @@ class FTCamera:
                         break
             except Exception:
                 pass
+            FTCamera._logger.info("FRCamera.async_read_thread: EXIT")
     else:
         def _async_read(self: 'FTCamera') -> None:
             while not self._thread_read_stop:
@@ -538,6 +569,7 @@ class FTCamera:
             The captured frame is reshaped to (height, width, 3) before
             sending it to "callback_frame".
             """
+            # FTCamera._logger.info("process_frame: data={}".format(len(frame.data)))
             if not self.callback_frame or len(frame.data) == 0:
                 return True
 
