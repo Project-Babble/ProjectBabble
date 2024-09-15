@@ -6,13 +6,11 @@ import serial.tools.list_ports
 import threading
 import time
 import traceback
-import platform
 
 from colorama import Fore
 from config import BabbleConfig, BabbleSettingsConfig
 from enum import Enum
-from vivefacialtracker.camera import FTCamera
-from vivefacialtracker.vivetracker import ViveTracker
+from vivefacialtracker.camera_controller import FTCameraController
 
 WAIT_TIME = 0.1
 
@@ -54,10 +52,7 @@ class Camera:
         self.cancellation_event = cancellation_event
         self.current_capture_source = config.capture_source
         self.cv2_camera: "cv2.VideoCapture" = None
-        self.vft_camera: FTCamera = None
-        self.vft_camera_image: np.ndarray = None
-        self.vft_camera_lock = threading.Lock()
-        self.vft_tracker: ViveTracker = None
+        self.vft_camera: FTCameraController = None
 
         self.serial_connection = None
         self.last_frame_time = time.time()
@@ -84,11 +79,8 @@ class Camera:
         while True:
             if self.cancellation_event.is_set():
                 print(f"{Fore.CYAN}[INFO] Exiting Capture thread{Fore.RESET}")
-                if self.vft_tracker is not None:
-                    self.vft_tracker.dispose()
-                    self.vft_tracker = None
                 if self.vft_camera is not None:
-                    self.vft_camera.close_sync()
+                    self.vft_camera.close()
                     self.vft_camera = None
                 return
             should_push = True
@@ -113,33 +105,15 @@ class Camera:
                         print(self.error_message.format(self.config.capture_source))
                         if self.cancellation_event.wait(WAIT_TIME):
                             return
-                        self.vft_camera_image = None
                         try:
-                            self.vft_camera = FTCamera(int(str(self.config.capture_source)[3:]))
+                            self.vft_camera = FTCameraController(int(str(self.config.capture_source)[3:]))
                             self.vft_camera.open()
-                            self.vft_camera.callback_frame = self.vft_process_frame
-                            self.vft_camera.start_read()
                             should_push = False
                         except Exception:
                             print(traceback.format_exc())
                             if self.vft_camera is not None:
-                                self.vft_camera.close_sync()
+                                self.vft_camera.close()
                             self.vft_camera = None
-                            pass
-
-                        if self.vft_camera is not None\
-                                and ViveTracker.is_camera_vive_tracker(self.vft_camera.device):
-                            try:
-                                if platform.system() == 'Linux':
-                                    self.vft_tracker = ViveTracker(
-                                        self.vft_camera.device.fileno())
-                                else:
-                                    self.vft_tracker = ViveTracker(
-                                        self.vft_camera.device,
-                                        self.vft_camera.device_index)
-                            except Exception:
-                                print(traceback.format_exc())
-
                 else:
                     if (
                             self.cv2_camera is None
@@ -180,23 +154,12 @@ class Camera:
                     # if we get all the way down here, consider ourselves connected
                     self.camera_status = CameraState.CONNECTED
 
-    def vft_process_frame(self, data: np.ndarray) -> None:
-        with self.vft_camera_lock:
-            self.vft_camera_image = data
-
     def get_cv2_camera_picture(self, should_push):
         try:
             if self.vft_camera is not None:
-                image = None
-                with self.vft_camera_lock:
-                    image = self.vft_camera_image
-                    self.vft_camera_image = None
+                image = self.vft_camera.get_image()
                 if image is None:
                     return
-                channel = cv2.split(image)[0]
-                image = cv2.merge((channel, channel, channel))
-                if self.vft_tracker:
-                    image = self.vft_tracker.process_frame(image)
                 frame_number = self.frame_number
             else:
                 ret, image = self.cv2_camera.read()
@@ -226,6 +189,7 @@ class Camera:
             if should_push:
                 self.push_image_to_queue(image, frame_number, self.fps)
         except:
+            FTCameraController._logger.exception("get_image")
             print(f"{Fore.YELLOW}[WARN] Capture source problem, assuming camera disconnected, waiting for reconnect.{Fore.RESET}")
             self.camera_status = CameraState.DISCONNECTED
             pass

@@ -22,12 +22,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-import asyncio as aio
-import traceback
 import time
 import platform
-import threading
 import logging
+import signal
 from enum import Enum
 import numpy as np
 
@@ -137,6 +135,25 @@ class FTCamera:
                 return "(pixel_format={}, description='{}')".format(
                     self.pixel_format, self.description)
 
+    class Terminator:
+        """Terminator."""
+        terminate_requested = False
+        def __init__(self):
+            signal.signal(signal.SIGINT, self.request_terminate)
+            signal.signal(signal.SIGTERM, self.request_terminate)
+
+        def request_terminate(self, signum, frame):
+            """Request to terminate process."""
+            self.terminate_requested = True
+
+    class Processor:
+        """Processor."""
+        def __init__(self):
+            pass
+
+        def process(self, frame) -> None:
+            """Process frame."""
+
     _logger = logging.getLogger("evcta.FTCamera")
 
     def __init__(self: 'FTCamera', index: int) -> None:
@@ -159,12 +176,6 @@ class FTCamera:
             self._filter_grabber = None
 
         self._controls: "list[FTCamera.Control]" = []
-        self._task_read: aio.Task = None
-        self._thread_read: threading.Thread = None
-        self._thread_lock: threading.Lock = None
-        self._thread_read_stop: bool = False
-        self._task_process: aio.Task = None
-        self._task_lock: threading.Lock = None
         self._has_frame: bool = False
         self._read_frame: np.ndarray = None
         self._arr_data: np.ndarray = None
@@ -180,18 +191,8 @@ class FTCamera:
         self._half_frame_width: int = 0
         self._half_frame_height: int = 0
 
-        self.callback_frame = None
-        """Callback to send captured frame data to.
-
-        Has to be a callable object with the signature
-        "callback(data: np.ndarray) -> None". If callback_frame
-        is None no image is grabbed nor processed.
-
-        The image send to the callback is a numpy array of shape
-        (height, width, 3). Channel format is YUV.
-
-        Callback function can be changed while capturing.
-        """
+        self.terminator: FTCamera.Terminator = None
+        self.processor: FTCamera.Processor = None
 
     def open(self: 'FTCamera') -> None:
         """Open device if closed.
@@ -415,12 +416,11 @@ class FTCamera:
         Only valid if device is open."""
         return self._controls
 
-    async def close(self: 'FTCamera') -> None:
+    def close(self: 'FTCamera') -> None:
         """Closes the device if open.
 
         If capturing stops capturing first.
         """
-        await self.stop_read()
         if not self._device:
             return
         FTCamera._logger.info("FTCamera.close: index {}".format(self._index))
@@ -437,129 +437,27 @@ class FTCamera:
             pass
         self._device = None
 
-    def close_sync(self: 'FTCamera') -> None:
-        """Close (synchronous call)."""
-        aio.run(self.close())
-
-    def _has_asyncio_loop(self: 'FTCamera') -> bool:
-        try:
-            aio.get_running_loop()
-            return True
-        except RuntimeError:
-            return False
-
-    def start_read(self: 'FTCamera') -> None:
-        """Start capturing frames if not capturing and device is open."""
-        if self._task_read or self._thread_read or not self._device:
-            return
-        FTCamera._logger.info("FTCamera.start_read: start read task")
-        if isLinux:
-            if self._has_asyncio_loop():
-                FTCamera._logger.info("FTCamera.start_read: Linux: using aio")
-                self._task_read = aio.create_task(self._async_read())
-            else:
-                FTCamera._logger.info("FTCamera.start_read: Linux: using thread")
-                self._thread_read_stop = False
-                self._thread_lock = threading.Lock()
-                self._thread_read = threading.Thread(target=self._async_read_thread)
-                self._thread_read.start()
-        else:
-            FTCamera._logger.info("FTCamera.start_read: Windows")
-            self._has_frame = False
-            self._read_frame = None
-            self._thread_read_stop = False
-            self._task_lock = threading.Lock()
-            self._filter_graph.run()
-            self._thread_read = threading.Thread(target=self._async_read)
-            self._thread_read.start()
-            self._task_process = aio.create_task(self._async_process())
-
-    async def stop_read(self: 'FTCamera') -> None:
-        """Stop capturing frames if capturing."""
-        if (not self._task_read and not self._thread_read) or not self._device:
-            return
-        FTCamera._logger.info("FTCamera.stop_read: stop read task")
-        if isLinux:
-            if self._thread_read is not None:
-                FTCamera._logger.info("FTCamera.start_read: Linux: stop thread")
-                with self._thread_lock:
-                    self._thread_read_stop = True
-                self._thread_read.join(1)
-                FTCamera._logger.info("FTCamera.start_read: Linux: thread stopped")
-                self._thread_read = None
-                self._thread_lock = None
-                self._thread_read_stop = False
-            else:
-                FTCamera._logger.info("FTCamera.start_read: Linux: aio stop")
-                self._task_read.cancel()
-                try:
-                    await self._task_read
-                except aio.CancelledError:
-                    FTCamera._logger.info("FTCamera.stop_read: read task stopped")
-                self._task_read = None
-        else:
-            self._filter_graph.stop()
-            self._thread_read_stop = True
-            self._task_process.cancel()
-            try:
-                await self._task_process
-            except aio.CancelledError:
-                FTCamera._logger.info("FTCamera.stop_read: read task stopped")
-            self._task_process = None
-            self._thread_read.join(0.5)
-            self._thread_read = None
-            self._task_lock = None
-
     if isLinux:
-        async def _async_read(self: 'FTCamera') -> None:
-            FTCamera._logger.info("FRCamera.async_read: ENTER")
-            async for frame in self._device:
-                if not self._process_frame(frame):
+        def read(self: 'FTCamera') -> None:
+            """Read next frame."""
+            FTCamera._logger.info("FTCamera.read: ENTER")
+            for frame in self._device:
+                if self.terminator.terminate_requested:
                     break
-            FTCamera._logger.info("FRCamera.async_read: EXIT")
-
-        def _async_read_thread(self: 'FTCamera') -> None:
-            FTCamera._logger.info("FRCamera.async_read_thread: ENTER")
-            try:
-                for frame in self._device:
-                    # FTCamera._logger.info("FRCamera.async_read_thread: READ")
-                    with self._thread_lock:
-                        if self._thread_read_stop:
-                            return
-                    if not self._process_frame(frame):
-                        break
-            except Exception:
-                pass
-            FTCamera._logger.info("FRCamera.async_read_thread: EXIT")
+                self._process_frame(frame)
+            FTCamera._logger.info("FTCamera.read: EXIT")
     else:
-        def _async_read(self: 'FTCamera') -> None:
-            while not self._thread_read_stop:
+        def read(self: 'FTCamera') -> None:
+            """Read next frame."""
+            while not self.terminator.terminate_requested:
                 self._filter_graph.grab_frame()
                 time.sleep(0.001)
 
         def _async_grabber(self: 'FTCamera', image: np.ndarray) -> None:
-            with self._task_lock:
-                self._read_frame = image
-                self._has_frame = True
-
-        async def _async_process(self: 'FTCamera') -> None:
-            while True:
-                has_frame = False
-                frame = None
-                with self._task_lock:
-                    has_frame = self._has_frame
-                    self._has_frame = False
-                    frame = self._read_frame
-                    self._read_frame = None
-
-                if has_frame:
-                    if not self._process_frame(frame):
-                        break
-                else:
-                    await aio.sleep(0.001)
+            self._process_frame(image)
 
     if isLinux:
-        def _process_frame(self: 'FTCamera', frame: v4l.Frame) -> bool:
+        def _process_frame(self: 'FTCamera', frame: v4l.Frame) -> None:
             """Process captured frames.
 
             Operates only on YUV422 format right now. Calls _decode_yuv422
@@ -569,31 +467,24 @@ class FTCamera:
             The captured frame is reshaped to (height, width, 3) before
             sending it to "callback_frame".
             """
-            # FTCamera._logger.info("process_frame: data={}".format(len(frame.data)))
-            if not self.callback_frame or len(frame.data) == 0:
-                return True
+            if len(frame.data) == 0:
+                return
 
             try:
                 match frame.pixel_format:
                     case v4l.PixelFormat.YUYV:
                         self._decode_yuv422(frame.data)
                     case _:
-                        FTCamera._logger.error("Unsupported pixel format: {}".
-                                               format(frame.pixel_format))
+                        FTCamera._logger.error(
+                            "Unsupported pixel format: {}".format(frame.pixel_format))
                         return False
-                self.callback_frame(self._arr_merge.reshape(
-                    [frame.height, frame.width, 3]))
-
-            except aio.CancelledError:
-                raise
+                self.processor.process(self._arr_merge.reshape([frame.height, frame.width, 3]))
             except Exception:
-                FTCamera._logger.error(traceback.format_exc())
-                return False
-            return True
+                FTCamera._logger.exception("FTCamera._process_frame")
     else:
-        def _process_frame(self: 'FTCamera', frame: np.ndarray) -> bool:
-            if not self.callback_frame or len(frame) == 0:
-                return True
+        def _process_frame(self: 'FTCamera', frame: np.ndarray) -> None:
+            if len(frame) == 0:
+                return
             try:
                 match self._format.pixel_format:
                     case 'YUY2':
@@ -603,15 +494,10 @@ class FTCamera:
                             "Unsupported pixel format: {}".format(
                                 self._format.pixel_format))
                         return False
-                self.callback_frame(
-                    self._arr_merge.reshape([self._frame_size.height,
-                                             self._frame_size.width, 3]))
-            except aio.CancelledError:
-                raise
+                self.processor.process(self._arr_merge.reshape(
+                    [self._frame_size.height, self._frame_size.width, 3]))
             except Exception:
-                FTCamera._logger.error(traceback.format_exc())
-                return False
-            return True
+                FTCamera._logger.exception("FTCamera._process_frame")
 
     if isLinux:
         def _decode_yuv422(self: 'FTCamera', frame: list[bytes]) -> None:
