@@ -22,7 +22,8 @@ def run_model(self):
 
         output = self.one_euro_filter(output)
 
-        for i in range(len(output)):  # Clip values between 0 - 1
-            output[i] = max(min(output[i], 1), 0)
-
-        self.output = output
+        # for i in range(len(output)):  # Clip values between 0 - 1
+        #     output[i] = max(min(output[i], 1), 0)
+        ## Clip values between 0 - 1
+        output = np.clip(output, 0, 1)
+    self.output = output
