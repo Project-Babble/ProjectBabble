@@ -6,6 +6,7 @@ from enum import IntEnum
 import time
 from config import BabbleConfig
 import traceback
+import math
 
 class Tab(IntEnum):
     CAM = 0
@@ -14,54 +15,61 @@ class Tab(IntEnum):
     CALIBRATION = 3
 
 
+import numpy as np
+
 def output_osc(array, self):
     location = self.config.gui_osc_location
     multi = self.config.gui_multiply
-    self.client.send_message(location + "/cheekPuffLeft", array[0] * multi)
-    self.client.send_message(location + "/cheekPuffRight", array[1] * multi)
-    self.client.send_message(location + "/cheekSuckLeft", array[2] * multi)
-    self.client.send_message(location + "/cheekSuckRight", array[3] * multi)
-    self.client.send_message(location + "/jawOpen", array[4] * multi)
-    self.client.send_message(location + "/jawForward", array[5] * multi)
-    self.client.send_message(location + "/jawLeft", array[6] * multi)
-    self.client.send_message(location + "/jawRight", array[7] * multi)
-    self.client.send_message(location + "/noseSneerLeft", array[8] * multi)
-    self.client.send_message(location + "/noseSneerRight", array[9] * multi)
-    self.client.send_message(location + "/mouthFunnel", array[10] * multi)
-    self.client.send_message(location + "/mouthPucker", array[11] * multi)
-    self.client.send_message(location + "/mouthLeft", array[12] * multi)
-    self.client.send_message(location + "/mouthRight", array[13] * multi)
-    self.client.send_message(location + "/mouthRollUpper", array[14] * multi)
-    self.client.send_message(location + "/mouthRollLower", array[15] * multi)
-    self.client.send_message(location + "/mouthShrugUpper", array[16] * multi)
-    self.client.send_message(location + "/mouthShrugLower", array[17] * multi)
-    self.client.send_message(location + "/mouthClose", array[18] * multi)
-    self.client.send_message(location + "/mouthSmileLeft", array[19] * multi)
-    self.client.send_message(location + "/mouthSmileRight", array[20] * multi)
-    self.client.send_message(location + "/mouthFrownLeft", array[21] * multi)
-    self.client.send_message(location + "/mouthFrownRight", array[22] * multi)
-    self.client.send_message(location + "/mouthDimpleLeft", array[23] * multi)
-    self.client.send_message(location + "/mouthDimpleRight", array[24] * multi)
-    self.client.send_message(location + "/mouthUpperUpLeft", array[25] * multi)
-    self.client.send_message(location + "/mouthUpperUpRight", array[26] * multi)
-    self.client.send_message(location + "/mouthLowerDownLeft", array[27] * multi)
-    self.client.send_message(location + "/mouthLowerDownRight", array[28] * multi)
-    self.client.send_message(location + "/mouthPressLeft", array[29] * multi)
-    self.client.send_message(location + "/mouthPressRight", array[30] * multi)
-    self.client.send_message(location + "/mouthStretchLeft", array[31] * multi)
-    self.client.send_message(location + "/mouthStretchRight", array[32] * multi)
-    self.client.send_message(location + "/tongueOut", array[33] * multi)
-    self.client.send_message(location + "/tongueUp", array[34] * multi)
-    self.client.send_message(location + "/tongueDown", array[35] * multi)
-    self.client.send_message(location + "/tongueLeft", array[36] * multi)
-    self.client.send_message(location + "/tongueRight", array[37] * multi)
-    self.client.send_message(location + "/tongueRoll", array[38] * multi)
-    self.client.send_message(location + "/tongueBendDown", array[39] * multi)
-    self.client.send_message(location + "/tongueCurlUp", array[40] * multi)
-    self.client.send_message(location + "/tongueSquish", array[41] * multi)
-    self.client.send_message(location + "/tongueFlat", array[42] * multi)
-    self.client.send_message(location + "/tongueTwistLeft", array[43] * multi)
-    self.client.send_message(location + "/tongueTwistRight", array[44] * multi)
+
+    max_clip_value = 10 ** math.floor(math.log10(multi))
+    # Apply the multiplier and then clip the values between 0 and 1
+    clipped_array = np.clip(array * multi, 0, max_clip_value)
+    self.client.send_message(location + "/cheekPuffLeft", clipped_array[0])
+    self.client.send_message(location + "/cheekPuffRight", clipped_array[1])
+    self.client.send_message(location + "/cheekSuckLeft", clipped_array[2])
+    self.client.send_message(location + "/cheekSuckRight", clipped_array[3])
+    self.client.send_message(location + "/jawOpen", clipped_array[4])
+    self.client.send_message(location + "/jawForward", clipped_array[5])
+    self.client.send_message(location + "/jawLeft", clipped_array[6])
+    self.client.send_message(location + "/jawRight", clipped_array[7])
+    self.client.send_message(location + "/noseSneerLeft", clipped_array[8])
+    self.client.send_message(location + "/noseSneerRight", clipped_array[9])
+    self.client.send_message(location + "/mouthFunnel", clipped_array[10])
+    self.client.send_message(location + "/mouthPucker", clipped_array[11])
+    self.client.send_message(location + "/mouthLeft", clipped_array[12])
+    self.client.send_message(location + "/mouthRight", clipped_array[13])
+    self.client.send_message(location + "/mouthRollUpper", clipped_array[14])
+    self.client.send_message(location + "/mouthRollLower", clipped_array[15])
+    self.client.send_message(location + "/mouthShrugUpper", clipped_array[16])
+    self.client.send_message(location + "/mouthShrugLower", clipped_array[17])
+    self.client.send_message(location + "/mouthClose", clipped_array[18])
+    self.client.send_message(location + "/mouthSmileLeft", clipped_array[19])
+    self.client.send_message(location + "/mouthSmileRight", clipped_array[20])
+    self.client.send_message(location + "/mouthFrownLeft", clipped_array[21])
+    self.client.send_message(location + "/mouthFrownRight", clipped_array[22])
+    self.client.send_message(location + "/mouthDimpleLeft", clipped_array[23])
+    self.client.send_message(location + "/mouthDimpleRight", clipped_array[24])
+    self.client.send_message(location + "/mouthUpperUpLeft", clipped_array[25])
+    self.client.send_message(location + "/mouthUpperUpRight", clipped_array[26])
+    self.client.send_message(location + "/mouthLowerDownLeft", clipped_array[27])
+    self.client.send_message(location + "/mouthLowerDownRight", clipped_array[28])
+    self.client.send_message(location + "/mouthPressLeft", clipped_array[29])
+    self.client.send_message(location + "/mouthPressRight", clipped_array[30])
+    self.client.send_message(location + "/mouthStretchLeft", clipped_array[31])
+    self.client.send_message(location + "/mouthStretchRight", clipped_array[32])
+    self.client.send_message(location + "/tongueOut", clipped_array[33])
+    self.client.send_message(location + "/tongueUp", clipped_array[34])
+    self.client.send_message(location + "/tongueDown", clipped_array[35])
+    self.client.send_message(location + "/tongueLeft", clipped_array[36])
+    self.client.send_message(location + "/tongueRight", clipped_array[37])
+    self.client.send_message(location + "/tongueRoll", clipped_array[38])
+    self.client.send_message(location + "/tongueBendDown", clipped_array[39])
+    self.client.send_message(location + "/tongueCurlUp", clipped_array[40])
+    self.client.send_message(location + "/tongueSquish", clipped_array[41])
+    self.client.send_message(location + "/tongueFlat", clipped_array[42])
+    self.client.send_message(location + "/tongueTwistLeft", clipped_array[43])
+    self.client.send_message(location + "/tongueTwistRight", clipped_array[44])
+
 
 class VRChatOSC:
     # Use a tuple of blink (true, blinking, false, not), x, y for now. 
