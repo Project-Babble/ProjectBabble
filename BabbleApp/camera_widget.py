@@ -35,6 +35,7 @@ class CameraWidget:
         self.gui_vertical_flip = f"-VERTICALFLIP{widget_id}-"
         self.gui_horizontal_flip = f"-HORIZONTALFLIP{widget_id}-"
         self.use_calibration = f"-USECALIBRATION{widget_id}-"
+        self.gui_refresh_button = f"-REFRESHCAMLIST{widget_id}-"
         self.osc_queue = osc_queue
         self.main_config = main_config
         self.cam_id = widget_id
@@ -165,10 +166,11 @@ class CameraWidget:
         self.widget_layout = [
             [
                 sg.Text("Camera Address", background_color='#424042'),
-                sg.InputCombo(self.camera_list, default_value=self.config.capture_source,
+                sg.InputCombo(values=self.camera_list, default_value=self.config.capture_source,
                               key=self.gui_camera_addr,
                               tooltip="Enter the IP address or UVC port of your camera. (Include the 'http://')",
-                              enable_events=True)
+                              enable_events=True),
+                sg.Button("Refresh List", key=self.gui_refresh_button, button_color='#539e8a')
             ],
             [
                 sg.Button("Save and Restart Tracking", key=self.gui_save_tracking_button, button_color='#539e8a'),
@@ -244,14 +246,18 @@ class CameraWidget:
             try:
                 self.config.use_ffmpeg = False
                 # Try storing ints as ints, for those using wired cameras.
-                if value not in self.camera_list:
-                    self.config.capture_source = value
-                else:
+                #if value not in self.camera_list:
+                #    self.config.capture_source = value
                     #if "COM" not in value:
-                    ports = ("COM", "/dev/tty")
-                    if any(x in str(self.config.capture_source) for x in ports):
+                ports = ("COM", "/dev/tty")
+                if any(x in str(value) for x in ports):
+                    self.config.capture_source = value
+                else: 
+                    cam = get_camera_index_by_name(value)       # Set capture_source to the UVC index. Otherwise treat value like an ipcam if we return none
+                    if cam != None:
                         self.config.capture_source = get_camera_index_by_name(value)
-                    else: self.config.capture_source = value
+                    else: 
+                        self.config.capture_source = value
             except ValueError:
                 if value == "":
                     self.config.capture_source = None
@@ -272,8 +278,6 @@ class CameraWidget:
                         self.config.capture_source = f"http://{values[self.gui_camera_addr]}/"
 
             changed = True
-
-
 
         if self.config.rotation_angle != values[self.gui_rotation_slider]:
             self.config.rotation_angle = int(values[self.gui_rotation_slider])
@@ -329,6 +333,13 @@ class CameraWidget:
                 self.is_mouse_up = False
                 self.x0, self.y0 = values[self.gui_roi_selection]
             self.x1, self.y1 = values[self.gui_roi_selection]
+
+        if (event == self.gui_refresh_button): 
+            print("Refreshed Cameralist")
+            self.camera_list = list_camera_names()
+            print(self.camera_list)
+            window[self.gui_camera_addr].update(values=self.camera_list)
+
 
         if event == self.gui_restart_calibration:
             self.babble_cnn.calibration_frame_counter = 1500

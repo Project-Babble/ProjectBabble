@@ -83,7 +83,7 @@ class Camera:
                 return
             should_push = True
             # If things aren't open, retry until they are. Don't let read requests come in any earlier
-            # than this, otherwise we can deadlock ourselves.
+            # than this, otherwise we can deadlock (valve reference) ourselves.
             if (
                     self.config.capture_source is not None and self.config.capture_source != ""
             ):
@@ -174,7 +174,7 @@ class Camera:
             #self.bps = image.nbytes
             if should_push:
                 self.push_image_to_queue(image, frame_number, self.fps)
-        except:
+        except Exception as e:
             print(
                 f"{Fore.YELLOW}[WARN] Capture source problem, assuming camera disconnected, waiting for reconnect.{Fore.RESET}")
             self.camera_status = CameraState.DISCONNECTED
