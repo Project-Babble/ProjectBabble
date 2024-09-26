@@ -90,20 +90,21 @@ def list_camera_names():
     if is_nt:
         # On Windows, use pygrabber to list devices
         cam_list = graph.get_input_devices()
-        return cam_list
+        return cam_list + list_serial_ports()
 
     elif os_type == "Linux":
         # On Linux, return UVC device paths like '/dev/video0'
-        return list_linux_uvc_devices()
+        return list_linux_uvc_devices() + list_serial_ports()
 
     elif os_type == "Darwin":
         # On macOS, fallback to OpenCV (device names aren't fetched)
-        return list_cameras_opencv()
+        return list_cameras_opencv() + list_serial_ports()
 
     else:
         return ["Unsupported operating system"]
 
 def list_serial_ports():
+    print("DEBUG: Listed Serial Ports")
     """ Lists serial port names
 
         :raises EnvironmentError:

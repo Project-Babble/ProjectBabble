@@ -8,7 +8,6 @@ import cv2
 from babble_processor import BabbleProcessor, CamInfoOrigin
 from camera import Camera, CameraState
 from config import BabbleConfig
-from landmark_processor import LandmarkProcessor
 from osc import Tab
 from utils.misc_utils import PlaySound, SND_FILENAME, SND_ASYNC, list_camera_names, get_camera_index_by_name
 
@@ -68,16 +67,6 @@ class CameraWidget:
             self.cam_id,
         )
 
-        self.babble_landmark = LandmarkProcessor(
-            self.config,
-            self.settings_config,
-            self.main_config,
-            self.cancellation_event,
-            self.capture_event,
-            self.capture_queue,
-            self.image_queue,
-            self.cam_id,
-        )
 
         self.camera_status_queue = Queue(maxsize=2)
         self.camera = Camera(
@@ -92,7 +81,7 @@ class CameraWidget:
 
         self.roi_layout = [
             [
-                sg.Button("Auto ROI", key=self.gui_autoroi, button_color='#539e8a', tooltip="Automatically set ROI", ),
+                sg.Button("Select Entire Frame", key=self.gui_autoroi, button_color='#539e8a', tooltip="Automatically set ROI", ),
             ],
             [
                 sg.Graph(
@@ -122,9 +111,10 @@ class CameraWidget:
             ],
             [
                 sg.Button("Start Calibration", key=self.gui_restart_calibration, button_color='#539e8a',
-                          tooltip="Start calibration. Look all arround to all extreams without blinking until sound is heard.", ),
+                          tooltip="Neutural Calibration: Hold a relaxed face, press [Start Calibration] and then press [Stop Calibraion]. \nFull Calibration: Press [Start Calibration] and make as many face movements as you can until it switches back to tracking mode or press [Stop Calibration]", disabled=True),
+                
                 sg.Button("Stop Calibration", key=self.gui_stop_calibration, button_color='#539e8a',
-                          tooltip="Stop calibration manualy.", ),
+                          tooltip="Stop calibration manualy.", disabled=True),
             ],
             [
                 sg.Checkbox(
@@ -133,6 +123,7 @@ class CameraWidget:
                     key=self.use_calibration,
                     background_color='#424042',
                     tooltip="Checked = Calibrated model output. Unchecked = Raw model output",
+                    enable_events=True
                 ),
             ],
             [
@@ -197,7 +188,7 @@ class CameraWidget:
 
     def _movavg_fps(self, next_fps):
         self.movavg_fps_queue.append(next_fps)
-        fps = round(sum(self.movavg_fps_queue) / len(self.movavg_fps_queue))
+        fps = round(sum(self.movavg_fps_queue) / len(self.movavg_fps_queue)) 
         millisec = round((1 / fps if fps else 0) * 1000)
         return f"{fps} Fps {millisec} ms"
 
@@ -283,7 +274,6 @@ class CameraWidget:
             self.config.rotation_angle = int(values[self.gui_rotation_slider])
             changed = True
 
-        #print(self.config.gui_vertical_flip)
         if self.config.gui_vertical_flip != values[self.gui_vertical_flip]:
             self.config.gui_vertical_flip = values[self.gui_vertical_flip]
             changed = True
@@ -313,6 +303,17 @@ class CameraWidget:
             window[self.gui_roi_layout].update(visible=True)
             window[self.gui_tracking_layout].update(visible=False)
 
+        if event == self.use_calibration:
+            print("toggle event")
+            if self.settings_config.use_calibration == True:
+                window[self.gui_restart_calibration].update(disabled = False)
+                window[self.gui_stop_calibration].update(disabled = False)
+                print("Enabled")
+            else:
+                window[self.gui_restart_calibration].update(disabled = True)
+                window[self.gui_stop_calibration].update(disabled = True)
+                print("Disabled")
+
         if event == "{}+UP".format(self.gui_roi_selection):
             # Event for mouse button up in ROI mode
             self.is_mouse_up = True
@@ -334,19 +335,30 @@ class CameraWidget:
                 self.x0, self.y0 = values[self.gui_roi_selection]
             self.x1, self.y1 = values[self.gui_roi_selection]
 
+        if event == self.gui_autoroi:
+            print("Set ROI")
+            output = self.babble_cnn.get_framesize()
+            self.config.roi_window_x = 0
+            self.config.roi_window_y = 0
+            self.config.roi_window_w = output[0]
+            self.config.roi_window_h = output[1]
+            self.main_config.save()
+
         if (event == self.gui_refresh_button): 
-            print("Refreshed Cameralist")
+            print("\033[94m[INFO] Refreshed Camera List\033[0m")
             self.camera_list = list_camera_names()
             print(self.camera_list)
             window[self.gui_camera_addr].update(values=self.camera_list)
 
 
         if event == self.gui_restart_calibration:
-            self.babble_cnn.calibration_frame_counter = 1500
-            PlaySound('Audio/start.wav', SND_FILENAME | SND_ASYNC)
+            if values[self.use_calibration] == True:    # Don't start recording if the calibration filter is disabled.
+                self.babble_cnn.calibration_frame_counter = 1500
+                PlaySound('Audio/start.wav', SND_FILENAME | SND_ASYNC)
 
         if event == self.gui_stop_calibration:
-            self.babble_cnn.calibration_frame_counter = 0
+            if self.babble_cnn.calibration_frame_counter != None: # Only assign the variable if we are in calibration mode.
+                self.babble_cnn.calibration_frame_counter = 0
 
         needs_roi_set = self.config.roi_window_h <= 0 or self.config.roi_window_w <= 0
 

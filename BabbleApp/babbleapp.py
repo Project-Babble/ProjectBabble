@@ -262,7 +262,7 @@ def main():
             config.save()
 
         elif values[CALIB_SETTINGS_RADIO_NAME] and config.cam_display_id != Tab.CALIBRATION:
-            cams[0].stop()
+            cams[0].start()       # Allow tracking to continue in calibration tab
             settings[0].stop()
             settings[1].stop()
             settings[2].start()

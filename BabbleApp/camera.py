@@ -66,6 +66,7 @@ class Camera:
         self.prevft = 0
         self.newft = 0
         self.fl = [0]
+        self.FRAME_SIZE = [0,0]
 
         self.error_message = f"{Fore.YELLOW}[WARN] Capture source {{}} not found, retrying...{Fore.RESET}"
 
@@ -141,6 +142,7 @@ class Camera:
                 if any(x in str(self.config.capture_source) for x in ports):
                     self.get_serial_camera_picture(should_push)
                 else:
+                    self.__del__()
                     self.get_cv2_camera_picture(should_push)
                 if not should_push:
                     # if we get all the way down here, consider ourselves connected
@@ -152,6 +154,7 @@ class Camera:
             if not ret:
                 self.cv2_camera.set(cv2.CAP_PROP_POS_FRAMES, 0)
                 raise RuntimeError("Problem while getting frame")
+            self.FRAME_SIZE = image.shape
             frame_number = self.cv2_camera.get(cv2.CAP_PROP_POS_FRAMES)
             # Calculate the fps.
             yeah = time.time()
