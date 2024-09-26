@@ -28,8 +28,8 @@ def run_model(self): # Replace transforms n shit for the pfld model
         self.output = output
 
 
-def write_image(self): # Debug function for development, remove once pfld is implemented. 
-    frame = cv2.resize(self.current_image_gray, (256, 256))
-    cv2.imwrite("yeah.png", frame)
+def write_image(self, image): # Placeholder function for development, replace all instances with run_model() once pfld is implemented. 
+    frame = cv2.resize(image, (256, 256))
+    cv2.imwrite("yeah.png", frame) # Write the clean, untransformed frame to show that the frame is clean for pfld
     print("Image Wrote")
-    self.output = (0, 0, 100, 100)
+    self.output = ((0, 0, 100, 100), 25)  # Return ROI box and Rotation information. 

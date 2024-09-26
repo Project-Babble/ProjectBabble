@@ -66,6 +66,7 @@ class Camera:
         self.prevft = 0
         self.newft = 0
         self.fl = [0]
+        self.FRAME_SIZE = [0,0]
 
         self.error_message = f"{Fore.YELLOW}[WARN] Capture source {{}} not found, retrying...{Fore.RESET}"
 
@@ -83,13 +84,11 @@ class Camera:
                 return
             should_push = True
             # If things aren't open, retry until they are. Don't let read requests come in any earlier
-            # than this, otherwise we can deadlock ourselves.
+            # than this, otherwise we can deadlock (valve reference) ourselves.
             if (
                     self.config.capture_source is not None and self.config.capture_source != ""
             ):
-                self.current_capture_source = self.config.capture_source
-
-                if "COM" in str(self.config.capture_source) and self.config.capture_source not in self.camera_list:
+                if "COM" in str(self.config.capture_source):
                     if (
                             self.serial_connection is None
                             or self.camera_status == CameraState.DISCONNECTED
@@ -114,7 +113,7 @@ class Camera:
                         if self.config.capture_source not in self.camera_list:
                             self.current_capture_source = self.config.capture_source
                         else:
-                            self.current_capture_source = get_camera_index_by_name(self.current_capture_source)
+                            self.current_capture_source = get_camera_index_by_name(self.config.capture_source)
 
                         if self.config.use_ffmpeg:
                             self.cv2_camera = cv2.VideoCapture(self.current_capture_source, cv2.CAP_FFMPEG)
@@ -139,9 +138,11 @@ class Camera:
             if should_push and not self.capture_event.wait(timeout=0.02):
                 continue
             if self.config.capture_source is not None:
-                if "COM" in str(self.config.capture_source):
+                ports = ("COM", "/dev/tty")
+                if any(x in str(self.config.capture_source) for x in ports):
                     self.get_serial_camera_picture(should_push)
                 else:
+                    self.__del__()
                     self.get_cv2_camera_picture(should_push)
                 if not should_push:
                     # if we get all the way down here, consider ourselves connected
@@ -153,6 +154,7 @@ class Camera:
             if not ret:
                 self.cv2_camera.set(cv2.CAP_PROP_POS_FRAMES, 0)
                 raise RuntimeError("Problem while getting frame")
+            self.FRAME_SIZE = image.shape
             frame_number = self.cv2_camera.get(cv2.CAP_PROP_POS_FRAMES)
             # Calculate the fps.
             yeah = time.time()
@@ -175,7 +177,7 @@ class Camera:
             #self.bps = image.nbytes
             if should_push:
                 self.push_image_to_queue(image, frame_number, self.fps)
-        except:
+        except Exception as e:
             print(
                 f"{Fore.YELLOW}[WARN] Capture source problem, assuming camera disconnected, waiting for reconnect.{Fore.RESET}")
             self.camera_status = CameraState.DISCONNECTED

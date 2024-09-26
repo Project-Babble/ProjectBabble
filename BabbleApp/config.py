@@ -16,8 +16,6 @@ class BabbleCameraConfig(BaseModel):
     roi_window_w: int = 0
     roi_window_h: int = 0
     capture_source: Union[int, str, None] = None
-    use_calibration: bool = False
-    use_n_calibration: bool = True
     gui_vertical_flip: bool = False
     gui_horizontal_flip: bool = False
     use_ffmpeg: bool = False
@@ -44,6 +42,8 @@ class BabbleSettingsConfig(BaseModel):
     gui_cam_resolution_x: int = 0    
     gui_cam_resolution_y: int = 0
     gui_cam_framerate: int = 0
+    use_calibration: bool = False
+    calibration_mode: str = 'Neutral'
 
 class BabbleConfig(BaseModel):
     version: int = 1
@@ -87,5 +87,5 @@ class BabbleConfig(BaseModel):
                 # No backup because the saved settings file is broken.
                 pass
         with open(CONFIG_FILE_NAME, "w") as settings_file:
-            json.dump(obj=self.dict(), fp=settings_file)
+            json.dump(obj=self.dict(), fp=settings_file, indent=2)
         print("[INFO] Config Saved Successfully")

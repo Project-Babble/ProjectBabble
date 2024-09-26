@@ -68,6 +68,7 @@ class BabbleProcessor:
         self.current_image_gray = None
         self.current_frame_number = None
         self.current_fps = None
+        self.FRAMESIZE = [0,0,1]
 
         self.calibration_frame_counter = None
 
@@ -129,6 +130,7 @@ class BabbleProcessor:
         
         try:
             # Get frame from capture source, crop to ROI
+            self.FRAMESIZE = self.current_image.shape
             self.current_image = self.current_image[
                 int(self.config.roi_window_y): int(
                     self.config.roi_window_y + self.config.roi_window_h
@@ -223,15 +225,14 @@ class BabbleProcessor:
                 new_blue_channel = red_channel
                 new_green_channel = red_channel
                 self.current_image = cv2.merge((new_blue_channel, new_green_channel, red_channel))
-
             self.current_image_gray = cv2.cvtColor(
-            self.current_image, cv2.COLOR_BGR2GRAY
+                self.current_image, cv2.COLOR_BGR2GRAY
             )
             self.current_image_gray_clean = self.current_image_gray.copy() #copy this frame to have a clean image for blink algo
 
 
             run_model(self)
-            if self.config.use_calibration:
+            if self.settings.use_calibration:
                 self.output = cal.cal_osc(self, self.output)
 
             #else:
@@ -239,3 +240,5 @@ class BabbleProcessor:
             #print(self.output)
             self.output_images_and_update(CamInfo(self.current_algo, self.output))
 
+    def get_framesize(self):
+        return self.FRAMESIZE

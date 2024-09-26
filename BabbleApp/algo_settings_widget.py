@@ -198,6 +198,7 @@ class AlgoSettingsWidget:
         except ValueError:
             pass  # Ignore invalid float conversion
 
+
         if self.config.gui_model_file != values[self.gui_model_file]:
             self.config.gui_model_file = values[self.gui_model_file]
             changed = True
@@ -210,6 +211,7 @@ class AlgoSettingsWidget:
         except ValueError:
             pass  # Ignore invalid float conversion
 
+
         if self.config.gui_use_gpu != values[self.gui_use_gpu]:
             self.config.gui_use_gpu = values[self.gui_use_gpu]
             changed = True
@@ -221,6 +223,7 @@ class AlgoSettingsWidget:
                     changed = True
         except ValueError:
             pass  # Ignore invalid int conversion
+
 
         if self.config.gui_runtime != str(values[self.gui_runtime]):
             self.config.gui_runtime = str(values[self.gui_runtime])
