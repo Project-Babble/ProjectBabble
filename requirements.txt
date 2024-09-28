@@ -2,7 +2,7 @@ onnxruntime
 onnxruntime-directml
 opencv_python
 Pillow
-PySimpleGUI
+pysimplegui==4.60.5.0
 python_osc
 torch
 torchvision
@@ -10,5 +10,9 @@ pydantic
 pyserial
 colorama
 winotify
+<<<<<<< Updated upstream
 poetry
 pygrabber
+=======
+poetry
+>>>>>>> Stashed changes
