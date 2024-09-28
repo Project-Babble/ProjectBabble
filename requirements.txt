@@ -10,9 +10,5 @@ pydantic
 pyserial
 colorama
 winotify
-<<<<<<< Updated upstream
 poetry
 pygrabber
-=======
-poetry
->>>>>>> Stashed changes
