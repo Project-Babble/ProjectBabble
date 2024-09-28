@@ -1,4 +1,3 @@
-
 ![Babble Logo](https://github.com/SummerSigh/ProjectBabble/blob/SummerSigh-patch-4/Babble.png?raw=true)
 
 <h3 align="center">
@@ -32,8 +31,15 @@ Once it's finished installing, you can update and run the Babble app by typing `
 
 *You should also be able to run the Windows executable through Wine!*
 
-#### Note:
-If you recieve a `ModuleNotFoundError: No module named 'tkinter'` error message on run, you'll need to install `tkinter` for your distro.
+#### Notes:
+If you receive a `["Error listing UVC devices on Linux ... No such file or directory"]` when choosing/changing your camera, you'll need to install video4linux (`v4l-utils`) for your distro.
+
+For Ubuntu or other distros with apt:
+```bash
+sudo apt-get install v4l-utils
+```
+
+If you receive a `ModuleNotFoundError: No module named 'tkinter'` error message on run, you'll need to install `tkinter` for your distro.
 
 For Ubuntu or other distros with apt:
 ```bash
