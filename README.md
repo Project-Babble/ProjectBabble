@@ -1,38 +1,50 @@
 
 ![Babble Logo](https://github.com/SummerSigh/ProjectBabble/blob/SummerSigh-patch-4/Babble.png?raw=true)
 
-# Table of Contents
-- [What is Babble?](#what-is-babble)
+<h3 align="center">
+Project Babble is an open-source mouth tracking project designed to work with any VR headset. We strive to make our models robust to different lighting, cameras, image qualities and facial structures!
+</h3>
+
+## Table of Contents
 - [Features](#features)
-- [How do I set it up?](#setup-more-detailed-wiki-and-setup-video-coming-soon)
-- [Useful Links](#useful-links)
+- [Installation](#installation)
+- [Usage](#usage)
+- [Links](#links)
   
-
-## What is Babble?
-
-<p align="center">
-Babble is an opensource mouth tracking project designed to work with any existing VR headset. We strive to make our models robust to different lighting, cameras, image qualities, and facial structures!
-</p>
-
 ## Features
 - 100% Opensource! 🌟
 - Fast and robust! 🚀
 - Works with most existing blendshape standards! ⚙️
 - Constantly updated and modified! 🔧
 
-## Setup (More detailed wiki and setup video coming soon!) 
-To install babble is fairly simple! Head over to the releases tab and download the EXE located there. Run the EXE and install babble! After that, you can test with a USB WEBCAM by doing the following steps: 
+## Installation
+### Windows
+Head to the releases section and [download the latest installer](https://github.com/Project-Babble/ProjectBabble/releases/latest).
 
-- Run the babble app
-- Enter 0 into the camera address bar
-- Enter cropping mode where your camera feed should be
-- Crop your mouth out of the frame
-- Open VRCFT
-- Install the babble module
-- Test in VRC with a VRCFT-compatible avatar
+### Linux
+Copy, paste and run the following script into the terminal of your choice:
 
+```bash -c "$(curl -fsSL https://gist.githubusercontent.com/dfgHiatus/a92a3caae24c1bfab1c7544537a654c5/raw/494a4bc5ed6c97745c7a283661d2f5530ba3d949/project-babble-install.sh)"```
 
-## Useful links
-- [Our Discord!](https://discord.gg/XAMZmjBktk)
+Once it's finished installing, you can update and run the Babble app by typing `babble-app` into your terminal.
+
+*You should also be able to run the Windows executable through Wine!*
+
+#### Note:
+If you recieve a `ModuleNotFoundError: No module named 'tkinter'` error message on run, you'll need to install `tkinter` for your distro:
+- For Ubuntu or other distros with apt:
+```sudo apt-get install python3-tk```
+- For Fedora:
+```sudo dnf install python3-tkinter```
+
+You can read more about this [here](https://stackoverflow.com/questions/25905540/importerror-no-module-named-tkinter).
+
+## Usage 
+We have integrations for [VRChat](https://docs.babble.diy/docs/software/integrations/vrc), [Resonite](https://docs.babble.diy/docs/software/integrations/resonite) or [ChilloutVR](https://docs.babble.diy/docs/software/integrations/chilloutVR)!
+
+Looking for something else? Check out our [documentation](https://docs.babble.diy/) here!
+
+## Links
+- [Our Discord](https://discord.gg/XAMZmjBktk)
+- [Our Twitter](https://x.com/projectBabbleVR)
 - [Wandb Runs](https://wandb.ai/summerai/ProjectBabble)
-
