@@ -111,7 +111,7 @@ class CameraWidget:
             ],
             [
                 sg.Button("Start Calibration", key=self.gui_restart_calibration, button_color='#539e8a',
-                          tooltip="Neutural Calibration: Hold a relaxed face, press [Start Calibration] and then press [Stop Calibraion]. \nFull Calibration: Press [Start Calibration] and make as many face movements as you can until it switches back to tracking mode or press [Stop Calibration]", disabled=True),
+                          tooltip="Neutral Calibration: Hold a relaxed face, press [Start Calibration] and then press [Stop Calibraion]. \nFull Calibration: Press [Start Calibration] and make as many face movements as you can until it switches back to tracking mode or press [Stop Calibration]", disabled=True),
                 
                 sg.Button("Stop Calibration", key=self.gui_stop_calibration, button_color='#539e8a',
                           tooltip="Stop calibration manualy.", disabled=True),
