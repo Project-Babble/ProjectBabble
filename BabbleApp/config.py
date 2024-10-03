@@ -6,6 +6,7 @@ from BabbleApp.utils.misc_utils import EnsurePath
 from tab import Tab
 from pydantic import BaseModel
 from typing import Union
+from lang_manager import LocaleStringManager as lang
 
 CONFIG_FILE_NAME: str = "babble_settings.json"
 BACKUP_CONFIG_FILE_NAME: str = "babble_settings.backup"
@@ -64,17 +65,17 @@ class BabbleConfig(BaseModel):
             with open(CONFIG_FILE_NAME, "r") as settings_file:
                 return BabbleConfig(**json.load(settings_file))
         except json.JSONDecodeError:
-            print("[INFO] Failed to load settings file")
+            print(f'[{lang._instance.get_string("log.info")}] Failed to load settings file')
             load_config = None
             if os.path.exists(BACKUP_CONFIG_FILE_NAME):
                 try:
                     with open(BACKUP_CONFIG_FILE_NAME, "r") as settings_file:
                         load_config = BabbleConfig(**json.load(settings_file))
-                    print("[INFO] Using backup settings")
+                    print(f'[{lang._instance.get_string("log.info")}] Using backup settings')
                 except json.JSONDecodeError:
                     pass
             if load_config is None:
-                print("[INFO] using base settings")
+                print(f'[{lang._instance.get_string("log.info")}] using base settings')
                 load_config = BabbleConfig()
             return load_config
 
@@ -94,4 +95,4 @@ class BabbleConfig(BaseModel):
                 pass
         with open(CONFIG_FILE_NAME, "w") as settings_file:
             json.dump(obj=self.dict(), fp=settings_file, indent=2)
-        print("[INFO] Config Saved Successfully")
+        print(f'[{lang._instance.get_string("log.info")}] Config Saved Successfully')

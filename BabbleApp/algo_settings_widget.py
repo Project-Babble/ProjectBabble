@@ -1,11 +1,11 @@
 import PySimpleGUI as sg
-
 from config import BabbleSettingsConfig
 from osc import Tab
 from queue import Queue
 from threading import Event
 import re
-
+from utils.misc_utils import bg_color_highlight, bg_color_clear
+from lang_manager import LocaleStringManager as lang
 
 class AlgoSettingsWidget:
     def __init__(self, widget_id: Tab, main_config: BabbleSettingsConfig, osc_queue: Queue):
@@ -28,75 +28,75 @@ class AlgoSettingsWidget:
         # Define the window's contents
         self.general_settings_layout = [
 
-            [sg.Text("Model file:", background_color='#424042'),
+            [sg.Text(f'{lang._instance.get_string("algorithm.modelFile")}:', background_color=bg_color_highlight),
              sg.InputText(
                  self.config.gui_model_file,
                  key=self.gui_model_file,
                  size=(32),
-                 tooltip="Name of the model file.",
+                 tooltip=f'{lang._instance.get_string("algorithm.modelFileTooptip")}.',
              ),
-             sg.Text("Inference Threads:", background_color='#424042'),
+             sg.Text(f'{lang._instance.get_string("algorithm.inferenceThreads")}:', background_color=bg_color_highlight),
              sg.InputText(
                  self.config.gui_inference_threads,
                  key=self.gui_inference_threads,
                  size=(4),
-                 tooltip="How many threads to use for processing the model.",
+                 tooltip=f'{lang._instance.get_string("algorithm.inferenceThreadsTooltip")}.',
                  enable_events=True,
              ),
              ],
-            [sg.Text("Runtime:", background_color='#424042'),
+            [sg.Text(f'{lang._instance.get_string("algorithm.runtime")}:', background_color=bg_color_highlight),
              sg.OptionMenu(
                  self.runtime_list,
                  self.config.gui_runtime,
                  key=self.gui_runtime,
              ),
-             sg.Text("GPU Index:", background_color='#424042'),
+             sg.Text(f'{lang._instance.get_string("algorithm.GPUIndex")}:', background_color=bg_color_highlight),
              sg.InputText(
                  self.config.gui_gpu_index,
                  key=self.gui_gpu_index,
                  size=(4),
-                 tooltip="Select which device to run inference.",
+                 tooltip=f'{lang._instance.get_string("algorithm.GPUIndexTooltip")}.',
                  enable_events=True,
              ),
              sg.Checkbox(
-                 "Use GPU",
+                 lang._instance.get_string("algorithm.useGPU"),
                  default=self.config.gui_use_gpu,
                  key=self.gui_use_gpu,
-                 background_color='#424042',
-                 tooltip="Toggle GPU execution.",
+                 background_color=bg_color_highlight,
+                 tooltip=f'{lang._instance.get_string("algorithm.useGPUTooltip")}.',
              ),
              ],
-            [sg.Text("Model output multiplier:", background_color='#424042'),
+            [sg.Text(f'{lang._instance.get_string("algorithm.modelOutputMultiplier")}:', background_color=bg_color_highlight),
              sg.InputText(
                  self.config.gui_multiply,
                  key=self.gui_multiply,
                  size=(4),
-                 tooltip="Model output modifier.",
+                 tooltip=f'{lang._instance.get_string("algorithm.modelOutputMultiplierTooltip")}.',
                  enable_events=True,
              ),
              ],
-            [sg.Text("Calibration Deadzone:", background_color='#424042'),
+            [sg.Text(f'{lang._instance.get_string("algorithm.calibrationDeadzone")}:', background_color=bg_color_highlight),
              sg.InputText(
                  self.config.calib_deadzone,
                  key=self.calib_deadzone,
                  size=(4),
-                 tooltip="Offset the minimum calibrated values.",
+                 tooltip=f'{lang._instance.get_string("algorithm.calibrationDeadzoneTooltip")}.',
                  enable_events=True,
              ),
              ],
             [
-                sg.Text("One Euro Filter Parameters:", background_color='#242224'),
+                sg.Text(f'{lang._instance.get_string("algorithm.oneEuroFilterParameters")}:', background_color=bg_color_clear),
             ],
             [
 
-                sg.Text("Min Frequency Cutoff", background_color='#424042'),
+                sg.Text(lang._instance.get_string("algorithm.minFrequencyCutoff"), background_color=bg_color_highlight),
                 sg.InputText(
                     self.config.gui_min_cutoff,
                     key=self.gui_min_cutoff,
                     size=(7),
                     enable_events=True,
                 ),
-                sg.Text("Speed Coefficient", background_color='#424042'),
+                sg.Text(lang._instance.get_string("algorithm.speedCoefficient"), background_color=bg_color_highlight),
                 sg.InputText(
                     self.config.gui_speed_coefficient,
                     key=self.gui_speed_coefficient,
@@ -109,10 +109,10 @@ class AlgoSettingsWidget:
 
         self.widget_layout = [
             [
-                sg.Text("Model Settings:", background_color='#242224'),
+                sg.Text(lang._instance.get_string("algorithm.header"), background_color=bg_color_clear),
             ],
             [
-                sg.Column(self.general_settings_layout, key=self.gui_general_settings_layout, background_color='#424042'),
+                sg.Column(self.general_settings_layout, key=self.gui_general_settings_layout, background_color=bg_color_highlight),
             ],
         ]
 

@@ -29,8 +29,8 @@ from osc import VRChatOSCReceiver, VRChatOSC
 from general_settings_widget import SettingsWidget
 from algo_settings_widget import AlgoSettingsWidget
 from calib_settings_widget import CalibSettingsWidget
-from utils.misc_utils import EnsurePath, is_nt
-from lang_manager import LocaleStringManager
+from utils.misc_utils import EnsurePath, is_nt, bg_color_highlight, bg_color_clear
+from lang_manager import LocaleStringManager as lang
 if is_nt:
     from winotify import Notification
 os.system('color')  # init ANSI color
@@ -39,7 +39,7 @@ os.system('color')  # init ANSI color
 # https://github.com/opencv/opencv/issues/17687
 os.environ["OPENCV_VIDEOIO_MSMF_ENABLE_HW_TRANSFORMS"] = "0"
 
-WINDOW_NAME = "Babble sApp"
+WINDOW_NAME = "Babble App"
 CAM_NAME = "-CAMWIDGET-"
 SETTINGS_NAME = "-SETTINGSWIDGET-"
 ALGO_SETTINGS_NAME = "-ALGOSETTINGSWIDGET-"
@@ -52,16 +52,17 @@ CALIB_SETTINGS_RADIO_NAME = "-CALIBSETTINGSRADIO-"
 page_url = "https://github.com/SummerSigh/ProjectBabble/releases/latest"
 appversion = "Babble v2.0.6 Alpha"
 
-
 def main():
+    EnsurePath()
+
     # Get Configuration
     config: BabbleConfig = BabbleConfig.load()
-    config.save()
-
-    EnsurePath()
-        
+    
     # Init locale manager
-    LocaleStringManager("Locale", config.settings.gui_language)
+    lang("Locale", config.settings.gui_language)
+    
+    config.save()
+    
     cancellation_event = threading.Event()
     ROSC = False
     # Check to see if we can connect to our video source first. If not, bring up camera finding
@@ -76,10 +77,10 @@ def main():
             if (
                     appversion == latestversion
             ):  # If what we scraped and hardcoded versions are same, assume we are up to date.
-                print(f"\033[92m[INFO] App is the latest version! [{latestversion}]\033[0m")
+                print(f'\033[92m[{lang._instance.get_string("log.info")}] App is the latest version! [{latestversion}]\033[0m')
             else:
                 print(
-                    f"\033[93m[INFO] You have app version [{appversion}] installed. Please update to [{latestversion}] for the newest features.\033[0m"
+                    f'\033[93m[{lang._instance.get_string("log.info")}] You have app version [{appversion}] installed. Please update to [{latestversion}] for the newest features.\033[0m'
                 )
                 try:
                     if is_nt:
@@ -97,9 +98,9 @@ def main():
                         )
                         toast.show()
                 except Exception as e:
-                    print("[INFO] Toast notifications not supported")
+                    print(f'[{lang._instance.get_string("log.info")}] Toast notifications not supported')
         except:
-            print("[INFO] Internet connection failed, no update check occured.")
+            print(f'[{lang._instance.get_string("log.info")}] Internet connection failed, no update check occured.')
     # Check to see if we have an ROI. If not, bring up ROI finder GUI.
 
     # Spawn worker threads
@@ -124,28 +125,28 @@ def main():
             sg.Radio(
                 "Cam",
                 "TABSELECTRADIO",
-                background_color="#292929",
+                background_color=bg_color_clear,
                 default=(config.cam_display_id == Tab.CAM),
                 key=CAM_RADIO_NAME,
             ),
             sg.Radio(
                 "Settings",
                 "TABSELECTRADIO",
-                background_color="#292929",
+                background_color=bg_color_clear,
                 default=(config.cam_display_id == Tab.SETTINGS),
                 key=SETTINGS_RADIO_NAME,
             ),
             sg.Radio(
                 "Algo Settings",
                 "TABSELECTRADIO",
-                background_color="#292929",
+                background_color=bg_color_clear,
                 default=(config.cam_display_id == Tab.ALGOSETTINGS),
                 key=ALGO_SETTINGS_RADIO_NAME,
             ),
             sg.Radio(
                 "Calibration",
                 "TABSELECTRADIO",
-                background_color="#292929",
+                background_color=bg_color_clear,
                 default=(config.cam_display_id == Tab.CALIBRATION),
                 key=CALIB_SETTINGS_RADIO_NAME,
             ),
@@ -157,28 +158,28 @@ def main():
                 vertical_alignment="top",
                 key=CAM_NAME,
                 visible=(config.cam_display_id in [Tab.CAM]),
-                background_color="#424042",
+                background_color=bg_color_highlight,
             ),
             sg.Column(
                 settings[0].widget_layout,
                 vertical_alignment="top",
                 key=SETTINGS_NAME,
                 visible=(config.cam_display_id in [Tab.SETTINGS]),
-                background_color="#424042",
+                background_color=bg_color_highlight,
             ),
             sg.Column(
                 settings[1].widget_layout,
                 vertical_alignment="top",
                 key=ALGO_SETTINGS_NAME,
                 visible=(config.cam_display_id in [Tab.ALGOSETTINGS]),
-                background_color="#424042",
+                background_color=bg_color_highlight,
             ),
             sg.Column(
                 settings[2].widget_layout,
                 vertical_alignment="top",
                 key=CALIB_SETTINGS_NAME,
                 visible=(config.cam_display_id in [Tab.CALIBRATION]),
-                background_color="#424042",
+                background_color=bg_color_highlight,
             ),
             
         ],
@@ -202,7 +203,7 @@ def main():
 
     # Create the window
     window = sg.Window(
-        f"{appversion}", layout, icon="Images/logo.ico", background_color="#292929"
+        f"{appversion}", layout, icon="Images/logo.ico", background_color=bg_color_clear
     )
 
     # GUI Render loop
@@ -224,7 +225,7 @@ def main():
             if ROSC:
                 osc_receiver.shutdown()
                 osc_receiver_thread.join()
-            print("\033[94m[INFO] Exiting BabbleApp\033[0m")
+            print(f'\033[94m[{lang._instance.get_string("log.info")}] Exiting BabbleApp\033[0m')
             return
 
         if values[CAM_RADIO_NAME] and config.cam_display_id != Tab.CAM:

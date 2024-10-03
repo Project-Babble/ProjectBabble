@@ -5,6 +5,7 @@ import serial
 import serial.tools.list_ports
 import threading
 import time
+from lang_manager import LocaleStringManager as lang
 
 from colorama import Fore
 from config import BabbleConfig, BabbleSettingsConfig
@@ -68,7 +69,7 @@ class Camera:
         self.fl = [0]
         self.FRAME_SIZE = [0,0]
 
-        self.error_message = f"{Fore.YELLOW}[WARN] Capture source {{}} not found, retrying...{Fore.RESET}"
+        self.error_message = f'{Fore.YELLOW}[{lang._instance.get_string("log.warn")}] Capture source {{}} not found, retrying...{Fore.RESET}'
 
     def __del__(self):
         if self.serial_connection is not None:
@@ -80,7 +81,7 @@ class Camera:
     def run(self):
         while True:
             if self.cancellation_event.is_set():
-                print(f"{Fore.CYAN}[INFO] Exiting Capture thread{Fore.RESET}")
+                print(f'{Fore.CYAN}[{lang._instance.get_string("log.info")}] Exiting Capture thread{Fore.RESET}')
                 return
             should_push = True
             # If things aren't open, retry until they are. Don't let read requests come in any earlier
@@ -179,7 +180,7 @@ class Camera:
                 self.push_image_to_queue(image, frame_number, self.fps)
         except Exception as e:
             print(
-                f"{Fore.YELLOW}[WARN] Capture source problem, assuming camera disconnected, waiting for reconnect.{Fore.RESET}")
+                f'{Fore.YELLOW}[{lang._instance.get_string("log.warn")}] Capture source problem, assuming camera disconnected, waiting for reconnect.{Fore.RESET}')
             self.camera_status = CameraState.DISCONNECTED
             pass
 
@@ -214,12 +215,12 @@ class Camera:
                     # Create jpeg frame from byte string
                     image = cv2.imdecode(np.fromstring(jpeg, dtype=np.uint8), cv2.IMREAD_UNCHANGED)
                     if image is None:
-                        print(f"{Fore.YELLOW}[WARN] Frame drop. Corrupted JPEG.{Fore.RESET}")
+                        print(f'{Fore.YELLOW}[{lang._instance.get_string("log.warn")}] {lang._instance.get_string("warn.frameDrop")}{Fore.RESET}')
                         return
                     # Discard the serial buffer. This is due to the fact that it
                     # may build up some outdated frames. A bit of a workaround here tbh.
                     if conn.in_waiting >= 32768:
-                        print(f"{Fore.CYAN}[INFO] Discarding the serial buffer ({conn.in_waiting} bytes){Fore.RESET}")
+                        print(f'{Fore.CYAN}[{lang._instance.get_string("log.info")}] {lang._instance.get_string("info.discardingSerial")} ({conn.in_waiting} bytes){Fore.RESET}')
                         conn.reset_input_buffer()
                         self.buffer = b''
                     # Calculate the fps.
@@ -244,7 +245,7 @@ class Camera:
                         self.push_image_to_queue(image, self.frame_number, self.fps)
         except Exception:
             print(
-                f"{Fore.YELLOW}[WARN] Serial capture source problem, assuming camera disconnected, waiting for reconnect.{Fore.RESET}")
+                f'{Fore.YELLOW}[{lang._instance.get_string("log.warn")}] Serial capture source problem, assuming camera disconnected, waiting for reconnect.{Fore.RESET}')
             conn.close()
             self.camera_status = CameraState.DISCONNECTED
             pass
@@ -270,11 +271,11 @@ class Camera:
             # Set explicit buffer size for serial.
             conn.set_buffer_size(rx_size=32768, tx_size=32768)
 
-            print(f"{Fore.CYAN}[INFO] ETVR Serial Tracker device connected on {port}{Fore.RESET}")
+            print(f'{Fore.CYAN}[{lang._instance.get_string("log.info")}] ETVR Serial Tracker device connected on {port}{Fore.RESET}')
             self.serial_connection = conn
             self.camera_status = CameraState.CONNECTED
         except Exception:
-            print(f"{Fore.CYAN}[INFO] Failed to connect on {port}{Fore.RESET}")
+            print(f'{Fore.CYAN}[{lang._instance.get_string("log.info")}] Failed to connect on {port}{Fore.RESET}')
             self.camera_status = CameraState.DISCONNECTED
 
     def push_image_to_queue(self, image, frame_number, fps):
@@ -283,6 +284,6 @@ class Camera:
         qsize = self.camera_output_outgoing.qsize()
         if qsize > 1:
             print(
-                f"{Fore.YELLOW}[WARN] CAPTURE QUEUE BACKPRESSURE OF {qsize}. CHECK FOR CRASH OR TIMING ISSUES IN ALGORITHM.{Fore.RESET}")
+                f'{Fore.YELLOW}[{lang._instance.get_string("log.warn")}] CAPTURE QUEUE BACKPRESSURE OF {qsize}. CHECK FOR CRASH OR TIMING ISSUES IN ALGORITHM.{Fore.RESET}')
         self.camera_output_outgoing.put((image, frame_number, fps))
         self.capture_event.clear()

@@ -20,6 +20,7 @@ from babble_model_loader import *
 import os
 os.environ["OMP_NUM_THREADS"] = "1"
 import onnxruntime as ort
+from lang_manager import LocaleStringManager as lang
 
 def run_once(f):
     def wrapper(*args, **kwargs):
@@ -100,7 +101,7 @@ class BabbleProcessor:
             min_cutoff = float(self.settings.gui_min_cutoff)
             beta = float(self.settings.gui_speed_coefficient)
         except:
-            print('\033[93m[WARN] OneEuroFilter values must be a legal number.\033[0m')
+            print(f'\033[93m[{lang._instance.get_string("log.warn")}] OneEuroFilter values must be a legal number.\033[0m')
             min_cutoff = 0.9
             beta = 0.9
         noisy_point = np.array([45])
@@ -122,7 +123,7 @@ class BabbleProcessor:
             self.previous_image = self.current_image
             self.previous_rotation = self.config.rotation_angle
         except: # If this fails it likely means that the images are not the same size for some reason.
-            print('\033[91m[ERROR] Size of frames to display are of unequal sizes.\033[0m')
+            print(f'\033[91m[{lang._instance.get_string("log.error")}] Size of frames to display are of unequal sizes.\033[0m')
 
             pass
     def capture_crop_rotate_image(self):
@@ -144,7 +145,7 @@ class BabbleProcessor:
         except:
             # Failure to process frame, reuse previous frame.
             self.current_image = self.previous_image
-            print("\033[91m[ERROR] Frame capture issue detected.\033[0m")
+            print(f'\033[91m[{lang._instance.get_string("log.error")}] Frame capture issue detected.\033[0m')
 
         try:
             # Apply rotation to cropped area. For any rotation area outside of the bounds of the image,
@@ -191,7 +192,7 @@ class BabbleProcessor:
         while True:
              # Check to make sure we haven't been requested to close
             if self.cancellation_event.is_set():
-                print("\033[94m[INFO] Exiting Tracking thread\033[0m")
+                print(f'\033[94m[{lang._instance.get_string("log.info")}] Exiting Tracking thread\033[0m')
                 return
 
 

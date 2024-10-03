@@ -8,6 +8,9 @@ import cv2
 import subprocess
 from pygrabber.dshow_graph import FilterGraph
 
+bg_color_highlight = '#424042'
+bg_color_clear = '#242224'
+
 is_nt = True if sys.platform.startswith('win') else False
 graph = FilterGraph()
 

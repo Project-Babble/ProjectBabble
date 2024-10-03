@@ -6,6 +6,7 @@ from queue import Queue
 from threading import Event
 import numpy as np
 from calib_settings_values import set_shapes
+from utils.misc_utils import bg_color_highlight, bg_color_clear
 
 
 class CalibSettingsWidget:
@@ -70,7 +71,7 @@ class CalibSettingsWidget:
         self.widget_layout = [
             [   
                 sg.Text("Calibration Settings:", background_color='#242224'),
-                sg.Text("Calibration Mode:", background_color='#424042'), 
+                sg.Text("Calibration Mode:", background_color=bg_color_highlight), 
                 sg.OptionMenu(
                     self.calibration_list,
                     self.config.calibration_mode,
@@ -97,7 +98,7 @@ class CalibSettingsWidget:
                     scrollable=True, 
                     vertical_scroll_only=True,
                     element_justification='center',
-                    background_color='#424042' ),
+                    background_color=bg_color_highlight ),
             ],
             [
                 sg.Button("Reset Min", key=self.gui_reset_min, button_color='#FF0000', tooltip = "Reset minimum values",),
@@ -125,7 +126,7 @@ class CalibSettingsWidget:
                 size=(8),
                 tooltip="Max Left Value",
             ),
-            sg.Text(f"{shapename}Left/Right", background_color='#424042', expand_x=True),
+            sg.Text(f"{shapename}Left/Right", background_color=bg_color_highlight, expand_x=True),
             sg.InputText(
                 default_text=self.array[1][indexr],
                 key=self.shape[1][indexr],
@@ -156,7 +157,7 @@ class CalibSettingsWidget:
                 size=(8),
                 tooltip="Max Left Value",
             ),
-            sg.Text(f"{shapename}", background_color='#424042', expand_x=True),
+            sg.Text(f"{shapename}", background_color=bg_color_highlight, expand_x=True),
         ]
         return single_shape
 
