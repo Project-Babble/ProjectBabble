@@ -11,6 +11,7 @@ from lang_manager import LocaleStringManager as lang
 CONFIG_FILE_NAME: str = "babble_settings.json"
 BACKUP_CONFIG_FILE_NAME: str = "babble_settings.backup"
 
+
 class BabbleCameraConfig(BaseModel):
     rotation_angle: int = 0
     roi_window_x: int = 0
@@ -21,6 +22,7 @@ class BabbleCameraConfig(BaseModel):
     gui_vertical_flip: bool = False
     gui_horizontal_flip: bool = False
     use_ffmpeg: bool = False
+
 
 class BabbleSettingsConfig(BaseModel):
     gui_min_cutoff: str = "0.9"
@@ -33,20 +35,23 @@ class BabbleSettingsConfig(BaseModel):
     gui_ROSC: bool = False
     gui_osc_location: str = ""
     gui_multiply: float = 1
-    gui_model_file: str = 'Models/3MEFFB0E7MSE/'
+    gui_model_file: str = "Models/3MEFFB0E7MSE/"
     gui_runtime: str = "ONNX"
     gui_use_gpu: bool = False
     gui_gpu_index: int = 0
     gui_inference_threads: int = 2
     gui_use_red_channel: bool = False
     calib_deadzone: float = -0.1
-    calib_array: str = "[[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]]"
-    gui_cam_resolution_x: int = 0    
+    calib_array: str = (
+        "[[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]]"
+    )
+    gui_cam_resolution_x: int = 0
     gui_cam_resolution_y: int = 0
     gui_cam_framerate: int = 0
     use_calibration: bool = False
-    calibration_mode: str = 'Neutral'
-    gui_language: str = 'English'
+    calibration_mode: str = "Neutral"
+    gui_language: str = "English"
+
 
 class BabbleConfig(BaseModel):
     version: int = 1
@@ -57,31 +62,39 @@ class BabbleConfig(BaseModel):
     @staticmethod
     def load():
         EnsurePath()
-        
+
         if not os.path.exists(CONFIG_FILE_NAME):
-            print("No settings file, using base settings")
+            print(
+                f'[{lang._instance.get_string("log.info")}] {lang._instance.get_string("config.noSettingsFile")}'
+            )
             return BabbleConfig()
         try:
             with open(CONFIG_FILE_NAME, "r") as settings_file:
                 return BabbleConfig(**json.load(settings_file))
         except json.JSONDecodeError:
-            print(f'[{lang._instance.get_string("log.info")}] Failed to load settings file')
+            print(
+                f'[{lang._instance.get_string("log.info")}] {lang._instance.get_string("config.failedToLoadSettings")}'
+            )
             load_config = None
             if os.path.exists(BACKUP_CONFIG_FILE_NAME):
                 try:
                     with open(BACKUP_CONFIG_FILE_NAME, "r") as settings_file:
                         load_config = BabbleConfig(**json.load(settings_file))
-                    print(f'[{lang._instance.get_string("log.info")}] Using backup settings')
+                    print(
+                        f'[{lang._instance.get_string("log.info")}] {lang._instance.get_string("config.usingBackupSettings")}'
+                    )
                 except json.JSONDecodeError:
                     pass
             if load_config is None:
-                print(f'[{lang._instance.get_string("log.info")}] using base settings')
+                print(
+                    f'[{lang._instance.get_string("log.info")}] {lang._instance.get_string("config.usingBaseSettings")}'
+                )
                 load_config = BabbleConfig()
             return load_config
 
     def save(self):
         EnsurePath()
-        
+
         # make sure this is only called if there is a change
         if os.path.exists(CONFIG_FILE_NAME):
             try:
@@ -95,4 +108,6 @@ class BabbleConfig(BaseModel):
                 pass
         with open(CONFIG_FILE_NAME, "w") as settings_file:
             json.dump(obj=self.dict(), fp=settings_file, indent=2)
-        print(f'[{lang._instance.get_string("log.info")}] Config Saved Successfully')
+        print(
+            f'[{lang._instance.get_string("log.info")}] {lang._instance.get_string("config.saved")}.'
+        )
