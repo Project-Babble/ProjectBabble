@@ -1,12 +1,13 @@
 import numpy as np
 
+
 def normalize(numpy_array):
     """
     Normalize the values of a numpy array to a specified range.
 
     Args:
     - numpy_array (numpy.ndarray): Input numpy array.
-    
+
     Returns:
     - numpy.ndarray: Normalized numpy array.
     """
@@ -40,6 +41,7 @@ def to_tensor(numpy_array, dtype=np.float32):
     tensor = normalize(np.transpose(numpy_array, (2, 0, 1)))
 
     return tensor
+
 
 def unsqueeze(numpy_array, axis: int):
     """
