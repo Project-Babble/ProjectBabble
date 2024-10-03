@@ -2,7 +2,7 @@ import json
 import os.path
 import shutil
 
-from BabbleApp.utils.misc_utils import EnsurePath
+from utils.misc_utils import EnsurePath
 from tab import Tab
 from pydantic import BaseModel
 from typing import Union
