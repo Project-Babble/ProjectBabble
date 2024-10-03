@@ -166,6 +166,11 @@ def get_camera_index_by_name(name):
 def PlaySound(*args, **kwargs):
     pass
 
+# Handle debugging virtual envs.
+def EnsurePath():
+    if os.path.exists(os.path.join(os.getcwd(), "BabbleApp")):
+        os.chdir(os.path.join(os.getcwd(), "BabbleApp")) 
+
 
 SND_FILENAME = SND_ASYNC = 1
 

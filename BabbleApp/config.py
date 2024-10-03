@@ -2,6 +2,7 @@ import json
 import os.path
 import shutil
 
+from BabbleApp.utils.misc_utils import EnsurePath
 from tab import Tab
 from pydantic import BaseModel
 from typing import Union
@@ -44,6 +45,7 @@ class BabbleSettingsConfig(BaseModel):
     gui_cam_framerate: int = 0
     use_calibration: bool = False
     calibration_mode: str = 'Neutral'
+    gui_language: str = 'English'
 
 class BabbleConfig(BaseModel):
     version: int = 1
@@ -53,6 +55,8 @@ class BabbleConfig(BaseModel):
 
     @staticmethod
     def load():
+        EnsurePath()
+        
         if not os.path.exists(CONFIG_FILE_NAME):
             print("No settings file, using base settings")
             return BabbleConfig()
@@ -75,6 +79,8 @@ class BabbleConfig(BaseModel):
             return load_config
 
     def save(self):
+        EnsurePath()
+        
         # make sure this is only called if there is a change
         if os.path.exists(CONFIG_FILE_NAME):
             try:

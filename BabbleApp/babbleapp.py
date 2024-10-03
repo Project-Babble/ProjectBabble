@@ -29,7 +29,8 @@ from osc import VRChatOSCReceiver, VRChatOSC
 from general_settings_widget import SettingsWidget
 from algo_settings_widget import AlgoSettingsWidget
 from calib_settings_widget import CalibSettingsWidget
-from utils.misc_utils import is_nt
+from utils.misc_utils import EnsurePath, is_nt
+from lang_manager import LocaleStringManager
 if is_nt:
     from winotify import Notification
 os.system('color')  # init ANSI color
@@ -57,6 +58,10 @@ def main():
     config: BabbleConfig = BabbleConfig.load()
     config.save()
 
+    EnsurePath()
+        
+    # Init locale manager
+    LocaleStringManager("Locale", config.settings.gui_language)
     cancellation_event = threading.Event()
     ROSC = False
     # Check to see if we can connect to our video source first. If not, bring up camera finding
