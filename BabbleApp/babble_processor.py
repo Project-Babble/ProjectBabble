@@ -141,8 +141,6 @@ class BabbleProcessor:
                 f'\033[91m[{lang._instance.get_string("log.error")}] {lang._instance.get_string("error.size")}.\033[0m'
             )
 
-            pass
-
     def capture_crop_rotate_image(self):
         # Get our current frame
 
