@@ -304,15 +304,15 @@ class CameraWidget:
             window[self.gui_tracking_layout].update(visible=False)
 
         if event == self.use_calibration:
-            print("toggle event")
+            #print("toggle event")
             if self.settings_config.use_calibration == True:
                 window[self.gui_restart_calibration].update(disabled = False)
                 window[self.gui_stop_calibration].update(disabled = False)
-                print("Enabled")
+                #print("Enabled")
             else:
                 window[self.gui_restart_calibration].update(disabled = True)
                 window[self.gui_stop_calibration].update(disabled = True)
-                print("Disabled")
+                #print("Disabled")
 
         if event == "{}+UP".format(self.gui_roi_selection):
             # Event for mouse button up in ROI mode

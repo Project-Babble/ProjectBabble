@@ -186,7 +186,7 @@ class CalibSettingsWidget:
                     window[element2].update(float(self.array[count1][count2]))
                     #values[element2] = float(self.array[count1][count2])
                     self.refreshed = True
-            print('DEBUG: Refreshed')
+            #print('DEBUG: Refreshed')
 
         if self.config.calibration_mode != str(values[self.gui_calibration_mode]):
             self.config.calibration_mode = str(values[self.gui_calibration_mode])
