@@ -160,7 +160,7 @@ class CameraWidget:
                 sg.InputCombo(values=self.camera_list, default_value=self.config.capture_source,
                               key=self.gui_camera_addr,
                               tooltip="Enter the IP address or UVC port of your camera. (Include the 'http://')",
-                              enable_events=True),
+                              enable_events=True,size=(20,0)),
                 sg.Button("Refresh List", key=self.gui_refresh_button, button_color='#539e8a')
             ],
             [
@@ -347,8 +347,8 @@ class CameraWidget:
         if (event == self.gui_refresh_button): 
             print("\033[94m[INFO] Refreshed Camera List\033[0m")
             self.camera_list = list_camera_names()
-            print(self.camera_list)
-            window[self.gui_camera_addr].update(values=self.camera_list)
+            #print(self.camera_list)
+            window[self.gui_camera_addr].update(values=self.camera_list,size=(20,0))
 
 
         if event == self.gui_restart_calibration:
