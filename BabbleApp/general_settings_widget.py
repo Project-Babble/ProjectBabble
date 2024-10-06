@@ -249,4 +249,4 @@ class SettingsWidget:
 
         if changed:
             self.main_config.save()
-        self.osc_queue.put((Tab.SETTINGS))
+        self.osc_queue.put(Tab.SETTINGS)

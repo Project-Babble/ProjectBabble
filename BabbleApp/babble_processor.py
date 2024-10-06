@@ -90,10 +90,10 @@ class BabbleProcessor:
         self.opts = ort.SessionOptions()
         self.opts.intra_op_num_threads = settings.gui_inference_threads
         self.opts.graph_optimization_level = ort.GraphOptimizationLevel.ORT_ENABLE_ALL
-        if self.runtime == "ONNX" or self.runtime == "Default (ONNX)":    # ONNX 
-            if self.use_gpu: provider = 'DmlExecutionProvider' 
+        if self.runtime in ("ONNX", "Default (ONNX)"):    # ONNX
+            if self.use_gpu: provider = 'DmlExecutionProvider'
             else: provider = "CPUExecutionProvider"  # Build onnxruntime to get both DML and OpenVINO
-            self.sess = ort.InferenceSession(f'{self.model}onnx/model.onnx', self.opts, providers=[provider], provider_options=[{'device_id': self.gpu_index}]) 
+            self.sess = ort.InferenceSession(f'{self.model}onnx/model.onnx', self.opts, providers=[provider], provider_options=[{'device_id': self.gpu_index}])
             self.input_name = self.sess.get_inputs()[0].name
             self.output_name = self.sess.get_outputs()[0].name
         try:

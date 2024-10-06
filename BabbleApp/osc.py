@@ -82,15 +82,13 @@ class VRChatOSC:
         self.cam = Tab.CAM
 
     def run(self):
-        while True:
-            if self.cancellation_event.is_set():
-                print("\033[94m[INFO] Exiting OSC Queue\033[0m")
-                return
+        while not self.cancellation_event.is_set():
             try:
                 (self.cam_id, cam_info) = self.msg_queue.get(block=True, timeout=0.1)
-            except:
+            except TypeError:
                 continue
-
+            except queue.Empty:
+                continue
             output_osc(cam_info.output, self)
 
 
@@ -114,7 +112,8 @@ class VRChatOSCReceiver:
             pass
 
     def recalibrate_mouth(self, address, osc_value):
-        if type(osc_value) != bool: return  # just incase we get anything other than bool
+        if not isinstance(osc_value, bool):
+            return  # just incase we get anything other than bool
         if osc_value:
             for cam in self.cams:
                 cam.babble_cnn.calibration_frame_counter = 300
