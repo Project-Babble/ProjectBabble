@@ -17,6 +17,7 @@ Copyright (c) 2023 Project Babble <3
 '''
 
 import os
+import time
 import PySimpleGUI as sg
 import queue
 import requests
@@ -221,6 +222,14 @@ def main():
                 osc_receiver_thread.join()
             print("\033[94m[INFO] Exiting BabbleApp\033[0m")
             return
+
+        # When focus is lost stop 'n slow down the loop here.
+        try:
+            if not window.TKroot.focus_get():
+                time.sleep(0.2)
+                continue
+        except KeyError:
+            pass
 
         if values[CAM_RADIO_NAME] and config.cam_display_id != Tab.CAM:
             cams[0].start()
