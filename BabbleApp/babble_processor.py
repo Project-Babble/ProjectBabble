@@ -111,20 +111,19 @@ class BabbleProcessor:
         )
 
     def output_images_and_update(self, output_information: CamInfo):
-        try:
-            image_stack = np.concatenate(
-                (
-                    cv2.cvtColor(self.current_image_gray, cv2.COLOR_GRAY2BGR),
-                ),
-                axis=1,
-            )
-            self.image_queue_outgoing.put((image_stack, output_information))
-            self.previous_image = self.current_image
-            self.previous_rotation = self.config.rotation_angle
-        except: # If this fails it likely means that the images are not the same size for some reason.
-            print('\033[91m[ERROR] Size of frames to display are of unequal sizes.\033[0m')
+        image_stack = np.concatenate(
+            (
+                cv2.cvtColor(self.current_image_gray, cv2.COLOR_GRAY2BGR),
+            ),
+            axis=1,
+        )
+        self.image_queue_outgoing.put((image_stack, output_information))
+        if self.image_queue_outgoing.qsize() > 1:
+            self.image_queue_outgoing.get()
 
-            pass
+        self.previous_image = self.current_image
+        self.previous_rotation = self.config.rotation_angle
+
     def capture_crop_rotate_image(self):
         # Get our current frame
         
