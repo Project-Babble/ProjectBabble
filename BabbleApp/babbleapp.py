@@ -21,6 +21,7 @@ import PySimpleGUI as sg
 import queue
 import requests
 import threading
+from ctypes import windll, c_int
 from babble_model_loader import *
 from camera_widget import CameraWidget
 from config import BabbleConfig
@@ -33,6 +34,13 @@ from utils.misc_utils import is_nt
 if is_nt:
     from winotify import Notification
 os.system('color')  # init ANSI color
+
+winmm = None
+try:
+    winmm = windll.winmm
+except OSError:
+    #print("[DEBUG] Failed to load winmm.dll")
+    pass
 
 # Random environment variable to speed up webcam opening on the MSMF backend.
 # https://github.com/opencv/opencv/issues/17687
@@ -51,6 +59,15 @@ CALIB_SETTINGS_RADIO_NAME = "-CALIBSETTINGSRADIO-"
 page_url = "https://github.com/SummerSigh/ProjectBabble/releases/latest"
 appversion = "Babble v2.0.6 Alpha"
 
+def timerResolution(toggle):
+    if winmm != None:
+        if toggle:
+            rc = c_int(winmm.timeBeginPeriod(1))
+            if rc.value != 0:
+                # TIMEERR_NOCANDO = 97
+                print(f"[WARN] Failed to set timer resolution: {rc.value}")
+        else:
+            winmm.timeEndPeriod(1)
 
 def main():
     # Get Configuration
@@ -95,6 +112,8 @@ def main():
                     print("[INFO] Toast notifications not supported")
         except:
             print("[INFO] Internet connection failed, no update check occured.")
+
+    timerResolution(True)
     # Check to see if we have an ROI. If not, bring up ROI finder GUI.
 
     # Spawn worker threads
@@ -219,6 +238,7 @@ def main():
             if ROSC:
                 osc_receiver.shutdown()
                 osc_receiver_thread.join()
+            timerResolution(False)
             print("\033[94m[INFO] Exiting BabbleApp\033[0m")
             return
 
