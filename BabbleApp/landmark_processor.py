@@ -88,10 +88,13 @@ class LandmarkProcessor:
         #self.calibrate_config = np.empty((1, 45))
         #self.min_max_array = np.empty((2, 45))
 
-
+        ort.disable_telemetry_events()
         self.opts = ort.SessionOptions()
+        self.opts.inter_op_num_threads = 1
         self.opts.intra_op_num_threads = settings.gui_inference_threads
         self.opts.graph_optimization_level = ort.GraphOptimizationLevel.ORT_ENABLE_ALL
+        self.opts.add_session_config_entry("session.intra_op.allow_spinning", "0")  # ~3% savings worth ~6ms avg latency. Not noticeable at 60fps?
+        self.opts.enable_mem_pattern = False
         if self.runtime == "ONNX" or self.runtime == "Default (ONNX)":    # ONNX 
             if self.use_gpu: provider = 'DmlExecutionProvider' 
             else: provider = "CPUExecutionProvider"  # Build onnxruntime to get both DML and OpenVINO
@@ -219,7 +222,7 @@ class LandmarkProcessor:
                     self.current_image,
                     self.current_frame_number,
                     self.current_fps,
-                ) = self.capture_queue_incoming.get(block=True, timeout=0.2)
+                ) = self.capture_queue_incoming.get(block=True, timeout=0.1)
             except queue.Empty:
                 # print("No image available")
                 continue
