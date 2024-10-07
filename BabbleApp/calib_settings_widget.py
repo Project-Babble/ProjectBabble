@@ -23,6 +23,7 @@ class CalibSettingsWidget:
         self.calibration_list = ['Neutral', 'Full']
         self.osc_queue = osc_queue
         self.shape_index, self.shape = set_shapes(widget_id)
+        self.previous_values = {}
         self.refreshed = False
 
         
@@ -194,13 +195,18 @@ class CalibSettingsWidget:
         
         for count1, element1 in enumerate(self.shape):
             for count2, element2 in enumerate(element1):
-                if values[element2] != '':
-                    try: 
-                        if float(self.array[count1][count2]) != float(values[element2]):
-                            self.array[count1][count2] = float(values[element2])
+                current_value = values[element2]
+                if current_value != '' and current_value != self.previous_values.get(element2):
+                    try:
+                        new_value = self.safe_float_conversion(current_value)
+                        if self.array[count1][count2] != new_value:
+                            self.array[count1][count2] = new_value
                             changed = True
-                    except: print("Not a float")
-        
+                        self.previous_values[element2] = current_value
+                    except ValueError as e:
+                        print(f"Invalid input: {current_value} - {str(e)}")
+                        window[element2].update(self.previous_values.get(element2, ''))
+
         if event == self.gui_reset_min:
             for count1, element1 in enumerate(self.shape):
                 for count2, element2 in enumerate(element1):
@@ -219,3 +225,11 @@ class CalibSettingsWidget:
             self.main_config.save()
             #print(self.main_config)
         self.osc_queue.put(Tab.CALIBRATION)
+
+    def safe_float_conversion(self, value):
+        value = value.strip()
+        try:
+            return float(value)
+        except ValueError:
+            # If it's not a valid float, raise a more informative error
+            raise ValueError(f"{value} is not a valid number")
