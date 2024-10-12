@@ -4,7 +4,7 @@ from config import BabbleSettingsConfig
 from osc import Tab
 from queue import Queue
 from threading import Event
-import re
+from utils import misc_utils
 
 
 class AlgoSettingsWidget:
@@ -135,19 +135,11 @@ class AlgoSettingsWidget:
             return
         self.cancellation_event.set()
 
-    def is_valid_float_input(self, value):
-        # Allow empty string, negative sign, or a float number
-        return bool(re.match(r'^-?\d*\.?\d*$', value))
-
-    def is_valid_int_input(self, value):
-        # Allow empty string, negative sign, or an integer number
-        return bool(re.match(r'^-?\d*$', value))
-
     def render(self, window, event, values):
         # Input validation for the fields
         if event == self.gui_multiply:
             value = values[self.gui_multiply]
-            if not self.is_valid_float_input(value):
+            if not misc_utils.is_valid_float_input(value):
                 # Invalid input, remove last character
                 value = value[:-1]
                 window[self.gui_multiply].update(value)
@@ -155,35 +147,35 @@ class AlgoSettingsWidget:
 
         elif event == self.calib_deadzone:
             value = values[self.calib_deadzone]
-            if not self.is_valid_float_input(value):
+            if not misc_utils.is_valid_float_input(value):
                 value = value[:-1]
                 window[self.calib_deadzone].update(value)
                 values[self.calib_deadzone] = value
 
         elif event == self.gui_inference_threads:
             value = values[self.gui_inference_threads]
-            if not self.is_valid_int_input(value):
+            if not misc_utils.is_valid_float_input(value):
                 value = value[:-1]
                 window[self.gui_inference_threads].update(value)
                 values[self.gui_inference_threads] = value
 
         elif event == self.gui_gpu_index:
             value = values[self.gui_gpu_index]
-            if not self.is_valid_int_input(value):
+            if not misc_utils.is_valid_float_input(value):
                 value = value[:-1]
                 window[self.gui_gpu_index].update(value)
                 values[self.gui_gpu_index] = value
 
         elif event == self.gui_min_cutoff:
             value = values[self.gui_min_cutoff]
-            if not self.is_valid_float_input(value):
+            if not misc_utils.is_valid_float_input(value):
                 value = value[:-1]
                 window[self.gui_min_cutoff].update(value)
                 values[self.gui_min_cutoff] = value
 
         elif event == self.gui_speed_coefficient:
             value = values[self.gui_speed_coefficient]
-            if not self.is_valid_float_input(value):
+            if not misc_utils.is_valid_float_input(value):
                 value = value[:-1]
                 window[self.gui_speed_coefficient].update(value)
                 values[self.gui_speed_coefficient] = value

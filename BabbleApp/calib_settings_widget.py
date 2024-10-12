@@ -6,6 +6,7 @@ from queue import Queue
 from threading import Event
 import numpy as np
 from calib_settings_values import set_shapes
+from utils import misc_utils
 
 
 class CalibSettingsWidget:
@@ -194,12 +195,16 @@ class CalibSettingsWidget:
         
         for count1, element1 in enumerate(self.shape):
             for count2, element2 in enumerate(element1):
+                value = values[element2]
+                if not misc_utils.is_valid_float_input(value):
+                    value = value[:-1]
+                    window[element2].update(value)
+                    values[element2] = value
+                    
                 if values[element2] != '':
-                    try: 
-                        if float(self.array[count1][count2]) != float(values[element2]):
-                            self.array[count1][count2] = float(values[element2])
-                            changed = True
-                    except: print("Not a float")
+                    if float(self.array[count1][count2]) != float(value):
+                        self.array[count1][count2] = float(value)
+                        changed = True
         
         if event == self.gui_reset_min:
             for count1, element1 in enumerate(self.shape):

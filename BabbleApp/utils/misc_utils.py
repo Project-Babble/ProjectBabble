@@ -6,6 +6,7 @@ import os
 import platform
 import cv2
 import subprocess
+import re
 from pygrabber.dshow_graph import FilterGraph
 
 is_nt = True if sys.platform.startswith('win') else False
@@ -157,8 +158,13 @@ def get_camera_index_by_name(name):
 
     return None
 
-#def get_serial_port(name):
-#    for i, device in enumerate(cam_list):
+def is_valid_float_input(value):
+    # Allow empty string, negative sign, or a float number
+    return bool(re.match(r'^-?\d*\.?\d*$', value))
+
+def is_valid_int_input(value):
+    # Allow empty string, negative sign, or an integer number
+    return bool(re.match(r'^-?\d*$', value))
 
 
 
