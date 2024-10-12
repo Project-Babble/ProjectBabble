@@ -154,14 +154,14 @@ class AlgoSettingsWidget:
 
         elif event == self.gui_inference_threads:
             value = values[self.gui_inference_threads]
-            if not misc_utils.is_valid_float_input(value):
+            if not misc_utils.is_valid_int_input(value):
                 value = value[:-1]
                 window[self.gui_inference_threads].update(value)
                 values[self.gui_inference_threads] = value
 
         elif event == self.gui_gpu_index:
             value = values[self.gui_gpu_index]
-            if not misc_utils.is_valid_float_input(value):
+            if not misc_utils.is_valid_int_input(value):
                 value = value[:-1]
                 window[self.gui_gpu_index].update(value)
                 values[self.gui_gpu_index] = value
