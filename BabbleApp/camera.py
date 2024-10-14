@@ -12,17 +12,17 @@ from colorama import Fore
 from config import BabbleConfig, BabbleSettingsConfig
 from utils.misc_utils import get_camera_index_by_name, list_camera_names
 from enum import Enum
+import sys
 
 WAIT_TIME = 0.1
+BUFFER_SIZE = 32768
 MAX_RESOLUTION: int = 600
-
 # Serial communication protocol:
-# header-begin (2 bytes)
-# header-type (2 bytes)
-# packet-size (2 bytes)
-# packet (packet-size bytes)
-ETVR_HEADER = b"\xff\xa0"
-ETVR_HEADER_FRAME = b"\xff\xa1"
+#  header-begin (2 bytes) "\xff\xa0"
+#  header-type (2 bytes)  "\xff\xa1"
+#  packet-size (2 bytes)
+#  packet (packet-size bytes)
+ETVR_HEADER = b"\xff\xa0\xff\xa1"
 ETVR_HEADER_LEN = 6
 
 
@@ -48,8 +48,6 @@ class Camera:
         self.settings = settings
         self.camera_index = camera_index
         self.camera_list = list_camera_names()
-        # The variable is not used
-        # self.camera_address = config.capture_source
         self.camera_status_outgoing = camera_status_outgoing
         self.camera_output_outgoing = camera_output_outgoing
         self.capture_event = capture_event
@@ -59,15 +57,10 @@ class Camera:
 
         self.serial_connection = None
         self.last_frame_time = time.time()
-        self.frame_number = 0
         self.fps = 0
         self.bps = 0
         self.start = True
         self.buffer = b""
-        self.pf_fps = 0
-        self.prevft = 0
-        self.newft = 0
-        self.fl = [0]
         self.FRAME_SIZE = [0, 0]
 
         self.error_message = f'{Fore.YELLOW}[{lang._instance.get_string("log.warn")}] {lang._instance.get_string("info.enterCaptureOne")} {{}} {lang._instance.get_string("info.enterCaptureTwo")}{Fore.RESET}'
@@ -175,28 +168,18 @@ class Camera:
                 raise RuntimeError(lang._instance.get_string("error.frame"))
             self.FRAME_SIZE = image.shape
             frame_number = self.cv2_camera.get(cv2.CAP_PROP_POS_FRAMES)
-            # Calculate the fps.
-            yeah = time.time()
-            delta_time = yeah - self.last_frame_time
-            self.last_frame_time = yeah
-            if delta_time > 0:
-                self.bps = len(image) / delta_time
-            self.frame_number = self.frame_number + 1
-            self.fps = (self.fps + self.pf_fps) / 2
-            self.newft = time.time()
-            self.fps = 1 / (self.newft - self.prevft)
-            self.prevft = self.newft
-            self.fps = int(self.fps)
-            if len(self.fl) < 60:
-                self.fl.append(self.fps)
-            else:
-                self.fl.pop(0)
-                self.fl.append(self.fps)
-            self.fps = sum(self.fl) / len(self.fl)
-            # self.bps = image.nbytes
+            # Calculate FPS
+            current_frame_time = time.time()    # Should be using "time.perf_counter()", not worth ~3x cycles?
+            delta_time = current_frame_time - self.last_frame_time
+            self.last_frame_time = current_frame_time
+            current_fps = 1 / delta_time if delta_time > 0 else 0
+            # Exponential moving average (EMA). ~1100ns savings, delicious..
+            self.fps = 0.02 * current_fps + 0.98 * self.fps
+            self.bps = image.nbytes * self.fps
+
             if should_push:
-                self.push_image_to_queue(image, frame_number, self.fps)
-        except Exception as e:
+                self.push_image_to_queue(image, frame_number + 1, self.fps)
+        except Exception:
             print(
                 f'{Fore.YELLOW}[{lang._instance.get_string("log.warn")}] {lang._instance.get_string("warn.captureProblem")}{Fore.RESET}'
             )
@@ -207,7 +190,7 @@ class Camera:
         beg = -1
         while beg == -1:
             self.buffer += self.serial_connection.read(2048)
-            beg = self.buffer.find(ETVR_HEADER + ETVR_HEADER_FRAME)
+            beg = self.buffer.find(ETVR_HEADER)
         # Discard any data before the frame header.
         if beg > 0:
             self.buffer = self.buffer[beg:]
@@ -224,11 +207,11 @@ class Camera:
         return jpeg
 
     def get_serial_camera_picture(self, should_push):
-        conn = self.serial_connection
-        if conn is None:
+        # Stop spamming "Serial capture source problem" if connection is lost
+        if self.serial_connection is None or self.camera_status == CameraState.DISCONNECTED:
             return
         try:
-            if conn.in_waiting:
+            if self.serial_connection.in_waiting:
                 jpeg = self.get_next_jpeg_frame()
                 if jpeg:
                     # Create jpeg frame from byte string
@@ -240,39 +223,30 @@ class Camera:
                             f'{Fore.YELLOW}[{lang._instance.get_string("log.warn")}] {lang._instance.get_string("warn.frameDrop")}{Fore.RESET}'
                         )
                         return
-                    # Discard the serial buffer. This is due to the fact that it
-                    # may build up some outdated frames. A bit of a workaround here tbh.
-                    if conn.in_waiting >= 32768:
-                        print(
-                            f'{Fore.CYAN}[{lang._instance.get_string("log.info")}] {lang._instance.get_string("info.discardingSerial")} ({conn.in_waiting} bytes){Fore.RESET}'
-                        )
-                        conn.reset_input_buffer()
-                        self.buffer = b""
-                    # Calculate the fps.
-                    yeah = time.time()
-                    delta_time = yeah - self.last_frame_time
-                    self.last_frame_time = yeah
-                    if delta_time > 0:
-                        self.bps = len(jpeg) / delta_time
-                    self.fps = (self.fps + self.pf_fps) / 2
-                    self.newft = time.time()
-                    self.fps = 1 / (self.newft - self.prevft)
-                    self.prevft = self.newft
-                    self.fps = int(self.fps)
-                    if len(self.fl) < 60:
-                        self.fl.append(self.fps)
-                    else:
-                        self.fl.pop(0)
-                        self.fl.append(self.fps)
-                    self.fps = sum(self.fl) / len(self.fl)
-                    self.frame_number = self.frame_number + 1
+                    # Calculate FPS
+                    current_frame_time = time.time()    # Should be using "time.perf_counter()", not worth ~3x cycles?
+                    delta_time = current_frame_time - self.last_frame_time
+                    self.last_frame_time = current_frame_time
+                    current_fps = 1 / delta_time if delta_time > 0 else 0
+                    # Exponential moving average (EMA). ~1100ns savings, delicious..
+                    self.fps = 0.02 * current_fps + 0.98 * self.fps
+                    self.bps = len(jpeg) * self.fps
+
                     if should_push:
-                        self.push_image_to_queue(image, self.frame_number, self.fps)
+                        self.push_image_to_queue(image, int(current_fps), self.fps)
+                # Discard the serial buffer. This is due to the fact that it,
+                # may build up some outdated frames. A bit of a workaround here tbh.
+                # Do this at the end to give buffer time to refill.
+                if self.serial_connection.in_waiting >= BUFFER_SIZE:
+                    print(f'{Fore.CYAN}[{lang._instance.get_string("log.info")}] {lang._instance.get_string("info.discardingSerial")} ({self.serial_connection.in_waiting} bytes){Fore.RESET}')
+                    self.serial_connection.reset_input_buffer()
+                    self.buffer = b""
+
         except Exception:
             print(
                 f'{Fore.YELLOW}[{lang._instance.get_string("log.warn")}] {lang._instance.get_string("info.serialCapture")}{Fore.RESET}'
             )
-            conn.close()
+            self.serial_connection.close()
             self.camera_status = CameraState.DISCONNECTED
             pass
 
@@ -288,11 +262,10 @@ class Camera:
         if not any(p for p in com_ports if port in p):
             return
         try:
-            conn = serial.Serial(
-                baudrate=3000000, port=port, xonxoff=False, dsrdtr=False, rtscts=False
-            )
+            rate = 115200 if sys.platform == "darwin" else 3000000  # Higher baud rate not working on macOS
+            conn = serial.Serial(baudrate=rate, port=port, xonxoff=False, dsrdtr=False, rtscts=False)
             # Set explicit buffer size for serial.
-            conn.set_buffer_size(rx_size=32768, tx_size=32768)
+            conn.set_buffer_size(rx_size=BUFFER_SIZE, tx_size=BUFFER_SIZE)
 
             print(
                 f'{Fore.CYAN}[{lang._instance.get_string("log.info")}] {lang._instance.get_string("info.ETVRConnected")} {port}{Fore.RESET}'
