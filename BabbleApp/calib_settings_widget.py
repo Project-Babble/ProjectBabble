@@ -6,7 +6,7 @@ from queue import Queue
 from threading import Event
 import numpy as np
 from calib_settings_values import set_shapes
-from utils.misc_utils import bg_color_highlight, bg_color_clear
+from utils.misc_utils import bg_color_highlight, bg_color_clear, is_valid_float_input
 from lang_manager import LocaleStringManager as lang
 
 
@@ -164,12 +164,14 @@ class CalibSettingsWidget:
                 key=self.shape[0][indexl],
                 size=(8),
                 tooltip=lang._instance.get_string("calibration.minLeftValue"),
+                enable_events=True,
             ),
             sg.InputText(
                 default_text=self.array[1][indexl],
                 key=self.shape[1][indexl],
                 size=(8),
                 tooltip=lang._instance.get_string("calibration.maxLeftValue"),
+                enable_events=True,
             ),
             sg.Text(
                 f"{shapename}Left/Right",
@@ -181,12 +183,14 @@ class CalibSettingsWidget:
                 key=self.shape[1][indexr],
                 size=(8),
                 tooltip=lang._instance.get_string("calibration.maxRightValue"),
+                enable_events=True,
             ),
             sg.InputText(
                 default_text=self.array[0][indexr],
                 key=self.shape[0][indexr],
                 size=(8),
                 tooltip=lang._instance.get_string("calibration.minRightValue"),
+                enable_events=True,
             ),
         ]
         return double_shape
@@ -199,12 +203,14 @@ class CalibSettingsWidget:
                 key=self.shape[0][index],
                 size=(8),
                 tooltip=lang._instance.get_string("calibration.minLeftValue"),
+                enable_events=True,
             ),
             sg.InputText(
                 default_text=self.array[1][index],
                 key=self.shape[1][index],
                 size=(8),
                 tooltip=lang._instance.get_string("calibration.maxLeftValue"),
+                enable_events=True,
             ),
             sg.Text(f"{shapename}", background_color=bg_color_highlight, expand_x=True),
         ]
@@ -247,13 +253,17 @@ class CalibSettingsWidget:
 
         for count1, element1 in enumerate(self.shape):
             for count2, element2 in enumerate(element1):
-                if values[element2] != "":
-                    try:
-                        if float(self.array[count1][count2]) != float(values[element2]):
-                            self.array[count1][count2] = float(values[element2])
+                if values[element2] != "":   
+                    value = values[element2]
+                    if is_valid_float_input(value):
+                        value = float(values[element2])
+                        if float(self.array[count1][count2]) != value:
+                            self.array[count1][count2] = value
                             changed = True
-                    except:
-                        print(lang._instance.get_string("error.notAFloat"))
+                    else:
+                        value = float(value[:-1])
+                        window[element2].update(value)
+                        values[element2] = value
 
         if event == self.gui_reset_min:
             for count1, element1 in enumerate(self.shape):
@@ -261,6 +271,7 @@ class CalibSettingsWidget:
                     self.array[0][count2] = float(0)
                     changed = True
                     self.refreshed = False
+                    
         elif event == self.gui_reset_max:
             for count1, element1 in enumerate(self.shape):
                 for count2, element2 in enumerate(element1):
