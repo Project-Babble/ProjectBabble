@@ -8,14 +8,14 @@ fi
 
 # Check Python version
 if ! command -v python3 &> /dev/null; then    
-    echo "Error: Python is not installed. Please install Python 3.11 or higher."    
+    echo "Error: Python is not installed. Please install Python 3.8 or higher."    
     exit
 fi  
     
 python_version_major=$(python3 -c 'import platform; print(platform.python_version_tuple()[0])')
 python_version_minor=$(python3 -c 'import platform; print(platform.python_version_tuple()[1])')
-if (( python_version_major < 3 || python_version_minor < 11 )); then    
-    echo "Error: Your Python version is too low! Please install 3.11 or higher."    
+if (( python_version_major < 3 || python_version_minor < 8 )); then    
+    echo "Error: Your Python version is too low! Please install 3.8 or higher."    
     exit 1
 fi
 
