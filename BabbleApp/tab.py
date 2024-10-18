@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from enum import Enum, IntEnum
 
+
 class Tab(IntEnum):
     CAM = 0
     SETTINGS = 1
