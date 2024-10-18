@@ -7,13 +7,17 @@ import platform
 import cv2
 import re
 import subprocess
-from pygrabber.dshow_graph import FilterGraph
 
 bg_color_highlight = "#424042"
 bg_color_clear = "#242224"
 
-is_nt = True if sys.platform.startswith("win") else False
-graph = FilterGraph()
+# Detect the operating system
+is_nt = os.name == "nt"
+os_type = platform.system()
+
+if is_nt:
+    from pygrabber.dshow_graph import FilterGraph
+    graph = FilterGraph()
 
 def is_valid_float_input(value):
     # Allow empty string, negative sign, or a float number
@@ -22,7 +26,7 @@ def is_valid_float_input(value):
 def is_valid_int_input(value):
     # Allow empty string, negative sign, or an integer number
     return bool(re.match(r"^-?\d*$", value))
-
+    
 def list_camera_names():
     cam_list = graph.get_input_devices()
     cam_names = []
@@ -30,17 +34,6 @@ def list_camera_names():
         cam_names.append(name)
     cam_names = cam_names + list_serial_ports()
     return cam_names
-
-
-# Detect the operating system
-is_nt = True if os.name == "nt" else False
-os_type = platform.system()
-
-if is_nt:
-    from pygrabber.dshow_graph import FilterGraph
-
-    graph = FilterGraph()
-
 
 def list_cameras_opencv():
     """Use OpenCV to check available cameras by index (fallback for Linux/macOS)"""
