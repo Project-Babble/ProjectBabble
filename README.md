@@ -21,10 +21,12 @@ Project Babble is an open-source mouth tracking project designed to work with an
 Head to the releases section and [download the latest installer](https://github.com/Project-Babble/ProjectBabble/releases/latest).
 
 ### Linux
-Copy, paste and run the following script into the terminal of your choice:
+Install `git`, `curl` and a version of `python` greater than `3.8` for your distro. 
+
+Then, copy paste and run the following script into the terminal of your choice:
 
 ```bash
-bash -c "$(curl -fsSL https://gist.githubusercontent.com/dfgHiatus/a92a3caae24c1bfab1c7544537a654c5/raw/494a4bc5ed6c97745c7a283661d2f5530ba3d949/project-babble-install.sh)"
+bash -c "$(curl -fsSL https://gist.githubusercontent.com/dfgHiatus/a92a3caae24c1bfab1c7544537a654c5/raw/928904dfacfc193233ba842d0d137ec5874beac7/project-babble-install.sh)"
 ```
 
 Once it's finished installing, you can update and run the Babble app by typing `babble-app` into your terminal.

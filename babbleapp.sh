@@ -24,40 +24,43 @@ install_dir="$HOME/.local/share/project-babble"
 
 # Function to install requirements
 install_requirements() {
+    cd $install_dir
+    cd BabbleApp
+    echo "Installing requirements..."
     # Create a temporary requirements file without the Windows-only package
     grep -v "onnxruntime-directml" requirements.txt > linux_requirements.txt
     pip install -r linux_requirements.txt --quiet
     rm linux_requirements.txt
 }
 
+# Function to get the latest release tag
+get_latest_tag() {
+    git fetch --tags
+    git describe --tags --abbrev=0
+}
+
 # Function to update the repository
-update_repo() {    
-    echo "Checking for updates..."    
-    git fetch    
-    if [ "$(git rev-parse HEAD)" != "$(git rev-parse @{u})" ]; then        
-        echo "Updates found. Pulling changes..."        
-        git pull        
-        echo "Updating dependencies..."        
-        source venv/bin/activate        
-        install_requirements       
-        deactivate        
-
-        # Add babbleapp.sh to PATH    
-        mkdir -p "$HOME/.local/bin"    
-        ln -s "$install_dir/babbleapp.sh" "$HOME/.local/bin/babble-app"    
-        chmod +x "$HOME/.local/bin/babble-app"
-
-        # Add ~/.local/bin to PATH if not already present    
-        if [[ ":$PATH:" != *":$HOME/.local/bin:"* ]]; then        
-            echo 'export PATH="$HOME/.local/bin:$PATH"' >> "$HOME/.bashrc"            
-            echo "Please restart your terminal or run 'source ~/.bashrc' to update your PATH."    
-        fi
-
-        echo "Project Babble has been updated successfully!"    
-    else        
-        echo "Project Babble is already up to date."    
+update_repo() {
+    echo "Checking for updates..."
+    git fetch --tags
+    local_tag=$(git describe --tags --abbrev=0)
+    remote_tag=$(git describe --tags --abbrev=0 origin/main)
+    
+    if [ "$local_tag" != "$remote_tag" ]; then
+        echo "New version available: $remote_tag"
+        echo "Current version: $local_tag"
+        echo "Updating to the latest version..."
+        git checkout "$remote_tag"
+        echo "Updating dependencies..."
+        source venv/bin/activate
+        install_requirements
+        deactivate
+        echo "Project Babble has been updated successfully to version $remote_tag!"
+    else
+        echo "Project Babble is already at the latest version: $local_tag"
     fi
 }
+
 
 cd $install_dir
 update_repo
