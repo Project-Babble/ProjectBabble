@@ -26,7 +26,7 @@ Install `git`, `curl` and a version of `python` greater than `3.8` for your dist
 Then, copy paste and run the following script into the terminal of your choice:
 
 ```bash
-bash -c "$(curl -fsSL https://gist.githubusercontent.com/dfgHiatus/a92a3caae24c1bfab1c7544537a654c5/raw/928904dfacfc193233ba842d0d137ec5874beac7/project-babble-install.sh)"
+bash -c "$(curl -fsSL https://gist.githubusercontent.com/dfgHiatus/a92a3caae24c1bfab1c7544537a654c5/raw/fc30aa550c3c7aa83c37a72168e75ef92388e39b/project-babble-install.sh)"
 ```
 
 Once it's finished installing, you can update and run the Babble app by typing `babble-app` into your terminal.
