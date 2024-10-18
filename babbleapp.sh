@@ -63,9 +63,15 @@ update_repo() {
 
 
 cd $install_dir
-update_repo
-source venv/bin/activate  
 cd BabbleApp
+
+# Create venv if it does not exists
+if ! [ -d "venv" ]; then
+    python3 -m venv venv
+fi
+
+source venv/bin/activate  
+update_repo
 echo "Verifying dependencies. This might take a second!"
 install_requirements
 echo "Starting Babble app..."
