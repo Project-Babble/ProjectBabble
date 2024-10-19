@@ -5,13 +5,28 @@ import glob
 import os
 import platform
 import cv2
+import re
 import subprocess
-from pygrabber.dshow_graph import FilterGraph
 
-is_nt = True if sys.platform.startswith('win') else False
-graph = FilterGraph()
+bg_color_highlight = "#424042"
+bg_color_clear = "#242224"
 
+# Detect the operating system
+is_nt = os.name == "nt"
+os_type = platform.system()
 
+if is_nt:
+    from pygrabber.dshow_graph import FilterGraph
+    graph = FilterGraph()
+
+def is_valid_float_input(value):
+    # Allow empty string, negative sign, or a float number
+    return bool(re.match(r"^-?\d*\.?\d*$", value))
+
+def is_valid_int_input(value):
+    # Allow empty string, negative sign, or an integer number
+    return bool(re.match(r"^-?\d*$", value))
+    
 def list_camera_names():
     cam_list = graph.get_input_devices()
     cam_names = []
@@ -20,17 +35,8 @@ def list_camera_names():
     cam_names = cam_names + list_serial_ports()
     return cam_names
 
-# Detect the operating system
-is_nt = True if os.name == "nt" else False
-os_type = platform.system()
-
-if is_nt:
-    from pygrabber.dshow_graph import FilterGraph
-    graph = FilterGraph()
-
-
 def list_cameras_opencv():
-    """ Use OpenCV to check available cameras by index (fallback for Linux/macOS) """
+    """Use OpenCV to check available cameras by index (fallback for Linux/macOS)"""
     index = 0
     arr = []
     while True:
@@ -45,14 +51,14 @@ def list_cameras_opencv():
 
 
 def is_uvc_device(device):
-    """ Check if the device is a UVC video device (not metadata) """
+    """Check if the device is a UVC video device (not metadata)"""
     try:
         result = subprocess.run(
-            ['v4l2-ctl', f'--device={device}', '--all'],
+            ["v4l2-ctl", f"--device={device}", "--all"],
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
         )
-        output = result.stdout.decode('utf-8')
+        output = result.stdout.decode("utf-8")
 
         # Check if "UVC Payload Header Metadata" is in the output
         if "UVC Payload Header Metadata" in output:
@@ -63,10 +69,10 @@ def is_uvc_device(device):
 
 
 def list_linux_uvc_devices():
-    """ List UVC video devices on Linux (excluding metadata devices) """
+    """List UVC video devices on Linux (excluding metadata devices)"""
     try:
-        result = subprocess.run(['v4l2-ctl', '--list-devices'], stdout=subprocess.PIPE)
-        output = result.stdout.decode('utf-8')
+        result = subprocess.run(["v4l2-ctl", "--list-devices"], stdout=subprocess.PIPE)
+        output = result.stdout.decode("utf-8")
 
         lines = output.splitlines()
         devices = []
@@ -76,7 +82,9 @@ def list_linux_uvc_devices():
                 current_device = line.strip()
             else:
                 if "/dev/video" in line and is_uvc_device(line.strip()):
-                    devices.append(line.strip())  # We return the path like '/dev/video0'
+                    devices.append(
+                        line.strip()
+                    )  # We return the path like '/dev/video0'
 
         return devices
 
@@ -85,7 +93,7 @@ def list_linux_uvc_devices():
 
 
 def list_camera_names():
-    """ Cross-platform function to list camera names """
+    """Cross-platform function to list camera names"""
 
     if is_nt:
         # On Windows, use pygrabber to list devices
@@ -103,6 +111,7 @@ def list_camera_names():
     else:
         return ["Unsupported operating system"]
 
+
 def list_serial_ports():
     #print("DEBUG: Listed Serial Ports")
     """ Lists serial port names
@@ -112,15 +121,15 @@ def list_serial_ports():
         :returns:
             A list of the serial ports available on the system
     """
-    if sys.platform.startswith('win'):
-        ports = ['COM%s' % (i + 1) for i in range(256)]
-    elif sys.platform.startswith('linux') or sys.platform.startswith('cygwin'):
+    if sys.platform.startswith("win"):
+        ports = ["COM%s" % (i + 1) for i in range(256)]
+    elif sys.platform.startswith("linux") or sys.platform.startswith("cygwin"):
         # this excludes your current terminal "/dev/tty"
-        ports = glob.glob('/dev/tty[A-Za-z]*')
-    elif sys.platform.startswith('darwin'):
-        ports = glob.glob('/dev/tty.*')
+        ports = glob.glob("/dev/tty[A-Za-z]*")
+    elif sys.platform.startswith("darwin"):
+        ports = glob.glob("/dev/tty.*")
     else:
-        raise EnvironmentError('Unsupported platform')
+        raise EnvironmentError("Unsupported platform")
 
     result = []
     for port in ports:
@@ -134,7 +143,7 @@ def list_serial_ports():
 
 
 def get_camera_index_by_name(name):
-    """ Cross-platform function to get the camera index by its name or path """
+    """Cross-platform function to get the camera index by its name or path"""
     cam_list = list_camera_names()
 
     # On Linux, we use device paths like '/dev/video0' and match directly
@@ -157,14 +166,20 @@ def get_camera_index_by_name(name):
 
     return None
 
-#def get_serial_port(name):
-#    for i, device in enumerate(cam_list):
 
+# def get_serial_port(name):
+#    for i, device in enumerate(cam_list):
 
 
 # Placeholder for sound functions on Windows
 def PlaySound(*args, **kwargs):
     pass
+
+
+# Handle debugging virtual envs.
+def EnsurePath():
+    if os.path.exists(os.path.join(os.getcwd(), "BabbleApp")):
+        os.chdir(os.path.join(os.getcwd(), "BabbleApp"))
 
 
 SND_FILENAME = SND_ASYNC = 1
