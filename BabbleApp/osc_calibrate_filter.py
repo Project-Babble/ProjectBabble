@@ -13,6 +13,7 @@ class CamId(IntEnum):
 class cal:
 
     def __init__(self):
+        self.calibration_frame_counter = None
         self.calibrated_array = None
         self.raw_array = None
 

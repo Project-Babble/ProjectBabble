@@ -63,7 +63,7 @@ class CameraWidget:
         self.capture_event = Event()
         self.capture_queue = Queue(maxsize=2)
         self.roi_queue = Queue(maxsize=2)
-        self.image_queue = Queue(maxsize=500)
+        self.image_queue = Queue(maxsize=4)
 
         self.babble_cnn = BabbleProcessor(
             self.config,

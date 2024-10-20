@@ -91,6 +91,8 @@ class BabbleConfig(BaseModel):
                     BabbleConfig(**json.load(settings_file))
                 shutil.copy(CONFIG_FILE_NAME, BACKUP_CONFIG_FILE_NAME)
                 # print("Backed up settings files.") # Comment out because it's too loud.
+            except shutil.SameFileError:
+                pass
             except json.JSONDecodeError:
                 # No backup because the saved settings file is broken.
                 pass

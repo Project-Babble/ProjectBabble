@@ -113,7 +113,7 @@ def list_camera_names():
 
 
 def list_serial_ports():
-    print("DEBUG: Listed Serial Ports")
+    #print("DEBUG: Listed Serial Ports")
     """ Lists serial port names
 
         :raises EnvironmentError:
