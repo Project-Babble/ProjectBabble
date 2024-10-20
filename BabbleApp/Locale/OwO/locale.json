@@ -55,6 +55,7 @@
 	"info.enterCaptureTwo": "not found, retrying...",
 	"info.exitCaptureThread": "Exiting capture thread",
 	"info.exitTrackingThread": "Exiting tracking thread",
+	"info.serialCapture": "Fawled to gwet seiewal pictower 3:",
 	"log.info": "INFO",
 	"log.warn": "WARN",
 	"log.error": "ERROR",

@@ -395,11 +395,11 @@ class CameraWidget:
             if self.settings_config.use_calibration == True:
                 window[self.gui_restart_calibration].update(disabled=False)
                 window[self.gui_stop_calibration].update(disabled=False)
-                print({lang._instance.get_string("info.enabled")})
+                print(lang._instance.get_string("info.enabled"))
             else:
                 window[self.gui_restart_calibration].update(disabled=True)
                 window[self.gui_stop_calibration].update(disabled=True)
-                print(lang._instance.get_string("algoritm.disabled"))
+                print(lang._instance.get_string("info.disabled"))
 
         if event == "{}+UP".format(self.gui_roi_selection):
             # Event for mouse button up in ROI mode
