@@ -212,6 +212,7 @@ class CameraWidget:
                     key=self.gui_camera_addr,
                     tooltip=lang._instance.get_string("camera.cameraAddressTooltip"),
                     enable_events=True,
+                    size=(20,0),
                 ),
                 sg.Button(
                     lang._instance.get_string("camera.refreshCameraList"),
@@ -435,8 +436,8 @@ class CameraWidget:
                 f'\033[94m[{lang._instance.get_string("log.info")}] {lang._instance.get_string("info.refreshedCameraList")}\033[0m'
             )
             self.camera_list = list_camera_names()
-            print(self.camera_list)
-            window[self.gui_camera_addr].update(values=self.camera_list)
+            #print(self.camera_list)
+            window[self.gui_camera_addr].update(values=self.camera_list,size=(20,0))
 
         if event == self.gui_restart_calibration:
             if (
