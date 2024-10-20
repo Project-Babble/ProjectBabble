@@ -17,6 +17,7 @@ Copyright (c) 2023 Project Babble <3
 """
 
 import os
+import time
 import PySimpleGUI as sg
 import queue
 import requests
@@ -112,7 +113,7 @@ def main():
     # Check to see if we have an ROI. If not, bring up ROI finder GUI.
 
     # Spawn worker threads
-    osc_queue: queue.Queue[tuple[bool, int, int]] = queue.Queue(maxsize=2)
+    osc_queue: queue.Queue[tuple[bool, int, int]] = queue.Queue(maxsize=10)
     osc = VRChatOSC(cancellation_event, osc_queue, config)
     osc_thread = threading.Thread(target=osc.run)
     # start worker threads
@@ -239,6 +240,14 @@ def main():
                 f'\033[94m[{lang._instance.get_string("log.info")}] {lang._instance.get_string("babble.exit")}\033[0m'
             )
             return
+
+        # When focus is lost stop 'n slow down the loop here.
+        try:
+            if not window.TKroot.focus_get():
+                time.sleep(0.2)
+                continue
+        except KeyError:
+            pass
 
         if values[CAM_RADIO_NAME] and config.cam_display_id != Tab.CAM:
             cams[0].start()
