@@ -166,17 +166,6 @@ def get_camera_index_by_name(name):
 
     return None
 
-def is_valid_float_input(value):
-    # Allow empty string, negative sign, or a float number
-    return bool(re.match(r'^-?\d*\.?\d*$', value))
-
-def is_valid_int_input(value):
-    # Allow empty string, negative sign, or an integer number
-    return bool(re.match(r'^-?\d*$', value))
-
-# def get_serial_port(name):
-#    for i, device in enumerate(cam_list):
-
 
 # Placeholder for sound functions on Windows
 def PlaySound(*args, **kwargs):

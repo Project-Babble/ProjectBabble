@@ -8,7 +8,6 @@ from utils.misc_utils import bg_color_highlight, bg_color_clear, is_valid_float_
 from lang_manager import LocaleStringManager as lang
 
 
-
 class AlgoSettingsWidget:
     def __init__(
         self, widget_id: Tab, main_config: BabbleSettingsConfig, osc_queue: Queue
