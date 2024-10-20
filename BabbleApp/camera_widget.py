@@ -4,7 +4,7 @@ from threading import Event, Thread
 import PySimpleGUI as sg
 import cv2
 from babble_processor import BabbleProcessor, CamInfoOrigin
-from camera import Camera, CameraState
+from camera import Camera, CameraState, MAX_RESOLUTION
 from config import BabbleConfig
 from osc import Tab
 from utils.misc_utils import (
@@ -101,9 +101,9 @@ class CameraWidget:
             ],
             [
                 sg.Graph(
-                    (640, 480),
-                    (0, 480),
-                    (640, 0),
+                    (MAX_RESOLUTION, MAX_RESOLUTION),
+                    (0, MAX_RESOLUTION),
+                    (MAX_RESOLUTION, 0),
                     key=self.gui_roi_selection,
                     drag_submits=True,
                     enable_events=True,
@@ -424,11 +424,11 @@ class CameraWidget:
 
         if event == self.gui_autoroi:
             print(lang._instance.get_string("info.setROI"))
-            output = self.babble_cnn.get_framesize()
+            output = self.maybe_image[0].shape
             self.config.roi_window_x = 0
             self.config.roi_window_y = 0
-            self.config.roi_window_w = output[0]
-            self.config.roi_window_h = output[1]
+            self.config.roi_window_w = output[1]
+            self.config.roi_window_h = output[0]
             self.main_config.save()
 
         if event == self.gui_refresh_button:

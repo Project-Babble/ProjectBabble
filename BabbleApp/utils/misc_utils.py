@@ -167,10 +167,6 @@ def get_camera_index_by_name(name):
     return None
 
 
-# def get_serial_port(name):
-#    for i, device in enumerate(cam_list):
-
-
 # Placeholder for sound functions on Windows
 def PlaySound(*args, **kwargs):
     pass
