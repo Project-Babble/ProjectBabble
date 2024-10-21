@@ -43,7 +43,6 @@ class Camera:
         camera_output_outgoing: "queue.Queue(maxsize=2)",
         settings: BabbleSettingsConfig,
     ):
-        self.current_capture_sourc = None
         self.camera_status = CameraState.CONNECTING
         self.config = config
         self.settings = settings
