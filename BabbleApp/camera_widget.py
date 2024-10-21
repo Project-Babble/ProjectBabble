@@ -135,14 +135,14 @@ class CameraWidget:
                     key=self.gui_restart_calibration,
                     button_color=button_color,
                     tooltip=lang._instance.get_string("camera.startCalibrationTooltip"),
-                    disabled=True,
+                    disabled=not self.settings_config.use_calibration,
                 ),
                 sg.Button(
                     lang._instance.get_string("camera.stopCalibration"),
                     key=self.gui_stop_calibration,
                     button_color=button_color,
                     tooltip=lang._instance.get_string("camera.startCalibrationTooltip"),
-                    disabled=True,
+                    disabled=not self.settings_config.use_calibration,
                 ),
             ],
             [
