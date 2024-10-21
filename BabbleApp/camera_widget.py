@@ -63,7 +63,7 @@ class CameraWidget:
         self.capture_event = Event()
         self.capture_queue = Queue(maxsize=2)
         self.roi_queue = Queue(maxsize=2)
-        self.image_queue = Queue(maxsize=4)
+        self.image_queue = Queue(maxsize=500) # This is needed to prevent the UI from freezing during widget changes. 
 
         self.babble_cnn = BabbleProcessor(
             self.config,
