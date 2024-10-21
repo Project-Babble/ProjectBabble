@@ -96,7 +96,7 @@ class BabbleProcessor:
         self.opts.graph_optimization_level = ort.GraphOptimizationLevel.ORT_ENABLE_ALL
         self.opts.add_session_config_entry("session.intra_op.allow_spinning", "0")  # ~3% savings worth ~6ms avg latency. Not noticeable at 60fps?
         self.opts.enable_mem_pattern = False
-        if self.runtime == "ONNX" or self.runtime == "Default (ONNX)":  # ONNX
+        if self.runtime in ("ONNX", "Default (ONNX)"):  # ONNX
             if self.use_gpu:
                 provider = "DmlExecutionProvider"
             else:

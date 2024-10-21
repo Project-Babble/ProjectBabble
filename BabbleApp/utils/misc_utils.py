@@ -113,7 +113,7 @@ def list_camera_names():
 
 
 def list_serial_ports():
-    print("DEBUG: Listed Serial Ports")
+    #print("DEBUG: Listed Serial Ports")
     """ Lists serial port names
 
         :raises EnvironmentError:
@@ -165,10 +165,6 @@ def get_camera_index_by_name(name):
                 return i
 
     return None
-
-
-# def get_serial_port(name):
-#    for i, device in enumerate(cam_list):
 
 
 # Placeholder for sound functions on Windows

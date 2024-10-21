@@ -15,7 +15,7 @@ from one_euro_filter import OneEuroFilter
 
 
 def run_model(self):
-    if self.runtime == "ONNX" or self.runtime == "Default (ONNX)":
+    if self.runtime in ("ONNX", "Default (ONNX)"):
         frame = cv2.resize(self.current_image_gray, (256, 256))
         frame = transforms.to_tensor(frame)
         frame = transforms.unsqueeze(frame, 0)
