@@ -15,6 +15,7 @@ from utils.misc_utils import (
     get_camera_index_by_name,
     bg_color_highlight,
     bg_color_clear,
+    is_valid_int_input
 )
 from lang_manager import LocaleStringManager as lang
 
@@ -63,7 +64,7 @@ class CameraWidget:
         self.capture_event = Event()
         self.capture_queue = Queue(maxsize=2)
         self.roi_queue = Queue(maxsize=2)
-        self.image_queue = Queue(maxsize=4)
+        self.image_queue = Queue(maxsize=500) # This is needed to prevent the UI from freezing during widget changes. 
 
         self.babble_cnn = BabbleProcessor(
             self.config,
@@ -134,14 +135,14 @@ class CameraWidget:
                     key=self.gui_restart_calibration,
                     button_color=button_color,
                     tooltip=lang._instance.get_string("camera.startCalibrationTooltip"),
-                    disabled=True,
+                    disabled=not self.settings_config.use_calibration,
                 ),
                 sg.Button(
                     lang._instance.get_string("camera.stopCalibration"),
                     key=self.gui_stop_calibration,
                     button_color=button_color,
                     tooltip=lang._instance.get_string("camera.startCalibrationTooltip"),
-                    disabled=True,
+                    disabled=not self.settings_config.use_calibration,
                 ),
             ],
             [
@@ -324,11 +325,11 @@ class CameraWidget:
                 if any(x in str(value) for x in ports):
                     self.config.capture_source = value
                 else:
-                    cam = get_camera_index_by_name(
-                        value
-                    )  # Set capture_source to the UVC index. Otherwise treat value like an ipcam if we return none
+                    cam = get_camera_index_by_name(value)   # Set capture_source to the UVC index. Otherwise treat value like an ipcam if we return none
                     if cam != None:
-                        self.config.capture_source = get_camera_index_by_name(value)
+                        self.config.capture_source = cam
+                    elif is_valid_int_input(value): 
+                        self.config.capture_source = int(value)
                     else:
                         self.config.capture_source = value
             except ValueError:
@@ -395,11 +396,11 @@ class CameraWidget:
             if self.settings_config.use_calibration == True:
                 window[self.gui_restart_calibration].update(disabled=False)
                 window[self.gui_stop_calibration].update(disabled=False)
-                print({lang._instance.get_string("info.enabled")})
+                print(f'[{lang._instance.get_string("log.info")}] {lang._instance.get_string("info.enabled")}')
             else:
                 window[self.gui_restart_calibration].update(disabled=True)
                 window[self.gui_stop_calibration].update(disabled=True)
-                print(lang._instance.get_string("algoritm.disabled"))
+                print(f'[{lang._instance.get_string("log.info")}] {lang._instance.get_string("info.disabled")}')
 
         if event == "{}+UP".format(self.gui_roi_selection):
             # Event for mouse button up in ROI mode
