@@ -33,16 +33,15 @@ from calib_settings_widget import CalibSettingsWidget
 from utils.misc_utils import EnsurePath, is_nt, bg_color_highlight, bg_color_clear
 from lang_manager import LocaleStringManager as lang
 
+winmm = None
+
 if is_nt:
     from winotify import Notification
+    try:
+        winmm = windll.winmm
+    except OSError:
+        print(f'\033[91m[{lang._instance.get_string("log.error")}] {lang._instance.get_string("error.winmm")}.\033[0m')
 os.system("color")  # init ANSI color
-
-winmm = None
-try:
-    winmm = windll.winmm
-except OSError:
-    #print("[DEBUG] Failed to load winmm.dll")
-    pass
 
 # Random environment variable to speed up webcam opening on the MSMF backend.
 # https://github.com/opencv/opencv/issues/17687
@@ -67,7 +66,7 @@ def timerResolution(toggle):
             rc = c_int(winmm.timeBeginPeriod(1))
             if rc.value != 0:
                 # TIMEERR_NOCANDO = 97
-                print(f"[WARN] Failed to set timer resolution: {rc.value}")
+                print(f'\033[93m[{lang._instance.get_string("log.warn")}] {lang._instance.get_string("warn.timerRes")} {rc.value}\033[0m')
         else:
             winmm.timeEndPeriod(1)
 
