@@ -22,6 +22,9 @@ onnxruntime-directml = "^1.15.0"
 
 colorama = "^0.4.6"
 taskipy = "^1.10.4"
+pillow = "^11.0.0"
+comtypes = "^1.4.8"
+pygrabber = "^0.2"
 
 
 [tool.poetry.group.dev.dependencies]
