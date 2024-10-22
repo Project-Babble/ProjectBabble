@@ -232,7 +232,7 @@ def main():
     # GUI Render loop
     while True:
         # First off, check for any events from the GUI
-        event, values = window.read(timeout=30)
+        event, values = window.read(timeout=1)
 
         # If we're in either mode and someone hits q, quit immediately
         if event in ("Exit", sg.WIN_CLOSED):
