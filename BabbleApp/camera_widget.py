@@ -262,18 +262,15 @@ class CameraWidget:
         self.figure = None
         self.is_mouse_up = True
         self.in_roi_mode = False
-        self.movavg_fps_queue = deque(maxlen=120)
-        self.movavg_bps_queue = deque(maxlen=120)
+        self.bps = 0
 
     def _movavg_fps(self, next_fps):
-        self.movavg_fps_queue.append(next_fps)
-        fps = round(sum(self.movavg_fps_queue) / len(self.movavg_fps_queue))
-        millisec = round((1 / fps if fps else 0) * 1000)
-        return f"{fps} FPS {millisec} MS"
+        # next_fps is already averaged
+        return f"{round(next_fps)} FPS {round((1 / next_fps if next_fps else 0) * 1000)} ms"
 
     def _movavg_bps(self, next_bps):
-        self.movavg_bps_queue.append(next_bps)
-        return f"{sum(self.movavg_bps_queue) / len(self.movavg_bps_queue) * 0.001 * 0.001 * 8:.3f} Mbps"
+        self.bps = round(0.02 * next_bps + 0.98 * self.bps)
+        return f"{self.bps * 0.001 * 0.001 * 8:.3f} Mbps"
 
     def started(self):
         return not self.cancellation_event.is_set()
