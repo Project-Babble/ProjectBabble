@@ -17,7 +17,6 @@ Copyright (c) 2023 Project Babble <3
 """
 
 import os
-import time
 import PySimpleGUI as sg
 import queue
 import requests
@@ -207,6 +206,8 @@ def main():
                 background_color=bg_color_highlight,
             ),
         ],
+        # Keep at bottom!
+        [sg.Text(f'- - -  {lang._instance.get_string("general.windowFocus")}  - - -', key="-WINFOCUS-", background_color=bg_color_clear, text_color="#F0F0F0", justification="center", expand_x=True, visible=False)],
     ]
 
     if config.cam_display_id in [Tab.CAM]:
@@ -230,10 +231,12 @@ def main():
         f"{appversion}", layout, icon="Images/logo.ico", background_color=bg_color_clear
     )
 
+    tint = 33
+    fs = False
     # GUI Render loop
     while True:
         # First off, check for any events from the GUI
-        event, values = window.read(timeout=30)
+        event, values = window.read(timeout=tint)
 
         # If we're in either mode and someone hits q, quit immediately
         if event in ("Exit", sg.WIN_CLOSED):
@@ -259,10 +262,21 @@ def main():
             )
             return
 
-        # When focus is lost stop 'n slow down the loop here.
         try:
-            if not window.TKroot.focus_get():
-                time.sleep(0.2)
+            # If window isn't in focus increase timeout and stop loop early
+            if window.TKroot.focus_get():
+                if fs:
+                    fs = False
+                    tint = 33
+                    window["-WINFOCUS-"].update(visible=False)
+                    window["-WINFOCUS-"].hide_row()
+                    window.refresh()
+            else:
+                if not fs:
+                    fs = True
+                    tint = 100
+                    window["-WINFOCUS-"].update(visible=True)
+                    window["-WINFOCUS-"].unhide_row()
                 continue
         except KeyError:
             pass

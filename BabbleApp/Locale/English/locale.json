@@ -16,6 +16,7 @@
 	"general.recalibrate": "Recalibrate Address",
 	"general.recalibrateTooltip": "OSC address we use for recalibrating",
 	"general.uvcCameraSettings": "UVC Camera Settings",
+	"general.windowFocus": "Interface Paused",
 	"general.useRedChannel": "Use Red Channel",
 	"general.useRedChannelTooltip": "Uses only the red channel for Omnicept capture",
 	"general.xResolution": "X Resolution",
