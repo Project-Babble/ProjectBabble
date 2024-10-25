@@ -22,6 +22,7 @@ import PySimpleGUI as sg
 import queue
 import requests
 import threading
+from ctypes import windll, c_int
 from babble_model_loader import *
 from camera_widget import CameraWidget
 from config import BabbleConfig
@@ -33,8 +34,14 @@ from calib_settings_widget import CalibSettingsWidget
 from utils.misc_utils import EnsurePath, is_nt, bg_color_highlight, bg_color_clear
 from lang_manager import LocaleStringManager as lang
 
+winmm = None
+
 if is_nt:
     from winotify import Notification
+    try:
+        winmm = windll.winmm
+    except OSError:
+        print(f'\033[91m[{lang._instance.get_string("log.error")}] {lang._instance.get_string("error.winmm")}.\033[0m')
 os.system("color")  # init ANSI color
 
 # Random environment variable to speed up webcam opening on the MSMF backend.
@@ -54,6 +61,15 @@ CALIB_SETTINGS_RADIO_NAME = "-CALIBSETTINGSRADIO-"
 page_url = "https://github.com/SummerSigh/ProjectBabble/releases/latest"
 appversion = "Babble v2.0.6 Alpha"
 
+def timerResolution(toggle):
+    if winmm != None:
+        if toggle:
+            rc = c_int(winmm.timeBeginPeriod(1))
+            if rc.value != 0:
+                # TIMEERR_NOCANDO = 97
+                print(f'\033[93m[{lang._instance.get_string("log.warn")}] {lang._instance.get_string("warn.timerRes")} {rc.value}\033[0m')
+        else:
+            winmm.timeEndPeriod(1)
 
 def main():
     EnsurePath()
@@ -110,6 +126,7 @@ def main():
             print(
                 f'[{lang._instance.get_string("log.info")}] {lang._instance.get_string("babble.noInternet")}.'
             )
+    timerResolution(True)
     # Check to see if we have an ROI. If not, bring up ROI finder GUI.
 
     # Spawn worker threads
@@ -216,10 +233,10 @@ def main():
     # GUI Render loop
     while True:
         # First off, check for any events from the GUI
-        event, values = window.read(timeout=2)
+        event, values = window.read(timeout=30)
 
         # If we're in either mode and someone hits q, quit immediately
-        if event == "Exit" or event == sg.WIN_CLOSED:
+        if event in ("Exit", sg.WIN_CLOSED):
             for (
                 cam
             ) in (
@@ -236,6 +253,7 @@ def main():
             if ROSC:
                 osc_receiver.shutdown()
                 osc_receiver_thread.join()
+            timerResolution(False)
             print(
                 f'\033[94m[{lang._instance.get_string("log.info")}] {lang._instance.get_string("babble.exit")}\033[0m'
             )

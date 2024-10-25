@@ -64,31 +64,19 @@ class BabbleConfig(BaseModel):
         EnsurePath()
 
         if not os.path.exists(CONFIG_FILE_NAME):
-            print(
-                f'[{lang._instance.get_string("log.info")}] {lang._instance.get_string("config.noSettingsFile")}'
-            )
             return BabbleConfig()
         try:
             with open(CONFIG_FILE_NAME, "r") as settings_file:
                 return BabbleConfig(**json.load(settings_file))
         except json.JSONDecodeError:
-            print(
-                f'[{lang._instance.get_string("log.info")}] {lang._instance.get_string("config.failedToLoadSettings")}'
-            )
             load_config = None
             if os.path.exists(BACKUP_CONFIG_FILE_NAME):
                 try:
                     with open(BACKUP_CONFIG_FILE_NAME, "r") as settings_file:
                         load_config = BabbleConfig(**json.load(settings_file))
-                    print(
-                        f'[{lang._instance.get_string("log.info")}] {lang._instance.get_string("config.usingBackupSettings")}'
-                    )
                 except json.JSONDecodeError:
                     pass
             if load_config is None:
-                print(
-                    f'[{lang._instance.get_string("log.info")}] {lang._instance.get_string("config.usingBaseSettings")}'
-                )
                 load_config = BabbleConfig()
             return load_config
 
@@ -103,11 +91,10 @@ class BabbleConfig(BaseModel):
                     BabbleConfig(**json.load(settings_file))
                 shutil.copy(CONFIG_FILE_NAME, BACKUP_CONFIG_FILE_NAME)
                 # print("Backed up settings files.") # Comment out because it's too loud.
+            except shutil.SameFileError:
+                pass
             except json.JSONDecodeError:
                 # No backup because the saved settings file is broken.
                 pass
         with open(CONFIG_FILE_NAME, "w") as settings_file:
             json.dump(obj=self.dict(), fp=settings_file, indent=2)
-        print(
-            f'[{lang._instance.get_string("log.info")}] {lang._instance.get_string("config.saved")}.'
-        )

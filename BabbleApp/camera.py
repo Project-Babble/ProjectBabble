@@ -1,4 +1,5 @@
 import cv2
+from cv2.typing import *
 import numpy as np
 import queue
 import serial
@@ -13,6 +14,7 @@ from utils.misc_utils import get_camera_index_by_name, list_camera_names
 from enum import Enum
 
 WAIT_TIME = 0.1
+MAX_RESOLUTION: int = 600
 
 # Serial communication protocol:
 # header-begin (2 bytes)
@@ -25,9 +27,9 @@ ETVR_HEADER_LEN = 6
 
 
 class CameraState(Enum):
-    CONNECTING = 0
-    CONNECTED = 1
-    DISCONNECTED = 2
+    CONNECTING: int = 0
+    CONNECTED: int = 1
+    DISCONNECTED: int = 2
 
 
 class Camera:
@@ -41,7 +43,6 @@ class Camera:
         camera_output_outgoing: "queue.Queue(maxsize=2)",
         settings: BabbleSettingsConfig,
     ):
-        self.current_capture_sourc = None
         self.camera_status = CameraState.CONNECTING
         self.config = config
         self.settings = settings
@@ -304,6 +305,19 @@ class Camera:
             )
             self.camera_status = CameraState.DISCONNECTED
 
+    def clamp_max_res(self, image: MatLike) -> MatLike:
+        shape = image.shape
+        max_value = np.max(shape)
+        if max_value > MAX_RESOLUTION:
+            scale: float = MAX_RESOLUTION/max_value
+            width: int = int(shape[1] * scale)
+            height: int = int(shape[0] * scale)
+            image = cv2.resize(image, (width, height))
+
+            return image
+        else: return image
+
+
     def push_image_to_queue(self, image, frame_number, fps):
         # If there's backpressure, just yell. We really shouldn't have this unless we start getting
         # some sort of capture event conflict though.
@@ -312,5 +326,5 @@ class Camera:
             print(
                 f'{Fore.YELLOW}[{lang._instance.get_string("log.warn")}] {lang._instance.get_string("warn.backpressure1")} {qsize}. {lang._instance.get_string("warn.backpressure2")}{Fore.RESET}'
             )
-        self.camera_output_outgoing.put((image, frame_number, fps))
+        self.camera_output_outgoing.put((self.clamp_max_res(image), frame_number, fps))
         self.capture_event.clear()
