@@ -206,6 +206,8 @@ def main():
                 background_color=bg_color_highlight,
             ),
         ],
+        # Keep at bottom!
+        [sg.Text(f'- - -  {lang._instance.get_string("general.windowFocus")}  - - -', key="-WINFOCUS-", background_color=bg_color_clear, text_color="#F0F0F0", justification="center", expand_x=True, visible=False)],
     ]
 
     if config.cam_display_id in [Tab.CAM]:
@@ -229,10 +231,12 @@ def main():
         f"{appversion}", layout, icon="Images/logo.ico", background_color=bg_color_clear
     )
 
+    tint = 33
+    fs = False
     # GUI Render loop
     while True:
         # First off, check for any events from the GUI
-        event, values = window.read(timeout=30)
+        event, values = window.read(timeout=tint)
 
         # If we're in either mode and someone hits q, quit immediately
         if event in ("Exit", sg.WIN_CLOSED):
@@ -257,6 +261,25 @@ def main():
                 f'\033[94m[{lang._instance.get_string("log.info")}] {lang._instance.get_string("babble.exit")}\033[0m'
             )
             return
+
+        try:
+            # If window isn't in focus increase timeout and stop loop early
+            if window.TKroot.focus_get():
+                if fs:
+                    fs = False
+                    tint = 33
+                    window["-WINFOCUS-"].update(visible=False)
+                    window["-WINFOCUS-"].hide_row()
+                    window.refresh()
+            else:
+                if not fs:
+                    fs = True
+                    tint = 100
+                    window["-WINFOCUS-"].update(visible=True)
+                    window["-WINFOCUS-"].unhide_row()
+                continue
+        except KeyError:
+            pass
 
         if values[CAM_RADIO_NAME] and config.cam_display_id != Tab.CAM:
             cams[0].start()

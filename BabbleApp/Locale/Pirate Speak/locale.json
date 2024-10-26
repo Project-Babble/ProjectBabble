@@ -16,6 +16,7 @@
 	"general.recalibrate": "Recalibrate Yer Bearings",
 	"general.recalibrateTooltip": "OSC bearings we use fer recalibratin'",
 	"general.uvcCameraSettings": "Spyglass Settings",
+	"general.windowFocus": "Interfayce Be Paused",
 	"general.useRedChannel": "Use th' Red Channel",
 	"general.useRedChannelTooltip": "Uses only th' red channel fer Omnicept plunderin'",
 	"general.xResolution": "X Marks th' Spot",

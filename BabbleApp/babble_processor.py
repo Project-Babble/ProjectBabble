@@ -134,7 +134,7 @@ class BabbleProcessor:
             self.image_queue_outgoing.put((image_stack, output_information))
             if self.image_queue_outgoing.qsize() > 1:
                 self.image_queue_outgoing.get()
-
+                
             self.previous_image = self.current_image
             self.previous_rotation = self.config.rotation_angle
 
