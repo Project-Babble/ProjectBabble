@@ -75,6 +75,7 @@ class CameraWidget:
             self.capture_queue,
             self.image_queue,
             self.cam_id,
+            self.osc_queue,
         )
 
         self.camera_status_queue = Queue(maxsize=2)
@@ -518,8 +519,5 @@ class CameraWidget:
                 imgbytes = cv2.imencode(".ppm", maybe_image)[1].tobytes()
                 window[self.gui_tracking_image].update(data=imgbytes)
 
-                # Relay information to OSC
-                if cam_info.info_type != CamInfoOrigin.FAILURE:
-                    self.osc_queue.put((self.cam_id, cam_info))
             except Empty:
                 pass
