@@ -86,6 +86,8 @@ class BabbleProcessor:
         self.runtime = self.settings.gui_runtime
         self.use_gpu = self.settings.gui_use_gpu
         self.gpu_index = self.settings.gui_gpu_index
+        config_default: BabbleConfig = BabbleConfig()
+        self.default_model = config_default.settings.gui_model_file
         self.output = []
         self.val_list = []
         self.calibrate_config = np.empty((1, 45))
@@ -103,12 +105,24 @@ class BabbleProcessor:
                 provider = "DmlExecutionProvider"
             else:
                 provider = "CPUExecutionProvider"  # Build onnxruntime to get both DML and OpenVINO
-            self.sess = ort.InferenceSession(
-                f"{self.model}onnx/model.onnx",
-                self.opts,
-                providers=[provider],
-                provider_options=[{"device_id": self.gpu_index}],
-            )
+            try:
+                self.sess = ort.InferenceSession(
+                    f"{self.model}/onnx/model.onnx",
+                    self.opts,
+                    providers=[provider],
+                    provider_options=[{"device_id": self.gpu_index}],
+                )
+            except:                                                 # Load default model if we can't find the specified model
+                print(
+                f'\033[91m[{lang._instance.get_string("log.error")}] {lang._instance.get_string("error.modelLoad")} {self.model}\033[0m'
+                )
+                print(f'\033[91mLoading Default model: {self.default_model}.\033[0m')
+                self.sess = ort.InferenceSession(
+                    f"{self.default_model}/onnx/model.onnx",  
+                    self.opts,
+                    providers=[provider],
+                    provider_options=[{"device_id": self.gpu_index}],
+                )
             self.input_name = self.sess.get_inputs()[0].name
             self.output_name = self.sess.get_outputs()[0].name
         try:
