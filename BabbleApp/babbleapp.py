@@ -58,7 +58,7 @@ ALGO_SETTINGS_RADIO_NAME = "-ALGOSETTINGSRADIO-"
 CALIB_SETTINGS_RADIO_NAME = "-CALIBSETTINGSRADIO-"
 
 page_url = "https://github.com/SummerSigh/ProjectBabble/releases/latest"
-appversion = "Babble v2.0.6 Alpha"
+appversion = "Babble v2.1.0 Beta"
 
 def timerResolution(toggle):
     if winmm != None:
