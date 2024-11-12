@@ -264,7 +264,7 @@ def main():
 
         try:
             # If window isn't in focus increase timeout and stop loop early
-            if window.TKroot.focus_get():
+            if window.TKroot.focus_get(): 
                 if fs:
                     fs = False
                     tint = 33

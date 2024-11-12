@@ -6,6 +6,7 @@ BabbleApp/babble_settings.json
 BabbleApp/babble_settings.backup
 BabbleApp/build
 BabbleApp/dist
+BabbleApp/UserData
 /vivetest
 /training
 .vscode

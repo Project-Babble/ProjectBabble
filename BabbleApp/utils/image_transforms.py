@@ -38,7 +38,7 @@ def to_tensor(numpy_array, dtype=np.float32):
         numpy_array = numpy_array[:, :, np.newaxis]
 
     # Transpose the array to match PyTorch tensor format (C x H x W)
-    tensor = normalize(np.transpose(numpy_array, (2, 0, 1)))
+    tensor = np.transpose(numpy_array, (2, 0, 1))
 
     return tensor
 

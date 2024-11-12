@@ -13,6 +13,7 @@ from config import BabbleConfig, BabbleSettingsConfig
 from utils.misc_utils import get_camera_index_by_name, list_camera_names
 from enum import Enum
 import sys
+import os
 
 WAIT_TIME = 0.1
 BUFFER_SIZE = 32768
@@ -302,3 +303,13 @@ class Camera:
             )
         self.camera_output_outgoing.put((self.clamp_max_res(image), frame_number, fps))
         self.capture_event.clear()
+        
+    def save_frame(self, destination_folder, frame_name, window_x, window_y, window_w, window_h):
+        #get camera data from buffer
+        image = self.camera_output_outgoing.get()[0] #this feels wrong but it's easy
+        #crop image to ROI
+        image = image[window_y:window_y+window_h, window_x:window_x+window_w]
+    
+        if not os.path.exists(destination_folder):
+            os.makedirs(destination_folder)
+        cv2.imwrite(os.path.join(destination_folder, frame_name), image)

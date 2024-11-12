@@ -113,6 +113,7 @@
 	"camera.waitingOnMouthCrop": "Awating Mouth Crop",
 	"camera.calibration": "Calibration",
 	"camera.tracking": "Tracking",
+	"camera.neutralface": "Model Face Calibraion",
 	"config.noSettingsFile": "No settings file, using base settings",
 	"config.failedToLoadSettings": "Failed to load settings file",
 	"config.usingBackupSettings": "Using backup settings",

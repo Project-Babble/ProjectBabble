@@ -103,14 +103,23 @@ class BabbleProcessor:
                 provider = "DmlExecutionProvider"
             else:
                 provider = "CPUExecutionProvider"  # Build onnxruntime to get both DML and OpenVINO
-            self.sess = ort.InferenceSession(
-                f"{self.model}onnx/model.onnx",
+            self.sess_encoder = ort.InferenceSession(
+                f"{self.model}onnx/encoder.onnx",
                 self.opts,
                 providers=[provider],
                 provider_options=[{"device_id": self.gpu_index}],
             )
-            self.input_name = self.sess.get_inputs()[0].name
-            self.output_name = self.sess.get_outputs()[0].name
+            self.sess_head = ort.InferenceSession(
+                f"{self.model}onnx/head_with_selu.onnx",
+                self.opts,
+                providers=[provider],
+                provider_options=[{"device_id": self.gpu_index}],
+            )
+            self.input_name_encoder = self.sess_encoder.get_inputs()[0].name
+            self.output_name_encoder = self.sess_encoder.get_outputs()[0].name
+
+            self.input_name_head = self.sess_head.get_inputs()[0].name
+            self.output_name_head = self.sess_head.get_outputs()[0].name
         try:
             min_cutoff = float(self.settings.gui_min_cutoff)
             beta = float(self.settings.gui_speed_coefficient)
@@ -207,7 +216,10 @@ class BabbleProcessor:
             pass
 
     def run(self):
-
+        run_model_embeding(self)
+        #load the model embeding. It's a NPY 
+        embed_netural = np.load('UserData/model_embeding.npy')
+        netural_blends = np.load('UserData/netural.npy')
         while True:
             # Check to make sure we haven't been requested to close
             if self.cancellation_event.is_set():
@@ -253,7 +265,7 @@ class BabbleProcessor:
                 self.current_image_gray.copy()
             )  # copy this frame to have a clean image for blink algo
 
-            run_model(self)
+            run_model(self, embed_netural, netural_blends)
             if self.settings.use_calibration:
                 self.output = cal.cal_osc(self, self.output)
             # else:

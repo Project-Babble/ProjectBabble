@@ -113,6 +113,7 @@
 	"camera.waitingOnMouthCrop": "Esperando Recorte de Boca",
 	"camera.calibration": "Calibración",
 	"camera.tracking": "Seguimiento",
+	"camera.neutralface": "Capturando la cara",
 	"config.noSettingsFile": "No hay archivo de configuración, usando configuración base",
 	"config.failedToLoadSettings": "Error al cargar el archivo de configuración",
 	"config.usingBackupSettings": "Usando configuración de respaldo",

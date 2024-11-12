@@ -22,6 +22,8 @@ class BabbleCameraConfig(BaseModel):
     gui_vertical_flip: bool = False
     gui_horizontal_flip: bool = False
     use_ffmpeg: bool = False
+    neutral_frame: str = None
+
 
 
 class BabbleSettingsConfig(BaseModel):
@@ -51,6 +53,7 @@ class BabbleSettingsConfig(BaseModel):
     use_calibration: bool = False
     calibration_mode: str = "Neutral"
     gui_language: str = "English"
+
 
 
 class BabbleConfig(BaseModel):

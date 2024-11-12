@@ -43,6 +43,8 @@ class CameraWidget:
         self.gui_horizontal_flip = f"-HORIZONTALFLIP{widget_id}-"
         self.use_calibration = f"-USECALIBRATION{widget_id}-"
         self.gui_refresh_button = f"-REFRESHCAMLIST{widget_id}-"
+        self.neural_face_frame_calibration_button = f"-FACEID{widget_id}-"
+
         self.osc_queue = osc_queue
         self.main_config = main_config
         self.cam_id = widget_id
@@ -197,8 +199,10 @@ class CameraWidget:
                     f'{lang._instance.get_string("camera.crop")}:',
                     key=self.gui_roi_message,
                     background_color=bg_color_highlight,
+                    font=("Helvetica", 16, "bold"),
+                    text_color="red",  # Use a color that contrasts with bg_color_highlight
                     visible=False,
-                ),
+                )
             ],
         ]
 
@@ -241,6 +245,11 @@ class CameraWidget:
                     key=self.gui_roi_button,
                     button_color=button_color,
                     tooltip=f'{lang._instance.get_string("camera.croppingModeToolTip")}.',
+                ),
+                sg.Button(
+                    lang._instance.get_string("camera.neutralface"),
+                    key=self.neural_face_frame_calibration_button,
+                    button_color=button_color,
                 ),
             ],
             [
@@ -298,6 +307,7 @@ class CameraWidget:
         self.camera_thread.join()
 
     def render(self, window, event, values):
+        
         if self.image_queue.qsize() > 2:
             with self.image_queue.mutex:
                 self.image_queue.queue.clear()
@@ -368,6 +378,8 @@ class CameraWidget:
         if self.settings_config.use_calibration != values[self.use_calibration]:
             self.settings_config.use_calibration = values[self.use_calibration]
             changed = True
+            
+
 
         if changed:
             self.main_config.save()
@@ -416,7 +428,7 @@ class CameraWidget:
 
         if event == self.gui_roi_selection:
             # Event for mouse button down or mouse drag in ROI mode
-            if self.is_mouse_up:
+            if self.is_mouse_up: 
                 self.is_mouse_up = False
                 self.x0, self.y0 = values[self.gui_roi_selection]
             self.x1, self.y1 = values[self.gui_roi_selection]
@@ -453,6 +465,19 @@ class CameraWidget:
 
         needs_roi_set = self.config.roi_window_h <= 0 or self.config.roi_window_w <= 0
 
+        if event == self.neural_face_frame_calibration_button:
+            if needs_roi_set:
+                return
+            if self.config.neutral_frame == None:
+                self.camera.save_frame("UserData", "neutral_frame.jpg", self.config.roi_window_x, self.config.roi_window_y, self.config.roi_window_w, self.config.roi_window_h)
+                self.config.neutral_frame = "UserData/neutral_frame.jpg" #TODO: Have this exposed in the settings widget
+            else:
+                self.camera.save_frame("UserData", "neutral_frame.jpg", self.config.roi_window_x, self.config.roi_window_y, self.config.roi_window_w, self.config.roi_window_h)
+            changed = True
+        
+            
+                
+
         # TODO: Refactor if statements below...
         window[self.gui_tracking_fps].update("")
         window[self.gui_tracking_bps].update("")
@@ -478,7 +503,7 @@ class CameraWidget:
             window[self.gui_mode_readout].update(
                 lang._instance.get_string("camera.calibration")
             )
-        else:
+        else: 
             window[self.gui_mode_readout].update(
                 lang._instance.get_string("camera.tracking")
             )
