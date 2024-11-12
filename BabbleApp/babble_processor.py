@@ -217,6 +217,7 @@ class BabbleProcessor:
 
     def run(self):
         run_model_embeding(self)
+        print("[INFO] Created model embeding")
         #load the model embeding. It's a NPY 
         embed_netural = np.load('UserData/model_embeding.npy')
         netural_blends = np.load('UserData/netural.npy')

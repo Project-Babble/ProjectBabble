@@ -13,7 +13,6 @@ def run_model(self, embedding, netural_blends):
         frame = transforms.to_tensor(frame)
         frame = transforms.unsqueeze(frame, 0)
         frame = transforms.normalize(frame)
-        print(frame)
         frame = frame * 2 - 1 
         #make the image 3 channels but concat
         frame = np.concatenate((frame, frame, frame), axis=1)
@@ -55,9 +54,10 @@ def run_model_embeding(self):
         frame = transforms.unsqueeze(frame, 0)
         frame = transforms.normalize(frame)
         frame = frame * 2 - 1 
-        frame = np.concatenate((frame, frame, frame), axis=1)
-
+        
         #convert to color by duplicating the channels
+        frame = np.concatenate((frame, frame, frame), axis=1)
+        
         out = self.sess_encoder.run([self.output_name_encoder], {self.input_name_encoder: frame})
         out = out[0]
         output_emb = np.concatenate((out, out), axis=-1)
