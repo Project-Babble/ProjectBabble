@@ -216,7 +216,10 @@ class BabbleProcessor:
             pass
 
     def run(self):
+        if not os.path.exists("UserData"):
+            os.makedirs("UserData")
         run_model_embeding(self)
+            
         print("[INFO] Created model embeding")
         #load the model embeding. It's a NPY 
         embed_netural = np.load('UserData/model_embeding.npy')
