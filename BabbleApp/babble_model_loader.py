@@ -42,13 +42,12 @@ def run_model_embeding(self):
         #load BabbleApp\UserData\neutral_frame.jpg
         frame = cv2.imread("UserData/neutral_frame.jpg")
 
-        #convert to black and white
-        frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         #convert back to color
         #frame = cv2.cvtColor(frame, cv2.COLOR_GRAY2BGR)
         if frame is None:
             print("No frame")
             frame = np.zeros((256, 256, 3), dtype=np.uint8)
+        frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         frame = cv2.resize(frame, (256, 256))
         frame = transforms.to_tensor(frame)
         frame = transforms.unsqueeze(frame, 0)
