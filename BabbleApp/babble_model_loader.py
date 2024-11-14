@@ -30,11 +30,14 @@ def run_model(self, embedding, netural_blends):
         output = output[0][0] - netural_blends
     
         output = self.one_euro_filter(output)
+        #remove the last item. (46,) --> (45,)
+        output = np.delete(output, -1, axis=0)
 
         # for i in range(len(output)):  # Clip values between 0 - 1
         #     output[i] = max(min(output[i], 1), 0)
         ## Clip values between 0 - 1
         output = np.clip(output, 0, 1)
+
     self.output = output
 
 def run_model_embeding(self):
