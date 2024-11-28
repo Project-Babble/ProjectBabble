@@ -37,6 +37,7 @@
 	"error.size": "Los tamaños de los fotogramas para mostrar son de dimensiones desiguales",
 	"error.capture": "Detectado problema en la captura de fotogramas",
 	"error.winmm": "Error al cargar winmm",
+	"error.modelLoad": "Error al cargar Modelo:",
 	"warn.frameDrop": "Pérdida de fotogramas. JPEG dañado",
 	"warn.captureProblem": "Problema con la fuente de captura, se asume que la cámara está desconectada, esperando reconexión",
 	"warn.serialCapture": "Problema con la fuente de captura en serie, se asume que la cámara está desconectada, esperando reconexión",

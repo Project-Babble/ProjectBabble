@@ -37,6 +37,7 @@
 	"error.size": "Size of frames to display are of unequal sizes",
 	"error.capture": "Frame capture issue detected",
 	"error.winmmDll": "Failed to load winmm",
+	"error.modelLoad": "Failed to load mdoel:",
 	"warn.frameDrop": "Frame drop. Corrupted JPEG",
 	"warn.captureProblem": "Capture source problem, assuming camera disconnected, waiting for reconnect",
 	"warn.serialCapture": "Serial capture source problem, assuming camera disconnected, waiting for reconnect",
