@@ -1,4 +1,4 @@
-![Babble Logo](https://github.com/SummerSigh/ProjectBabble/blob/SummerSigh-patch-4/Babble.png?raw=true)
+![Babble Logo](https://github.com/Project-Babble/ProjectBabble/Babble.png?raw=true)
 
 <h3 align="center">
 Project Babble is an open-source mouth tracking project designed to work with any VR headset. We strive to make our models robust to different lighting, cameras, image qualities and facial structures!
