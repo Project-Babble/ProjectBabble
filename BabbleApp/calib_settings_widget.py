@@ -255,15 +255,24 @@ class CalibSettingsWidget:
             for count2, element2 in enumerate(element1):
                 if values[element2] != "":   
                     value = values[element2]
-                    if is_valid_float_input(value):
+                    if is_valid_float_input(value): # Returns true if a single decimal point. Therefore we need to make sure value can be converted to a float by assuming a dot implies a leading 0.
+                        if value == ".":
+                            valid_float = 0.
+                            values[element2] = valid_float
+                            window[element2].update(valid_float)
                         value = float(values[element2])
                         if float(self.array[count1][count2]) != value:
                             self.array[count1][count2] = value
                             changed = True
                     else:
-                        value = float(value[:-1])
-                        window[element2].update(value)
-                        values[element2] = value
+                        trimmed_value = value[:-1]
+                        if trimmed_value == '':     # If we get an empty string, don't try to convert to float. 
+                            window[element2].update(trimmed_value)
+                            values[element2] = trimmed_value
+                        else: 
+                            value = float(trimmed_value)
+                            window[element2].update(value)
+                            values[element2] = value
 
         if event == self.gui_reset_min:
             for count1, element1 in enumerate(self.shape):
