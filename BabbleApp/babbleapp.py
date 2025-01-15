@@ -17,6 +17,8 @@ Copyright (c) 2023 Project Babble <3
 """
 
 import os
+import sys
+import logging
 import PySimpleGUI as sg
 import queue
 import requests
@@ -25,7 +27,7 @@ from ctypes import windll, c_int
 from babble_model_loader import *
 from camera_widget import CameraWidget
 from config import BabbleConfig
-from tab import CamInfo, Tab
+from tab import Tab
 from osc import VRChatOSCReceiver, VRChatOSC
 from general_settings_widget import SettingsWidget
 from algo_settings_widget import AlgoSettingsWidget
@@ -60,6 +62,50 @@ CALIB_SETTINGS_RADIO_NAME = "-CALIBSETTINGSRADIO-"
 page_url = "https://github.com/SummerSigh/ProjectBabble/releases/latest"
 appversion = "Babble v2.1.0 Beta"
 
+def setupLogging():
+    # Determine the user's Documents directory
+    documents_dir = os.path.join(os.path.expanduser("~"), "Documents")
+    log_dir = os.path.join(documents_dir, "ProjectBabble")
+    os.makedirs(log_dir, exist_ok=True)
+
+    log_file = os.path.join(log_dir, "latest.log")
+    
+    # Set up logging
+    logger = logging.getLogger("debug_logger")
+    logger.setLevel(logging.DEBUG)
+    
+    # File handler for logging to file
+    file_handler = logging.FileHandler(log_file, mode='w', encoding='utf-8')
+    file_handler.setLevel(logging.DEBUG)
+    formatter = logging.Formatter('%(asctime)s - %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
+    file_handler.setFormatter(formatter)
+
+    logger.addHandler(file_handler)
+
+    # Optionally output to console as well
+    console_handler = logging.StreamHandler(sys.stdout)
+    console_handler.setLevel(logging.DEBUG)
+    console_handler.setFormatter(formatter)
+    logger.addHandler(console_handler)
+
+    # Redirect stdout and stderr to logger
+    class StreamToLogger:
+        def __init__(self, stream, log_level):
+            self.stream = stream
+            self.log_level = log_level
+
+        def write(self, message):
+            if message.strip():
+                logger.log(self.log_level, message.strip())
+            self.stream.write(message)
+            self.stream.flush()
+
+        def flush(self):
+            self.stream.flush()
+
+    sys.stdout = StreamToLogger(sys.stdout, logging.INFO)
+    sys.stderr = StreamToLogger(sys.stderr, logging.ERROR)
+
 def timerResolution(toggle):
     if winmm != None:
         if toggle:
@@ -72,6 +118,7 @@ def timerResolution(toggle):
 
 def main():
     EnsurePath()
+    setupLogging()
 
     # Get Configuration
     config: BabbleConfig = BabbleConfig.load()
@@ -342,7 +389,6 @@ def main():
         for setting in settings:
             if setting.started():
                 setting.render(window, event, values)
-
 
 if __name__ == "__main__":
     main()
