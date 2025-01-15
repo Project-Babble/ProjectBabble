@@ -12,7 +12,7 @@ By defualt Project Babble is under a non-commerical license! Please contact us a
 - [Installation](#installation)
 - [Usage](#usage)
 - [Links](#links)
-  
+
 ## Features
 - 100% open-source! 🌟
 - Fast and robust! 🚀
@@ -24,7 +24,7 @@ By defualt Project Babble is under a non-commerical license! Please contact us a
 Head to the releases section and [download the latest installer](https://github.com/Project-Babble/ProjectBabble/releases/latest).
 
 ### Linux
-Install `git`, `curl` and a version of `python` greater than `3.8` for your distro. 
+Install `git`, `curl` and a version of `python` (between `3.8` and `3.12`) for your distro.
 
 Then, copy paste and run the following script into the terminal of your choice:
 
@@ -57,7 +57,7 @@ sudo dnf install python3-tkinter
 
 You can read more about this [here](https://stackoverflow.com/questions/25905540/importerror-no-module-named-tkinter).
 
-## Usage 
+## Usage
 We have integrations for [VRChat](https://docs.babble.diy/docs/software/integrations/vrc), [Resonite](https://docs.babble.diy/docs/software/integrations/resonite) and [ChilloutVR](https://docs.babble.diy/docs/software/integrations/chilloutVR)!
 
 Looking for something else? Check out our [documentation](https://docs.babble.diy/)!
