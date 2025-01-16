@@ -21,11 +21,11 @@ Project Babble is an open-source mouth tracking project designed to work with an
 Head to the releases section and [download the latest installer](https://github.com/Project-Babble/ProjectBabble/releases/latest).
 
 ### MacOS and Linux
-Install `git`, `curl` and a version of `python` greater than `3.8` for your distro. 
+Install `git`, `curl` and a version of `python` (between `3.8` and `3.12`) for your distro.
 
 Then, copy paste and run the following script into the terminal of your choice:
 
-#### For the latest commit (may be buggy, but has more features):
+#### For the latest commit:
 
 ```bash
 bash -c "$(curl -fsSL https://gist.githubusercontent.com/dfgHiatus/e1bce63cd6be1e8645c3b3adfd5b71a6/raw/93c65ee8256484b75feb0573499092810c076084/project-babble-installer-latest.sh)"
@@ -42,6 +42,9 @@ Once it's finished installing, you can update and run the Babble app by typing `
 *You should also be able to run the Windows executable through Wine!*
 
 #### Notes:
+
+*For **KDE Plasma** users only: If your GUI window shows just the top row of buttons, set a resolution for the Babble App manually in KDE's Window Settings. 800x600y is a good starting point with plenty of empty space.*
+
 If you receive a `["Error listing UVC devices on Linux ... No such file or directory"]` when choosing/changing your camera, you'll need to install video4linux (`v4l-utils`) for your distro.
 
 For Ubuntu or other distros with apt:
