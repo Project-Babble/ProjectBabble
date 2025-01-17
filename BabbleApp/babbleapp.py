@@ -21,7 +21,8 @@ import PySimpleGUI as sg
 import queue
 import requests
 import threading
-from ctypes import windll, c_int
+import webbrowser
+from ctypes import c_int
 from babble_model_loader import *
 from camera_widget import CameraWidget
 from config import BabbleConfig
@@ -32,11 +33,11 @@ from algo_settings_widget import AlgoSettingsWidget
 from calib_settings_widget import CalibSettingsWidget
 from utils.misc_utils import EnsurePath, is_nt, bg_color_highlight, bg_color_clear
 from lang_manager import LocaleStringManager as lang
+from desktop_notifier import DesktopNotifierSync, Urgency, Button, DEFAULT_SOUND
 
 winmm = None
 
 if is_nt:
-    from winotify import Notification
     try:
         winmm = windll.winmm
     except OSError:
@@ -70,6 +71,22 @@ def timerResolution(toggle):
         else:
             winmm.timeEndPeriod(1)
 
+def send_notification(latestversion):
+    notifier = DesktopNotifierSync(app_name="Babble App")
+    notifier.send(
+        title=lang._instance.get_string("babble.updatePresent"),
+        message=f'{lang._instance.get_string("babble.updateTo")} {latestversion}',
+        urgency=Urgency.Normal,  
+        buttons=[
+            Button(
+                title=lang._instance.get_string("babble.downloadPage"),
+                on_pressed=lambda: webbrowser.open("https://github.com/SummerSigh/ProjectBabble/releases/latest"),
+            )
+        ],
+        icon=os.path.join(os.getcwd(), "Images", "logo.ico"),
+        sound=DEFAULT_SOUND
+    )
+
 def main():
     EnsurePath()
 
@@ -83,18 +100,17 @@ def main():
 
     cancellation_event = threading.Event()
     ROSC = False
-    # Check to see if we can connect to our video source first. If not, bring up camera finding
-    # dialog.
+    # Check to see if we can connect to our video source first. If not, bring up the camera dialog.
 
     if config.settings.gui_update_check:
         try:
             response = requests.get(
-                "https://api.github.com/repos/SummerSigh/ProjectBabble/releases/latest"
+                "https://api.github.com/repos/Project-Babble/ProjectBabble/releases/latest"
             )
             latestversion = response.json()["name"]
-            if (
-                appversion == latestversion
-            ):  # If what we scraped and hardcoded versions are same, assume we are up to date.
+
+            # If what we scraped and hardcoded versions are same, assume we are up to date.
+            if False: #appversion == latestversion:
                 print(
                     f'\033[92m[{lang._instance.get_string("log.info")}] {lang._instance.get_string("babble.latestVersion")}! [{latestversion}]\033[0m'
                 )
@@ -103,30 +119,19 @@ def main():
                     f'\033[93m[{lang._instance.get_string("log.info")}] {lang._instance.get_string("babble.needUpdateOne")} [{appversion}] {lang._instance.get_string("babble.needUpdateTwo")} [{latestversion}] {lang._instance.get_string("babble.needUpdateThree")}.\033[0m'
                 )
                 try:
-                    if is_nt:
-                        cwd = os.getcwd()
-                        icon = cwd + "\Images\logo.ico"
-                        toast = Notification(
-                            app_id=lang._instance.get_string("babble.name"),
-                            title=lang._instance.get_string("babble.updatePresent"),
-                            msg=f'{lang._instance.get_string("babble.updateTo")} {latestversion}',
-                            icon=r"{}".format(icon),
-                        )
-                        toast.add_actions(
-                            label=lang._instance.get_string("babble.downloadPage"),
-                            launch="https://github.com/SummerSigh/ProjectBabble/releases/latest",
-                        )
-                        toast.show()
+                    send_notification(latestversion)
                 except Exception as e:
                     print(
                         f'[{lang._instance.get_string("log.info")}] {lang._instance.get_string("babble.noToast")}'
                     )
-        except:
+        except Exception as e:
             print(
-                f'[{lang._instance.get_string("log.info")}] {lang._instance.get_string("babble.noInternet")}.'
+                f'[{lang._instance.get_string("log.info")}] {lang._instance.get_string("babble.noInternet")}. Error: {e}'
             )
+
     timerResolution(True)
-    # Check to see if we have an ROI. If not, bring up ROI finder GUI.
+
+    # At this, check to see if we have an ROI. If not, bring up ROI finder GUI.
 
     # Spawn worker threads
     osc_queue: queue.Queue[tuple[bool, int, int]] = queue.Queue(maxsize=10)
@@ -346,3 +351,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
