@@ -114,34 +114,6 @@ async def async_main():
     cancellation_event = threading.Event()
     ROSC = False
 
-    if config.settings.gui_update_check:
-        try:
-            response = requests.get(
-                "https://api.github.com/repos/Project-Babble/ProjectBabble/releases/latest"
-            )
-            latestversion = response.json()["name"]
-
-            # If what we scraped and hardcoded versions are same, assume we are up to date.
-            if appversion == latestversion:
-                print(
-                    f'\033[92m[{lang._instance.get_string("log.info")}] {lang._instance.get_string("babble.latestVersion")}! [{latestversion}]\033[0m'
-                )
-            else:
-                print(
-                    f'\033[93m[{lang._instance.get_string("log.info")}] {lang._instance.get_string("babble.needUpdateOne")} [{appversion}] {lang._instance.get_string("babble.needUpdateTwo")} [{latestversion}] {lang._instance.get_string("babble.needUpdateThree")}.\033[0m'
-                )
-                try:
-                    # Run notification in a separate thread to avoid blocking
-                    await notification_manager.show_notification(latestversion)
-                except Exception as e:
-                    print(
-                        f'[{lang._instance.get_string("log.info")}] {lang._instance.get_string("babble.noToast")} Error: {e}'
-                    )
-        except Exception as e:
-            print(
-                f'[{lang._instance.get_string("log.info")}] {lang._instance.get_string("babble.noInternet")}. Error: {e}'
-            )
-
     timerResolution(True)
 
     osc_queue: queue.Queue[tuple[bool, int, int]] = queue.Queue(maxsize=10)
