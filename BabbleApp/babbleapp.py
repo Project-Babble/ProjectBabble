@@ -34,7 +34,7 @@ from algo_settings_widget import AlgoSettingsWidget
 from calib_settings_widget import CalibSettingsWidget
 from utils.misc_utils import EnsurePath, is_nt, bg_color_highlight, bg_color_clear
 from lang_manager import LocaleStringManager as lang
-from desktop_notifier import DesktopNotifierSync, Urgency, Button, DEFAULT_SOUND
+from desktop_notifier import DesktopNotifierSync, Urgency, Button, Icon, DEFAULT_SOUND
 
 winmm = None
 
@@ -74,6 +74,9 @@ def timerResolution(toggle):
             winmm.timeEndPeriod(1)
 
 def send_notification(latestversion):
+    logo = Icon(
+        path=Path(os.path.join(os.getcwd(), "Images", "logo.ico"))
+    )
     notifier = DesktopNotifierSync(app_name="Babble App")
     notifier.send(
         title=lang._instance.get_string("babble.updatePresent"),
@@ -85,7 +88,7 @@ def send_notification(latestversion):
                 on_pressed=lambda: webbrowser.open("https://github.com/SummerSigh/ProjectBabble/releases/latest"),
             )
         ],
-        icon=Path(os.path.join(os.getcwd(), "Images", "logo.ico")),
+        icon=logo,
         sound=DEFAULT_SOUND
     )
 
