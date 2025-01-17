@@ -22,6 +22,7 @@ import queue
 import requests
 import threading
 import webbrowser
+from pathlib import Path
 from ctypes import c_int
 from babble_model_loader import *
 from camera_widget import CameraWidget
@@ -39,6 +40,7 @@ winmm = None
 
 if is_nt:
     try:
+        from ctypes import windll
         winmm = windll.winmm
     except OSError:
         print(f'\033[91m[{lang._instance.get_string("log.error")}] {lang._instance.get_string("error.winmm")}.\033[0m')
@@ -83,7 +85,7 @@ def send_notification(latestversion):
                 on_pressed=lambda: webbrowser.open("https://github.com/SummerSigh/ProjectBabble/releases/latest"),
             )
         ],
-        icon=os.path.join(os.getcwd(), "Images", "logo.ico"),
+        icon=Path(os.path.join(os.getcwd(), "Images", "logo.ico")),
         sound=DEFAULT_SOUND
     )
 
