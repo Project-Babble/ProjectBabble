@@ -2,11 +2,40 @@ import re
 import logging
 import os
 import sys
+import platform
+import psutil
 
 def strip_ansi_codes(text):
     """Remove ANSI color codes from a string."""
     ansi_escape = re.compile(r'\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])')
     return ansi_escape.sub('', text)
+
+def log_system_info(logger):
+    """
+    Logs basic system and hardware information to the provided logger.
+    """
+    try:
+        # Operating system details
+        os_name = platform.system()
+        os_version = platform.version()
+        os_release = platform.release()
+        machine = platform.machine()
+        processor = platform.processor()
+        
+        # CPU and Memory
+        cpu_count = psutil.cpu_count(logical=True)
+        total_memory = psutil.virtual_memory().total // (1024 ** 2)  # Convert bytes to MB
+        
+        logger.info("========== System Information ==========")
+        logger.info(f"Operating System: {os_name} {os_release} (Version: {os_version})")
+        logger.info(f"Architecture: {machine}")
+        logger.info(f"Processor: {processor}")
+        logger.info(f"Logical CPUs: {cpu_count}")
+        logger.info(f"Total Memory: {total_memory} MB")
+        logger.info("========================================")
+    except Exception as e:
+        logger.error(f"Failed to log system information: {e}")
+
 
 def setup_logging():
     # Determine the user's Documents directory
@@ -44,3 +73,5 @@ def setup_logging():
 
     sys.stdout = StreamToLogger(sys.stdout, logging.INFO)
     sys.stderr = StreamToLogger(sys.stderr, logging.ERROR)
+
+    log_system_info(logger)
