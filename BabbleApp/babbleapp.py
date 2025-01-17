@@ -25,13 +25,14 @@ from ctypes import windll, c_int
 from babble_model_loader import *
 from camera_widget import CameraWidget
 from config import BabbleConfig
-from tab import CamInfo, Tab
+from tab import Tab
 from osc import VRChatOSCReceiver, VRChatOSC
 from general_settings_widget import SettingsWidget
 from algo_settings_widget import AlgoSettingsWidget
 from calib_settings_widget import CalibSettingsWidget
 from utils.misc_utils import EnsurePath, is_nt, bg_color_highlight, bg_color_clear
 from lang_manager import LocaleStringManager as lang
+from logger import setup_logging
 
 winmm = None
 
@@ -72,6 +73,7 @@ def timerResolution(toggle):
 
 def main():
     EnsurePath()
+    setup_logging()
 
     # Get Configuration
     config: BabbleConfig = BabbleConfig.load()
@@ -342,7 +344,6 @@ def main():
         for setting in settings:
             if setting.started():
                 setting.render(window, event, values)
-
 
 if __name__ == "__main__":
     main()
