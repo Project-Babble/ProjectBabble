@@ -115,7 +115,7 @@ def main():
             latestversion = response.json()["name"]
 
             # If what we scraped and hardcoded versions are same, assume we are up to date.
-            if False: #appversion == latestversion:
+            if appversion == latestversion:
                 print(
                     f'\033[92m[{lang._instance.get_string("log.info")}] {lang._instance.get_string("babble.latestVersion")}! [{latestversion}]\033[0m'
                 )
