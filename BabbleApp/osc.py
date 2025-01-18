@@ -20,6 +20,10 @@ class Tab(IntEnum):
 import numpy as np
 
 
+def delay_output_osc(array, delay_seconds, self):
+    time.sleep(delay_seconds)
+    output_osc(array, self)
+
 def output_osc(array, self):
     location = self.config.gui_osc_location
     multi = self.config.gui_multiply
@@ -104,7 +108,14 @@ class VRChatOSC:
                 continue
             except queue.Empty:
                 continue
-            output_osc(cam_info.output, self)
+
+            # If the delay setting is enabled, make a new thread and delay the outputs.
+            delay_enable = self.config.general.osc_delay_enable
+            delay_seconds = self.config.general.osc_delay_seconds
+            if delay_enable:
+                threading.Thread(target=delay_output_osc, args=(cam_info.output, delay_seconds, self)) 
+            else:
+                output_osc(cam_info.output, self)
 
 
 class VRChatOSCReceiver:
