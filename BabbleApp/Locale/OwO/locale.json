@@ -9,6 +9,8 @@
 	"general.addressTooltip": "IP addwess we send OSC data to uwu",
 	"general.port": "Powt nya~",
 	"general.portTooltip": "OSC powt we send data to :3",
+	"general.osc_delay_enable": "Enawbel OSC fwame deway",
+	"general.osc_delay_seconds": "OSC deway in seconds:",
 	"general.receiver": "Weceive functions OwO",
 	"general.receiverTooltip": "Toggwe OSC weceive functions UwU",
 	"general.receiverPort": "Weceivew Powt >w<",

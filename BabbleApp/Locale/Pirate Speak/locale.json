@@ -9,6 +9,8 @@
 	"general.addressTooltip": "IP port we be sendin' OSC booty to",
 	"general.port": "Harbor",
 	"general.portTooltip": "OSC harbor we be sendin' data to",
+	"general.osc_delay_enable": "Belay that OSC data",
+	"general.osc_delay_seconds": "OSC belay & wait",
 	"general.receiver": "Receive functions, ye scurvy dog",
 	"general.receiverTooltip": "Toggle OSC receive functions, aye",
 	"general.receiverPort": "Receiver's Berth",
