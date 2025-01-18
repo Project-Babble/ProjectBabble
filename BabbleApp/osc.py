@@ -110,10 +110,12 @@ class VRChatOSC:
                 continue
 
             # If the delay setting is enabled, make a new thread and delay the outputs.
-            delay_enable = self.config.general.osc_delay_enable
-            delay_seconds = self.config.general.osc_delay_seconds
+            delay_enable = self.config.gui_osc_delay_enable
+            delay_seconds = self.config.gui_osc_delay_seconds
             if delay_enable:
-                threading.Thread(target=delay_output_osc, args=(cam_info.output, delay_seconds, self)) 
+                #print(delay_enable)
+                #print(delay_seconds)
+                threading.Thread(target=delay_output_osc, args=(cam_info.output, delay_seconds, self)).start() 
             else:
                 output_osc(cam_info.output, self)
 
