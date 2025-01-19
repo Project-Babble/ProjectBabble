@@ -13,6 +13,8 @@ from config import BabbleConfig, BabbleSettingsConfig
 from utils.misc_utils import get_camera_index_by_name, list_camera_names
 from enum import Enum
 import sys
+from PIL import Image
+from io import BytesIO
 
 WAIT_TIME = 0.1
 BUFFER_SIZE = 32768
@@ -190,20 +192,21 @@ class Camera:
         beg = -1
         while beg == -1:
             self.buffer += self.serial_connection.read(2048)
-            beg = self.buffer.find(ETVR_HEADER)
+            beg = self.buffer.find(b"\xff\xd8\xff")
         # Discard any data before the frame header.
         if beg > 0:
             self.buffer = self.buffer[beg:]
             beg = 0
-        # We know exactly how long the jpeg packet is
-        end = int.from_bytes(self.buffer[4:6], signed=False, byteorder="little")
-        self.buffer += self.serial_connection.read(end - len(self.buffer))
+        end = -1
+        while end == -1:
+            self.buffer += self.serial_connection.read(128)
+            end = self.buffer.find(b"\xff\xd9")
         return beg, end
 
     def get_next_jpeg_frame(self):
         beg, end = self.get_next_packet_bounds()
-        jpeg = self.buffer[beg + ETVR_HEADER_LEN : end + ETVR_HEADER_LEN]
-        self.buffer = self.buffer[end + ETVR_HEADER_LEN :]
+        jpeg = self.buffer[beg: end + 2]
+        self.buffer = self.buffer[end + 2 :]
         return jpeg
 
     def get_serial_camera_picture(self, should_push):
@@ -216,10 +219,9 @@ class Camera:
                 jpeg = self.get_next_jpeg_frame()
                 if jpeg:
                     # Create jpeg frame from byte string
-                    image = cv2.imdecode(
-                        np.fromstring(jpeg, dtype=np.uint8), cv2.IMREAD_UNCHANGED
-                    )
-                    if image is None:
+                    try:
+                        image = np.array(Image.open(BytesIO(jpeg)))
+                    except Exception:
                         print(
                             f'{Fore.YELLOW}[{lang._instance.get_string("log.warn")}] {lang._instance.get_string("warn.frameDrop")}{Fore.RESET}'
                         )
