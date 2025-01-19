@@ -448,7 +448,7 @@ class FTCamera:
             FTCamera._logger.info("FTCamera.read: EXIT")
     else:
         def read(self: 'FTCamera') -> None:
-            """Read next frame."""
+            """Read frames until requested to exit."""
             while not self.terminator.terminate_requested:
                 self._filter_graph.grab_frame()
                 time.sleep(0.001)

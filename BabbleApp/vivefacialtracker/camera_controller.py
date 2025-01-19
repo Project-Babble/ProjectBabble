@@ -98,20 +98,20 @@ class FTCameraController:
         """Stop capturing frames if capturing."""
         if self._proc_read is None:
             return
-        FTCameraController._logger.info("FTCameraController._stop_read: Linux: stop process")
+        FTCameraController._logger.info("FTCameraController._stop_read: stop process")
         self._proc_read.terminate()  # sends a SIGTERM
         self._proc_read.join(1)
 
         if self._proc_read.exitcode is not None:
             FTCameraController._logger.info(
-                "FTCameraController.stop_read: Linux: process terminated")
+                "FTCameraController.stop_read: process terminated")
         else:
             FTCameraController._logger.info(
-                "FTCameraController._stop_read: Linux: process not responding, killing it")
+                "FTCameraController._stop_read: process not responding, killing it")
             self._proc_read.kill()  # sends a SIGKILL
             self._proc_read.join(1)
             FTCameraController._logger.info(
-                "FTCameraController._stop_read: Linux: process killed")
+                "FTCameraController._stop_read: process killed")
         self._proc_read = None
 
     def _read_process(self: 'FTCameraController',
