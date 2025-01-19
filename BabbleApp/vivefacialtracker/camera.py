@@ -449,6 +449,7 @@ class FTCamera:
     else:
         def read(self: 'FTCamera') -> None:
             """Read frames until requested to exit."""
+            self._filter_graph.run()
             while not self.terminator.terminate_requested:
                 self._filter_graph.grab_frame()
                 time.sleep(0.001)

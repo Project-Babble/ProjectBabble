@@ -80,7 +80,8 @@ class FTCameraController:
     def get_image(self: 'FTCameraController') -> np.ndarray:
         """Get next image or None."""
         try:
-            frame = self._proc_queue.get(True, 1)
+            # timeout of 1s is a bit short. 2s is safer
+            frame = self._proc_queue.get(True, 2)
             shape = unpack('HHH', frame[0:6])
             image = np.frombuffer(frame[6:], dtype=np.uint8).reshape(shape)
             return image
@@ -116,6 +117,13 @@ class FTCameraController:
 
     def _read_process(self: 'FTCameraController',
                       queue: multiprocessing.connection.Connection) -> None:
+        """Read process function."""
+
+        """
+        logging.basicConfig(filename='ViveFaceTracker-ReadThread.log', filemode='w',
+                            encoding='utf-8', level=logging.INFO)
+        """
+
         FTCameraController._logger.info("FTCameraController._read_process: ENTER")
         class Helper(FTCamera.Processor):
             """Helper."""
