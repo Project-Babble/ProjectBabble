@@ -28,13 +28,13 @@ Then, copy paste and run the following script into the terminal of your choice:
 #### For the latest commit:
 
 ```bash
-bash -c "$(curl -fsSL https://gist.githubusercontent.com/dfgHiatus/e1bce63cd6be1e8645c3b3adfd5b71a6/raw/93c65ee8256484b75feb0573499092810c076084/project-babble-installer-latest.sh)"
+bash -c "$(curl -fsSL https://gist.githubusercontent.com/dfgHiatus/e1bce63cd6be1e8645c3b3adfd5b71a6/raw/26561da3b2bcf738f580176229e4853c18ddf554/project-babble-installer-latest.sh)"
 ```
 
 #### For the latest tagged release:
 
 ```bash
-bash -c "$(curl -fsSL https://gist.githubusercontent.com/dfgHiatus/a92a3caae24c1bfab1c7544537a654c5/raw/2fc34b9f60760ea93cd82006d3a428699609f0d8/project-babble-installer-tagged.sh)"
+bash -c "$(curl -fsSL https://gist.githubusercontent.com/dfgHiatus/a92a3caae24c1bfab1c7544537a654c5/raw/63573d5c882b4152c9434b9dd4bc888573fe9e98/project-babble-installer-tagged.sh)"
 ```
 
 Once it's finished installing, you can update and run the Babble app by typing `babble-app` into your terminal.
