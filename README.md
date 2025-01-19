@@ -23,13 +23,21 @@ By defualt Project Babble is under a non-commerical license! Please contact us a
 ### Windows
 Head to the releases section and [download the latest installer](https://github.com/Project-Babble/ProjectBabble/releases/latest).
 
-### Linux
-Install `git`, `curl` and a version of `python` greater than `3.8` for your distro. 
+### MacOS and Linux
+Install `git`, `curl` and a version of `python` (between `3.8` and `3.12`) for your distro.
 
 Then, copy paste and run the following script into the terminal of your choice:
 
+#### For the latest commit:
+
 ```bash
-bash -c "$(curl -fsSL https://gist.githubusercontent.com/dfgHiatus/a92a3caae24c1bfab1c7544537a654c5/raw/fc30aa550c3c7aa83c37a72168e75ef92388e39b/project-babble-install.sh)"
+bash -c "$(curl -fsSL https://gist.githubusercontent.com/dfgHiatus/e1bce63cd6be1e8645c3b3adfd5b71a6/raw/26561da3b2bcf738f580176229e4853c18ddf554/project-babble-installer-latest.sh)"
+```
+
+#### For the latest tagged release:
+
+```bash
+bash -c "$(curl -fsSL https://gist.githubusercontent.com/dfgHiatus/a92a3caae24c1bfab1c7544537a654c5/raw/63573d5c882b4152c9434b9dd4bc888573fe9e98/project-babble-installer-tagged.sh)"
 ```
 
 Once it's finished installing, you can update and run the Babble app by typing `babble-app` into your terminal.
@@ -37,6 +45,9 @@ Once it's finished installing, you can update and run the Babble app by typing `
 *You should also be able to run the Windows executable through Wine!*
 
 #### Notes:
+
+*For **KDE Plasma** users only: If your GUI window shows just the top row of buttons, set a resolution for the Babble App manually in KDE's Window Settings. 800x600y is a good starting point with plenty of empty space.*
+
 If you receive a `["Error listing UVC devices on Linux ... No such file or directory"]` when choosing/changing your camera, you'll need to install video4linux (`v4l-utils`) for your distro.
 
 For Ubuntu or other distros with apt:

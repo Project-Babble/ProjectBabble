@@ -10,7 +10,7 @@ from lang_manager import LocaleStringManager as lang
 
 from colorama import Fore
 from config import BabbleConfig, BabbleSettingsConfig
-from utils.misc_utils import get_camera_index_by_name, list_camera_names
+from utils.misc_utils import is_nt, get_camera_index_by_name, list_camera_names
 from enum import Enum
 import sys
 
@@ -86,7 +86,7 @@ class Camera:
                 self.config.capture_source is not None
                 and self.config.capture_source != ""
             ):
-                if "COM" in str(self.config.capture_source):
+                if "COM" or "/dev/tty" in str(self.config.capture_source):
                     if (
                         self.serial_connection is None
                         or self.camera_status == CameraState.DISCONNECTED
@@ -265,8 +265,9 @@ class Camera:
         try:
             rate = 115200 if sys.platform == "darwin" else 3000000  # Higher baud rate not working on macOS
             conn = serial.Serial(baudrate=rate, port=port, xonxoff=False, dsrdtr=False, rtscts=False)
-            # Set explicit buffer size for serial.
-            conn.set_buffer_size(rx_size=BUFFER_SIZE, tx_size=BUFFER_SIZE)
+            # Set explicit buffer size for serial. This function is Windows only!
+            if is_nt:
+                conn.set_buffer_size(rx_size=BUFFER_SIZE, tx_size=BUFFER_SIZE)
 
             print(
                 f'{Fore.CYAN}[{lang._instance.get_string("log.info")}] {lang._instance.get_string("info.ETVRConnected")} {port}{Fore.RESET}'
