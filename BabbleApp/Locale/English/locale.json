@@ -11,6 +11,7 @@
 	"general.portTooltip": "OSC port we send data to",
 	"general.osc_delay_enable": "Enable OSC delay",
 	"general.osc_delay_seconds": "OSC delay in seconds:",
+	"general.disableCameraPreview": "Disable camera preview (everywhere)",
 	"general.receiver": "Receive functions",
 	"general.receiverTooltip": "Toggle OSC receive functions",
 	"general.receiverPort": "Receiver Port",
