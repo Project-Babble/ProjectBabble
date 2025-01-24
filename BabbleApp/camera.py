@@ -93,7 +93,10 @@ class Camera:
                 self.config.capture_source is not None
                 and self.config.capture_source != ""
             ):
-                if "COM" in self.camera_list[self.config.capture_source]:
+                if "COM" in str(self.config.capture_source):
+                    if self.cv2_camera is not None:
+                        self.cv2_camera.release()
+                        self.cv2_camera = None
                     if self.vft_camera is not None:
                         self.vft_camera.close()
                     if (
@@ -105,6 +108,10 @@ class Camera:
                         self.current_capture_source = port
                         self.start_serial_connection(port)
                 elif "HTC Multimedia Camera" in self.camera_list[self.config.capture_source]:
+                    if self.cv2_camera is not None:
+                        self.cv2_camera.release()
+                        self.cv2_camera = None
+                    
                     if self.vft_camera is None:
                         print(self.error_message.format(self.config.capture_source))
                         if self.cancellation_event.wait(WAIT_TIME):
