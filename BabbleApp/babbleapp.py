@@ -22,6 +22,7 @@ import queue
 import requests
 import threading
 import asyncio
+import logging
 from ctypes import c_int
 from babble_model_loader import *
 from camera_widget import CameraWidget
@@ -110,6 +111,9 @@ async def async_main():
     
     # Run the update check
     await check_for_updates(config, notification_manager)
+    
+    # Uncomment for low-level Vive Facial Tracker logging
+    # logging.basicConfig(filename='BabbleApp.log', filemode='w', encoding='utf-8', level=logging.INFO)
 
     cancellation_event = threading.Event()
     ROSC = False

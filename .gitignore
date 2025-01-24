@@ -6,6 +6,8 @@ BabbleApp/babble_settings.json
 BabbleApp/babble_settings.backup
 BabbleApp/build
 BabbleApp/dist
+/BabbleApp/Models/dev
+/BabbleApp/venv
 /vivetest
 /training
 .vscode
@@ -13,7 +15,6 @@ BabbleApp/dist
 /old_models
 /Lib
 /share
-/BabbleApp/Models/dev
 
 scripts/example_build_app_and_installer.bat
 scripts/example_build_app_and_installer.bat
@@ -21,4 +22,5 @@ scripts/installer.iss
 Glia_cap.py
 lazyass_minecraft_script.py
 scripts/example_build_app_and_installer.bat
-/BabbleApp/venv
+*.kdev*
+*.code-workspace
