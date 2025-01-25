@@ -485,48 +485,41 @@ class CameraWidget:
             )
             window[self.gui_tracking_fps].update(self._movavg_fps(self.camera.fps))
             window[self.gui_tracking_bps].update(self._movavg_bps(self.camera.bps))
-        if self.in_roi_mode:
-            try:
-                if self.roi_queue.empty():
-                    self.capture_event.set()
-                maybe_image = self.roi_queue.get(block=False)
-                self.maybe_image = maybe_image
-                if not self.settings_config.gui_disable_camera_preview:
+        if not self.settings_config.gui_disable_camera_preview: #If not hiding the image
+            if self.in_roi_mode:
+                try:
+                    if self.roi_queue.empty():
+                        self.capture_event.set()
+                    maybe_image = self.roi_queue.get(block=False)
+                    self.maybe_image = maybe_image
                     imgbytes = cv2.imencode(".ppm", maybe_image[0])[1].tobytes()
-                else:
-                    #If camera display is disabled, show alternative image.
-                    imgbytes = cv2.imencode(".png", cv2.imread("Images/PreviewHidden.png"))[1].tobytes()
-                graph = window[self.gui_roi_selection]
-                if self.figure:
-                    graph.delete_figure(self.figure)
-                # INCREDIBLY IMPORTANT ERASE. Drawing images does NOT overwrite the buffer, the fucking
-                # graph keeps every image fed in until you call this. Therefore we have to make sure we
-                # erase before we redraw, otherwise we'll leak memory *very* quickly.
-                graph.erase()
-                graph.draw_image(data=imgbytes, location=(0, 0))
-                if None not in (self.x0, self.y0, self.x1, self.y1):
-                    self.figure = graph.draw_rectangle(
-                        (self.x0, self.y0), (self.x1, self.y1), line_color="#6f4ca1"
-                    )
-            except Empty:
-                pass
-        else:
-            if needs_roi_set:
-                window[self.gui_roi_message].update(visible=True)
-                return
+                    graph = window[self.gui_roi_selection]
+                    if self.figure:
+                        graph.delete_figure(self.figure)
+                    # INCREDIBLY IMPORTANT ERASE. Drawing images does NOT overwrite the buffer, the fucking
+                    # graph keeps every image fed in until you call this. Therefore we have to make sure we
+                    # erase before we redraw, otherwise we'll leak memory *very* quickly.
+                    graph.erase()
+                    graph.draw_image(data=imgbytes, location=(0, 0))
+                    if None not in (self.x0, self.y0, self.x1, self.y1):
+                        self.figure = graph.draw_rectangle(
+                            (self.x0, self.y0), (self.x1, self.y1), line_color="#6f4ca1"
+                        )
+                except Empty:
+                    pass
+            else:
+                if needs_roi_set:
+                    window[self.gui_roi_message].update(visible=True)
+                    return
             try:
                 window[self.gui_roi_message].update(visible=False)
-                if not self.settings_config.gui_disable_camera_preview: #If not hiding the image
-                    (maybe_image, cam_info) = self.image_queue.get(block=False)
-                    imgbytes = cv2.imencode(".ppm", maybe_image)[1].tobytes()
-                # If we aren't drawing the image, print a reminder that the image is hidden.
-                # so we don't get people going "oh my camera feed isn't showing!"
-                else:
-                    # Not efficient. We could pre-store as bytes but that'd be >4kb.
-                    # If we don't like that, we could display text or a single pixel.
-                    # I'm trying to avoid more upstream gui layouts as I heard it may be redone soon.
-                    imgbytes = cv2.imencode(".png", cv2.imread("Images/PreviewHidden.png"))[1].tobytes()
+                (maybe_image, cam_info) = self.image_queue.get(block=False)
+                imgbytes = cv2.imencode(".ppm", maybe_image)[1].tobytes()
                 window[self.gui_tracking_image].update(data=imgbytes)
 
             except Empty:
                 pass
+        else: # We are hiding the previews and crop feed.
+            window[self.gui_roi_layout].update(visible=False)
+            window[self.gui_tracking_layout].update(visible=False)
+            self.in_roi_mode = False
