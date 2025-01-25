@@ -93,6 +93,10 @@ class Camera:
                 self.config.capture_source is not None
                 and self.config.capture_source != ""
             ):
+                # Don't accept numerical values outside the list
+                if self.config.capture_source > len(self.camera_list):
+                    return
+                
                 if "COM" in str(self.config.capture_source):
                     if self.cv2_camera is not None:
                         self.cv2_camera.release()
