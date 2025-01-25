@@ -94,9 +94,13 @@ class Camera:
                 and self.config.capture_source != ""
             ):
                 # Don't accept numerical values outside the list
-                if self.config.capture_source > len(self.camera_list):
+                try:
+                    number = int(self.config.capture_source)
+                    if number > len(self.camera_list):
+                        return
+                except ValueError:
                     return
-                
+
                 if "COM" in str(self.config.capture_source):
                     if self.cv2_camera is not None:
                         self.cv2_camera.release()
@@ -215,7 +219,7 @@ class Camera:
                 if image is None:
                     return
                 self.frame_number = self.frame_number + 1
-            elif self.cv2_camera is not None and self.cv2_camera.isOpened:
+            elif self.cv2_camera is not None and self.cv2_camera.isOpened():
                 ret, image = self.cv2_camera.read()
                 if not ret:
                     self.cv2_camera.set(cv2.CAP_PROP_POS_FRAMES, 0)
