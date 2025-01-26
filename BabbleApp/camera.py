@@ -15,6 +15,7 @@ from colorama import Fore
 from config import BabbleConfig, BabbleSettingsConfig
 from utils.misc_utils import get_camera_index_by_name, list_camera_names
 
+from vivefacialtracker.vivetracker import ViveTracker
 from vivefacialtracker.camera_controller import FTCameraController
 
 WAIT_TIME = 0.1
@@ -27,6 +28,7 @@ MAX_RESOLUTION: int = 600
 #  packet (packet-size bytes)
 ETVR_HEADER = b"\xff\xa0\xff\xa1"
 ETVR_HEADER_LEN = 6
+PORTS = ("COM", "/dev/tty")
 
 
 class CameraState(Enum):
@@ -93,15 +95,19 @@ class Camera:
                 self.config.capture_source is not None
                 and self.config.capture_source != ""
             ):
+                isSerial = any(x in str(self.config.capture_source) for x in PORTS)
+                
                 # Don't accept numerical values outside the list
+                # Unless it's a serial port. Skip this check if it is
                 try:
-                    number = int(self.config.capture_source)
-                    if number > len(self.camera_list):
-                        return
+                    if not isSerial:               
+                        number = int(self.config.capture_source)
+                        if number > len(self.camera_list):
+                            return
                 except ValueError:
                     return
 
-                if "COM" in str(self.config.capture_source):
+                if isSerial:
                     if self.cv2_camera is not None:
                         self.cv2_camera.release()
                         self.cv2_camera = None
@@ -115,7 +121,7 @@ class Camera:
                         port = self.config.capture_source
                         self.current_capture_source = port
                         self.start_serial_connection(port)
-                elif "HTC Multimedia Camera" in self.camera_list[self.config.capture_source]:
+                elif ViveTracker.is_device_vive_tracker(self.camera_list[self.config.capture_source]):
                     if self.cv2_camera is not None:
                         self.cv2_camera.release()
                         self.cv2_camera = None
@@ -186,6 +192,7 @@ class Camera:
                             self.cv2_camera.set(
                                 cv2.CAP_PROP_FPS, self.settings.gui_cam_framerate
                             )
+                            
                         should_push = False
             else:
                 # We don't have a capture source to try yet, wait for one to show up in the GUI.
@@ -200,8 +207,7 @@ class Camera:
             if should_push and not self.capture_event.wait(timeout=0.02):
                 continue
             if self.config.capture_source is not None:
-                ports = ("COM", "/dev/tty")
-                if any(x in str(self.config.capture_source) for x in ports):
+                if isSerial:
                     self.get_serial_camera_picture(should_push)
                 else:
                     self.__del__()
@@ -214,7 +220,7 @@ class Camera:
         try:
             image = None
             # Is the current camera a Vive Facial Tracker and have we opened a connection to it before?
-            if "HTC Multimedia Camera" in self.camera_list[self.config.capture_source] and self.vft_camera is not None:
+            if self.vft_camera is not None and ViveTracker.is_device_vive_tracker(self.camera_list[self.config.capture_source]):
                 image = self.vft_camera.get_image()
                 if image is None:
                     return

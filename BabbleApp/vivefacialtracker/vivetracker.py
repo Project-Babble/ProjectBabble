@@ -24,6 +24,8 @@ SOFTWARE.
 
 from timeit import default_timer as timer
 
+import os
+import subprocess
 import platform
 import logging
 import ctypes
@@ -438,6 +440,41 @@ class ViveTracker:
                                      format(device.Name, check))
             return check
 
+    @staticmethod
+    def is_device_vive_tracker(device_name: str) -> bool:
+        """
+        Check if the given device name corresponds to a Vive Face Tracker.
+
+        Args:
+            device_name (str): Name or path to the device (e.g., /dev/videoX).
+
+        Returns:
+            bool: True if the device is identified as a Vive Face Tracker, False otherwise.
+        """
+
+        if isLinux:
+            try:
+                # Ensure the provided device name exists
+                if not os.path.exists(device_name):
+                    return False
+
+                # Use subprocess to run v4l2-ctl and capture the output
+                result = subprocess.run(
+                    ["v4l2-ctl", "--all", "--device", device_name],
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                    text=True,
+                    check=True,
+                )
+
+                # Search for the 'HTC Multimedia Camera' keyword in the output
+                return "HTC Multimedia Camera" in result.stdout
+
+            except Exception:
+                return False
+        else:
+            return "HTC Multimedia Camera" in device_name
+        
     def dispose(self: 'ViveTracker') -> None:
         """Dispose of tracker.
 
