@@ -71,20 +71,16 @@ def is_uvc_device(device):
 def list_linux_uvc_devices():
     """List UVC video devices on Linux (excluding metadata devices)"""
     try:
-        result = subprocess.run(["v4l2-ctl", "--list-devices"], stdout=subprocess.PIPE)
-        output = result.stdout.decode("utf-8")
-
-        lines = output.splitlines()
+        # v4l2-ctl --list-devices breaks if video devices are non-sequential.
+        # So this might be better?
+        result = glob.glob("/dev/video*");
         devices = []
         current_device = None
-        for line in lines:
-            if not line.startswith("\t"):
-                current_device = line.strip()
-            else:
-                if "/dev/video" in line and is_uvc_device(line.strip()):
-                    devices.append(
-                        line.strip()
-                    )  # We return the path like '/dev/video0'
+        for line in result:
+            if is_uvc_device(line):
+                devices.append(
+                    line
+                )  # We return the path like '/dev/video0'
 
         return devices
 
@@ -147,10 +143,9 @@ def get_camera_index_by_name(name):
     cam_list = list_camera_names()
 
     # On Linux, we use device paths like '/dev/video0' and match directly
+    # OpenCV expects the actual /dev/video#, not the offset into the device list
     if os_type == "Linux":
-        for i, device_path in enumerate(cam_list):
-            if device_path == name:
-                return i
+        return int(str.replace(name,"/dev/video",""));
 
     # On Windows, match by camera name
     elif is_nt:
