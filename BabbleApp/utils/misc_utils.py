@@ -12,7 +12,7 @@ bg_color_highlight = "#424042"
 bg_color_clear = "#242224"
 
 onnx_providers = [
-    # "DmlExecutionProvider",      # DirectML for Windows-specific GPU computing
+    "DmlExecutionProvider",      # DirectML for Windows-specific GPU computing
     "CUDAExecutionProvider",     # General GPU provider for NVIDIA CUDA
     # "TensorrtExecutionProvider", # NVIDIA TensorRT for GPU inference
     # "MIGraphXExecutionProvider", # AMD MIGraphX for AMD GPUs
