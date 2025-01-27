@@ -1,0 +1,7 @@
+[project]
+name = "Babble App"
+version = "2.0.7"
+description = "Source code for Babble App."
+readme = "README.md"
+requires-python = ">=3.8"
+dependencies = []
