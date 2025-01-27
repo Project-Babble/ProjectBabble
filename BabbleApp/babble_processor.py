@@ -11,7 +11,7 @@ import numpy as np
 import cv2
 from enum import Enum
 from one_euro_filter import OneEuroFilter
-from utils.misc_utils import PlaySound, SND_FILENAME, SND_ASYNC
+from utils.misc_utils import PlaySound, SND_FILENAME, SND_ASYNC, onnx_providers
 import importlib
 from osc import Tab
 from osc_calibrate_filter import *
@@ -102,16 +102,14 @@ class BabbleProcessor:
         self.opts.enable_mem_pattern = False
         if self.runtime in ("ONNX", "Default (ONNX)"):  # ONNX
             if self.use_gpu:
-                provider = "DmlExecutionProvider"
+                provider = onnx_providers
             else:
-                provider = "CPUExecutionProvider"  # Build onnxruntime to get both DML and OpenVINO
+                provider = [onnx_providers[-1]]
             try:
                 self.sess = ort.InferenceSession(
                     f"{self.model}/onnx/model.onnx",
                     self.opts,
-                    providers=[provider],
-                    provider_options=[{"device_id": self.gpu_index}],
-                )
+                    providers=provider)
             except:                                                 # Load default model if we can't find the specified model
                 print(
                 f'\033[91m[{lang._instance.get_string("log.error")}] {lang._instance.get_string("error.modelLoad")} {self.model}\033[0m'
@@ -120,8 +118,7 @@ class BabbleProcessor:
                 self.sess = ort.InferenceSession(
                     f"{self.default_model}/onnx/model.onnx",  
                     self.opts,
-                    providers=[provider],
-                    provider_options=[{"device_id": self.gpu_index}],
+                    providers=provider
                 )
             self.input_name = self.sess.get_inputs()[0].name
             self.output_name = self.sess.get_outputs()[0].name

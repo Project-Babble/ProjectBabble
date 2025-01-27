@@ -1,5 +1,6 @@
 onnxruntime==1.19.2
 onnxruntime-directml==1.19.2
+onnxruntime-gpu==1.20.1
 opencv_python==4.10.0.84
 pillow==11.0.0
 pysimplegui==4.70.1
