@@ -10,7 +10,7 @@ from lang_manager import LocaleStringManager as lang
 
 from colorama import Fore
 from config import BabbleConfig, BabbleSettingsConfig
-from utils.misc_utils import get_camera_index_by_name, list_camera_names
+from utils.misc_utils import get_camera_index_by_name, list_camera_names, is_nt
 from enum import Enum
 import sys
 
@@ -267,17 +267,19 @@ class Camera:
             rate = 115200 if sys.platform == "darwin" else 3000000  # Higher baud rate not working on macOS
             conn = serial.Serial(baudrate=rate, port=port, xonxoff=False, dsrdtr=False, rtscts=False)
             # Set explicit buffer size for serial.
-            conn.set_buffer_size(rx_size=BUFFER_SIZE, tx_size=BUFFER_SIZE)
+            if is_nt:
+                conn.set_buffer_size(rx_size=BUFFER_SIZE, tx_size=BUFFER_SIZE)
 
             print(
                 f'{Fore.CYAN}[{lang._instance.get_string("log.info")}] {lang._instance.get_string("info.ETVRConnected")} {port}{Fore.RESET}'
             )
             self.serial_connection = conn
             self.camera_status = CameraState.CONNECTED
-        except Exception:
+        except Exception as e:
             print(
                 f'{Fore.CYAN}[{lang._instance.get_string("log.info")}] {lang._instance.get_string("info.ETVRFailiure")} {port}{Fore.RESET}'
             )
+            print(e)
             self.camera_status = CameraState.DISCONNECTED
 
     def clamp_max_res(self, image: MatLike) -> MatLike:

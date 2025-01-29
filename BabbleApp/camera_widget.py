@@ -320,9 +320,7 @@ class CameraWidget:
                 #    self.config.capture_source = value
                 # if "COM" not in value:
                 ports = ("COM", "/dev/ttyACM")
-                print(f"Value: {value}")
                 if any(x in str(value) for x in ports):
-                    print("SERIAL PORT")
                     self.config.capture_source = value
                 else:
                     cam = get_camera_index_by_name(value)   # Set capture_source to the UVC index. Otherwise treat value like an ipcam if we return none
