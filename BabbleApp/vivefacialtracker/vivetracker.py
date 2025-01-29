@@ -473,7 +473,7 @@ class ViveTracker:
             except Exception:
                 return False
         else:
-            return "HTC Multimedia Camera" in device_name
+            return "HTC Multimedia Camera" in str(device_name)
         
     def dispose(self: 'ViveTracker') -> None:
         """Dispose of tracker.

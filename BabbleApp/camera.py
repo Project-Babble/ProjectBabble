@@ -133,10 +133,7 @@ class Camera:
                             if self.vft_camera is not None:
                                 self.vft_camera.close()
                     else:
-                        # We created the camera earlier, just open it.
                         # If the camera is already open it don't spam it!!
-                        if self.cancellation_event.wait(WAIT_TIME):
-                            return
                         if (not self.vft_camera.is_open):
                             self.vft_camera.open()
                             should_push = False
