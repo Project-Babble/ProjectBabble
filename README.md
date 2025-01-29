@@ -41,9 +41,15 @@ Once it's finished installing, you can update and run the Babble app by typing `
 
 *You should also be able to run the Windows executable through Wine!*
 
-#### Notes:
+#### Notes on Linux:
 
-*For **KDE Plasma** users only: If your GUI window shows just the top row of buttons, set a resolution for the Babble App manually in KDE's Window Settings. 800x600y is a good starting point with plenty of empty space.*
+##### KDE Plasma
+
+If your GUI window shows just the top row of radio buttons, set a resolution for the Babble App manually in KDE's Window Settings. 800x600y is a good starting point with plenty of empty space.
+
+---
+
+##### v4l2/v4l-linux
 
 If you receive a `["Error listing UVC devices on Linux ... No such file or directory"]` when choosing/changing your camera, you'll need to install video4linux (`v4l-utils`) for your distro.
 
@@ -51,6 +57,10 @@ For Ubuntu or other distros with apt:
 ```bash
 sudo apt-get install v4l-utils
 ```
+
+---
+
+##### tkinter
 
 If you receive a `ModuleNotFoundError: No module named 'tkinter'` error message on run, you'll need to install `tkinter` for your distro.
 
@@ -64,6 +74,12 @@ sudo dnf install python3-tkinter
 ```
 
 You can read more about this [here](https://stackoverflow.com/questions/25905540/importerror-no-module-named-tkinter).
+
+---
+
+##### udev
+
+If you have trouble connecting to your Babble Board (IE being denied permission to access it), you will need to set up and configure [udev](https://docs.platformio.org/en/latest/core/installation/udev-rules.html) rules.
 
 ## Usage 
 We have integrations for [VRChat](https://docs.babble.diy/docs/software/integrations/vrc), [Resonite](https://docs.babble.diy/docs/software/integrations/resonite) and [ChilloutVR](https://docs.babble.diy/docs/software/integrations/chilloutVR)!
