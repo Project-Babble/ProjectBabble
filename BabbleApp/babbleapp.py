@@ -39,7 +39,6 @@ winmm = None
 
 if is_nt:
     try:
-        from winotify import Notification
         from ctypes import windll
         winmm = windll.winmm
     except OSError:
