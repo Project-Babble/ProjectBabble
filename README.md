@@ -4,6 +4,9 @@
 Project Babble is an open-source mouth tracking project designed to work with any VR headset. We strive to make our models robust to different lighting, cameras, image qualities and facial structures!
 </h3>
 
+## Interested in selling babble hardware?
+By defualt Project Babble is under a non-commerical license! Please contact us at projectbabblevr@gmail.com to obtain a commercial license!
+
 ## Table of Contents
 - [Features](#features)
 - [Installation](#installation)

@@ -21,27 +21,30 @@ import PySimpleGUI as sg
 import queue
 import requests
 import threading
+import asyncio
 from ctypes import c_int
 from babble_model_loader import *
 from camera_widget import CameraWidget
 from config import BabbleConfig
-from tab import CamInfo, Tab
+from tab import Tab
 from osc import VRChatOSCReceiver, VRChatOSC
 from general_settings_widget import SettingsWidget
 from algo_settings_widget import AlgoSettingsWidget
 from calib_settings_widget import CalibSettingsWidget
+from notification_manager import NotificationManager
 from utils.misc_utils import EnsurePath, is_nt, bg_color_highlight, bg_color_clear
 from lang_manager import LocaleStringManager as lang
 
 winmm = None
 
 if is_nt:
-    from ctypes import windll
-    from winotify import Notification
     try:
+        from winotify import Notification
+        from ctypes import windll
         winmm = windll.winmm
     except OSError:
         print(f'\033[91m[{lang._instance.get_string("log.error")}] {lang._instance.get_string("error.winmm")}.\033[0m')
+        
 os.system("color")  # init ANSI color
 
 # Random environment variable to speed up webcam opening on the MSMF backend.
@@ -58,8 +61,8 @@ SETTINGS_RADIO_NAME = "-SETTINGSRADIO-"
 ALGO_SETTINGS_RADIO_NAME = "-ALGOSETTINGSRADIO-"
 CALIB_SETTINGS_RADIO_NAME = "-CALIBSETTINGSRADIO-"
 
-page_url = "https://github.com/SummerSigh/ProjectBabble/releases/latest"
-appversion = "Babble v2.1.0 Beta"
+page_url = "https://github.com/Project-Babble/ProjectBabble/releases/latest"
+appversion = "Babble v2.0.7"
 
 def timerResolution(toggle):
     if winmm != None:
@@ -71,7 +74,29 @@ def timerResolution(toggle):
         else:
             winmm.timeEndPeriod(1)
 
-def main():
+async def check_for_updates(config, notification_manager):
+    if config.settings.gui_update_check:
+        try:
+            response = requests.get(
+                "https://api.github.com/repos/Project-Babble/ProjectBabble/releases/latest"
+            )
+            latestversion = response.json()["name"]
+
+            if appversion == latestversion:
+                print(
+                    f'\033[92m[{lang._instance.get_string("log.info")}] {lang._instance.get_string("babble.latestVersion")}! [{latestversion}]\033[0m'
+                )
+            else:
+                print(
+                    f'\033[93m[{lang._instance.get_string("log.info")}] {lang._instance.get_string("babble.needUpdateOne")} [{appversion}] {lang._instance.get_string("babble.needUpdateTwo")} [{latestversion}] {lang._instance.get_string("babble.needUpdateThree")}.\033[0m'
+                )
+                await notification_manager.show_notification(appversion, latestversion, page_url)
+        except Exception as e:
+            print(
+                f'[{lang._instance.get_string("log.info")}] {lang._instance.get_string("babble.noInternet")}. Error: {e}'
+            )
+
+async def async_main():
     EnsurePath()
 
     # Get Configuration
@@ -81,59 +106,21 @@ def main():
     lang("Locale", config.settings.gui_language)
 
     config.save()
+    
+    notification_manager = NotificationManager()
+    await notification_manager.initialize()
+    
+    # Run the update check
+    await check_for_updates(config, notification_manager)
 
     cancellation_event = threading.Event()
     ROSC = False
-    # Check to see if we can connect to our video source first. If not, bring up camera finding
-    # dialog.
 
-    if config.settings.gui_update_check:
-        try:
-            response = requests.get(
-                "https://api.github.com/repos/SummerSigh/ProjectBabble/releases/latest"
-            )
-            latestversion = response.json()["name"]
-            if (
-                appversion == latestversion
-            ):  # If what we scraped and hardcoded versions are same, assume we are up to date.
-                print(
-                    f'\033[92m[{lang._instance.get_string("log.info")}] {lang._instance.get_string("babble.latestVersion")}! [{latestversion}]\033[0m'
-                )
-            else:
-                print(
-                    f'\033[93m[{lang._instance.get_string("log.info")}] {lang._instance.get_string("babble.needUpdateOne")} [{appversion}] {lang._instance.get_string("babble.needUpdateTwo")} [{latestversion}] {lang._instance.get_string("babble.needUpdateThree")}.\033[0m'
-                )
-                try:
-                    if is_nt:
-                        cwd = os.getcwd()
-                        icon = cwd + "\Images\logo.ico"
-                        toast = Notification(
-                            app_id=lang._instance.get_string("babble.name"),
-                            title=lang._instance.get_string("babble.updatePresent"),
-                            msg=f'{lang._instance.get_string("babble.updateTo")} {latestversion}',
-                            icon=r"{}".format(icon),
-                        )
-                        toast.add_actions(
-                            label=lang._instance.get_string("babble.downloadPage"),
-                            launch="https://github.com/SummerSigh/ProjectBabble/releases/latest",
-                        )
-                        toast.show()
-                except Exception as e:
-                    print(
-                        f'[{lang._instance.get_string("log.info")}] {lang._instance.get_string("babble.noToast")}'
-                    )
-        except:
-            print(
-                f'[{lang._instance.get_string("log.info")}] {lang._instance.get_string("babble.noInternet")}.'
-            )
     timerResolution(True)
-    # Check to see if we have an ROI. If not, bring up ROI finder GUI.
 
-    # Spawn worker threads
     osc_queue: queue.Queue[tuple[bool, int, int]] = queue.Queue(maxsize=10)
     osc = VRChatOSC(cancellation_event, osc_queue, config)
     osc_thread = threading.Thread(target=osc.run)
-    # start worker threads
     osc_thread.start()
 
     cams = [
@@ -234,7 +221,6 @@ def main():
 
     tint = 33
     fs = False
-    # GUI Render loop
     while True:
         # First off, check for any events from the GUI
         event, values = window.read(timeout=tint)
@@ -343,7 +329,12 @@ def main():
         for setting in settings:
             if setting.started():
                 setting.render(window, event, values)
-
+        
+        # Does adding this help?
+        # await asyncio.sleep(0)
+        
+def main():
+    asyncio.run(async_main())
 
 if __name__ == "__main__":
     main()

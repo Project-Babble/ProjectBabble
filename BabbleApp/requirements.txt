@@ -9,7 +9,7 @@ torchvision==0.19.1
 pydantic==1.10.18
 pyserial==3.5
 colorama==0.4.6
-winotify==1.1.0
+desktop-notifier==6.0.0
 comtypes==1.4.8
 pygrabber==0.2
 poetry

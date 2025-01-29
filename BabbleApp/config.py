@@ -35,7 +35,7 @@ class BabbleSettingsConfig(BaseModel):
     gui_ROSC: bool = False
     gui_osc_location: str = ""
     gui_multiply: float = 1
-    gui_model_file: str = "Models/3MEFFB0E7MSE"
+    gui_model_file: str = "Models/EFFB0E5BS224V6.3.4"
     gui_runtime: str = "ONNX"
     gui_use_gpu: bool = False
     gui_gpu_index: int = 0
