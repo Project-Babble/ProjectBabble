@@ -86,7 +86,8 @@ class Camera:
                 self.config.capture_source is not None
                 and self.config.capture_source != ""
             ):
-                if "COM" or "/dev/tty" in str(self.config.capture_source):
+                capture = str(self.config.capture_source)
+                if "COM" in capture or "/dev/tty" in capture:
                     if (
                         self.serial_connection is None
                         or self.camera_status == CameraState.DISCONNECTED
