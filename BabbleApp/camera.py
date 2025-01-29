@@ -86,7 +86,8 @@ class Camera:
                 self.config.capture_source is not None
                 and self.config.capture_source != ""
             ):
-                if "COM" in str(self.config.capture_source):
+                ports = ("COM", "/dev/ttyACM")
+                if any(x in str(self.config.capture_source) for x in ports):
                     if (
                         self.serial_connection is None
                         or self.camera_status == CameraState.DISCONNECTED
@@ -150,7 +151,7 @@ class Camera:
             if should_push and not self.capture_event.wait(timeout=0.02):
                 continue
             if self.config.capture_source is not None:
-                ports = ("COM", "/dev/tty")
+                ports = ("COM", "/dev/ttyACM")
                 if any(x in str(self.config.capture_source) for x in ports):
                     self.get_serial_camera_picture(should_push)
                 else:
