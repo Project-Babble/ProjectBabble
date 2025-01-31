@@ -28,7 +28,7 @@ MAX_RESOLUTION: int = 600
 #  packet (packet-size bytes)
 ETVR_HEADER = b"\xff\xa0\xff\xa1"
 ETVR_HEADER_LEN = 6
-PORTS = ("COM", "/dev/tty")
+PORTS = ("COM", "/dev/ttyACM")
 
 
 class CameraState(Enum):
@@ -323,18 +323,20 @@ class Camera:
         try:
             rate = 115200 if sys.platform == "darwin" else 3000000  # Higher baud rate not working on macOS
             conn = serial.Serial(baudrate=rate, port=port, xonxoff=False, dsrdtr=False, rtscts=False)
-            # Set explicit buffer size for serial.
-            conn.set_buffer_size(rx_size=BUFFER_SIZE, tx_size=BUFFER_SIZE)
+            # Set explicit buffer size for serial. This function is Windows only!
+            if is_nt:
+                conn.set_buffer_size(rx_size=BUFFER_SIZE, tx_size=BUFFER_SIZE)
 
             print(
                 f'{Fore.CYAN}[{lang._instance.get_string("log.info")}] {lang._instance.get_string("info.ETVRConnected")} {port}{Fore.RESET}'
             )
             self.serial_connection = conn
             self.camera_status = CameraState.CONNECTED
-        except Exception:
+        except Exception as e:
             print(
                 f'{Fore.CYAN}[{lang._instance.get_string("log.info")}] {lang._instance.get_string("info.ETVRFailiure")} {port}{Fore.RESET}'
             )
+            print(e)
             self.camera_status = CameraState.DISCONNECTED
 
     def clamp_max_res(self, image: MatLike) -> MatLike:
