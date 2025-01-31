@@ -1,1 +1,0 @@
-FaceTrackPOC.exe -screen-fullscreen 0 -screen-width 640 -screen-height 480
