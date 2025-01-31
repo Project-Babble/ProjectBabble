@@ -1,8 +1,8 @@
 #!/bin/bash
 
-# Check if running on Linux
-if [[ "$OSTYPE" != "linux-gnu"* ]]; then    
-    echo "Error: This script is only compatible with Linux operating systems."    
+# Check if running on a supported operating system
+if [[ "$OSTYPE" != "linux-gnu"* ]] && [[ "$OSTYPE" != "darwin"* ]]; then    
+    echo "Error: This script is only compatible with Linux and macOS operating systems."    
     exit 1
 fi
 
@@ -19,12 +19,15 @@ if (( python_version_major < 3 || python_version_minor < 8 )); then
     exit 1
 fi
 
-# Set installation directory
 install_dir="$HOME/.local/share/project-babble"
+bin_dir="$HOME/.local/bin"
+
+# Create installation directory if it doesn't exist
+mkdir -p "$install_dir"
 
 # Function to install requirements
 install_requirements() {
-    cd $install_dir
+    cd "$install_dir"
     cd BabbleApp
     echo "Installing requirements..."
     # Create a temporary requirements file without the Windows-only package
@@ -62,7 +65,7 @@ update_repo() {
 }
 
 
-cd $install_dir
+cd "$install_dir"
 cd BabbleApp
 
 # Create venv if it does not exists
