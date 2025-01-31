@@ -35,6 +35,7 @@ from calib_settings_widget import CalibSettingsWidget
 from notification_manager import NotificationManager
 from utils.misc_utils import EnsurePath, is_nt, bg_color_highlight, bg_color_clear
 from lang_manager import LocaleStringManager as lang
+from logger import setup_logging
 
 winmm = None
 
@@ -74,6 +75,7 @@ def timerResolution(toggle):
         else:
             winmm.timeEndPeriod(1)
 
+
 async def check_for_updates(config, notification_manager):
     if config.settings.gui_update_check:
         try:
@@ -98,6 +100,7 @@ async def check_for_updates(config, notification_manager):
 
 async def async_main():
     EnsurePath()
+    setup_logging()
 
     # Get Configuration
     config: BabbleConfig = BabbleConfig.load()
@@ -332,9 +335,6 @@ async def async_main():
         for setting in settings:
             if setting.started():
                 setting.render(window, event, values)
-        
-        # Does adding this help?
-        # await asyncio.sleep(0)
         
 def main():
     asyncio.run(async_main())
