@@ -319,7 +319,7 @@ class CameraWidget:
                 # if value not in self.camera_list:
                 #    self.config.capture_source = value
                 # if "COM" not in value:
-                ports = ("COM", "/dev/tty")
+                ports = ("COM", "/dev/ttyACM")
                 if any(x in str(value) for x in ports):
                     self.config.capture_source = value
                 else:
@@ -344,7 +344,7 @@ class CameraWidget:
                         and ".mp4" not in value
                         and "udp" not in value
                         and "COM" not in value
-                        and "/dev/tty" not in value
+                        and "/dev/ttyACM" not in value
                         and value not in self.camera_list
                     ):  # If http is not in camera address, add it.
                         self.config.capture_source = (

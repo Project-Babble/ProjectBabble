@@ -10,7 +10,7 @@ from lang_manager import LocaleStringManager as lang
 
 from colorama import Fore
 from config import BabbleConfig, BabbleSettingsConfig
-from utils.misc_utils import is_nt, get_camera_index_by_name, list_camera_names
+from utils.misc_utils import get_camera_index_by_name, list_camera_names, is_nt
 from enum import Enum
 import sys
 
@@ -86,8 +86,8 @@ class Camera:
                 self.config.capture_source is not None
                 and self.config.capture_source != ""
             ):
-                capture = str(self.config.capture_source)
-                if "COM" in capture or "/dev/tty" in capture:
+                ports = ("COM", "/dev/ttyACM")
+                if any(x in str(self.config.capture_source) for x in ports):
                     if (
                         self.serial_connection is None
                         or self.camera_status == CameraState.DISCONNECTED
@@ -151,7 +151,7 @@ class Camera:
             if should_push and not self.capture_event.wait(timeout=0.02):
                 continue
             if self.config.capture_source is not None:
-                ports = ("COM", "/dev/tty")
+                ports = ("COM", "/dev/ttyACM")
                 if any(x in str(self.config.capture_source) for x in ports):
                     self.get_serial_camera_picture(should_push)
                 else:
@@ -275,10 +275,11 @@ class Camera:
             )
             self.serial_connection = conn
             self.camera_status = CameraState.CONNECTED
-        except Exception:
+        except Exception as e:
             print(
                 f'{Fore.CYAN}[{lang._instance.get_string("log.info")}] {lang._instance.get_string("info.ETVRFailiure")} {port}{Fore.RESET}'
             )
+            print(e)
             self.camera_status = CameraState.DISCONNECTED
 
     def clamp_max_res(self, image: MatLike) -> MatLike:
