@@ -40,8 +40,6 @@ class NotificationManager:
             sound=DEFAULT_SOUND,
             on_dismissed=lambda: self.stop_event.set()
         )
-        
-        await self.stop_event.wait()
 
     async def initialize(self):
         self.stop_event = asyncio.Event()
