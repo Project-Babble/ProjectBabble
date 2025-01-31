@@ -323,10 +323,7 @@ class CameraWidget:
                 if any(x in str(value) for x in ports):
                     self.config.capture_source = value
                 else:
-                    cam = get_camera_index_by_name(value)   # Set capture_source to the UVC index. Otherwise treat value like an ipcam if we return none
-                    if cam != None:
-                        self.config.capture_source = cam
-                    elif is_valid_int_input(value): 
+                    if is_valid_int_input(value): 
                         self.config.capture_source = int(value)
                     else:
                         self.config.capture_source = value
