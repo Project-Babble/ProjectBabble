@@ -43,6 +43,7 @@ if is_nt:
         winmm = windll.winmm
     except OSError:
         print(f'\033[91m[{lang._instance.get_string("log.error")}] {lang._instance.get_string("error.winmm")}.\033[0m')
+        
 os.system("color")  # init ANSI color
 
 # Random environment variable to speed up webcam opening on the MSMF backend.

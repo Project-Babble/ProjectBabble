@@ -266,7 +266,7 @@ class Camera:
         try:
             rate = 115200 if sys.platform == "darwin" else 3000000  # Higher baud rate not working on macOS
             conn = serial.Serial(baudrate=rate, port=port, xonxoff=False, dsrdtr=False, rtscts=False)
-            # Set explicit buffer size for serial.
+            # Set explicit buffer size for serial. This function is Windows only!
             if is_nt:
                 conn.set_buffer_size(rx_size=BUFFER_SIZE, tx_size=BUFFER_SIZE)
 
