@@ -32,6 +32,7 @@ def log_system_info(logger):
         logger.info(f"Processor: {processor}")
         logger.info(f"Logical CPUs: {cpu_count}")
         logger.info(f"Total Memory: {total_memory} MB")
+        logger.info(f"Python Version: {platform.python_version()}")
         logger.info("========================================")
     except Exception as e:
         logger.error(f"Failed to log system information: {e}")
