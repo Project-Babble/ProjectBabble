@@ -40,9 +40,9 @@ bash -c "$(curl -fsSL https://gist.githubusercontent.com/dfgHiatus/e1bce63cd6be1
 bash -c "$(curl -fsSL https://gist.githubusercontent.com/dfgHiatus/a92a3caae24c1bfab1c7544537a654c5/raw/63573d5c882b4152c9434b9dd4bc888573fe9e98/project-babble-installer-tagged.sh)"
 ```
 
-Once it's finished installing, you can update and run the Babble app by typing `babble-app` into your terminal.
+Once it's finished installing, you can update and run the Babble app by typing `babble-app` into your terminal. You *should* also be able to run the Windows executable through Wine!
 
-*You should also be able to run the Windows executable through Wine!*
+*Sometimes, the update script can error out if there are updates to pull from git. Fear not, re-rerunning the script in most cases fixes things.*
 
 #### Notes on Linux:
 
@@ -75,8 +75,12 @@ For Fedora:
 ```bash
 sudo dnf install python3-tkinter
 ```
+For MacOS:
+```bash
+brew install python-tk
+```
 
-You can read more about this [here](https://stackoverflow.com/questions/25905540/importerror-no-module-named-tkinter).
+You can read more about this [here](https://stackoverflow.com/questions/25905540/importerror-no-module-named-tkinter) and [here](https://stackoverflow.com/questions/36760839/why-does-python-installed-via-homebrew-not-include-tkinter).
 
 ---
 
