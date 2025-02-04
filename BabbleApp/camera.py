@@ -10,9 +10,10 @@ import threading
 from enum import Enum
 import serial.tools.list_ports
 from lang_manager import LocaleStringManager as lang
+
 from colorama import Fore
 from config import BabbleConfig, BabbleSettingsConfig
-from utils.misc_utils import get_camera_index_by_name, list_camera_names, is_nt
+from utils.misc_utils import get_camera_index_by_name, list_camera_names
 
 from vivefacialtracker.vivetracker import ViveTracker
 from vivefacialtracker.camera_controller import FTCameraController
@@ -94,7 +95,6 @@ class Camera:
                 self.config.capture_source is not None
                 and self.config.capture_source != ""
             ):
-                self.current_capture_source = self.config.capture_source
                 isSerial = any(x in str(self.config.capture_source) for x in PORTS)
                 
                 if isSerial:
@@ -103,7 +103,7 @@ class Camera:
                         self.cv2_camera = None
                     if self.vft_camera is not None:
                         self.vft_camera.close()
-                    self.device_is_vft = False
+                    self.device_is_vft = False;
                     if (
                         self.serial_connection is None
                         or self.camera_status == CameraState.DISCONNECTED
@@ -116,7 +116,7 @@ class Camera:
                     if self.cv2_camera is not None:
                         self.cv2_camera.release()
                         self.cv2_camera = None
-                    self.device_is_vft = True
+                    self.device_is_vft = True;
 
                     if self.vft_camera is None:
                         print(self.error_message.format(self.config.capture_source))
@@ -141,18 +141,18 @@ class Camera:
                         self.cv2_camera is None
                         or not self.cv2_camera.isOpened()
                         or self.camera_status == CameraState.DISCONNECTED
-                        #or get_camera_index_by_name(self.config.capture_source) != self.current_capture_source 
-                        or self.config.capture_source != self.current_capture_source 
+                        or get_camera_index_by_name(self.config.capture_source) != self.current_capture_source 
                     ):
                         if self.vft_camera is not None:
                             self.vft_camera.close()
-                        self.device_is_vft = False
+                        self.device_is_vft = False;
                         
                         print(self.error_message.format(self.config.capture_source))
                         # This requires a wait, otherwise we can error and possible screw up the camera
                         # firmware. Fickle things.
                         if self.cancellation_event.wait(WAIT_TIME):
                             return
+                        
                         if self.config.capture_source not in self.camera_list:
                             self.current_capture_source = self.config.capture_source
                         else:
@@ -163,8 +163,9 @@ class Camera:
                                 self.current_capture_source, cv2.CAP_FFMPEG
                             )
                         else:
-                            self.cv2_camera = cv2.VideoCapture()
-                            self.cv2_camera.open(self.current_capture_source)
+                            self.cv2_camera = cv2.VideoCapture(
+                                self.current_capture_source
+                            )
 
                         if not self.settings.gui_cam_resolution_x == 0:
                             self.cv2_camera.set(
@@ -180,6 +181,7 @@ class Camera:
                             self.cv2_camera.set(
                                 cv2.CAP_PROP_FPS, self.settings.gui_cam_framerate
                             )
+                            
                         should_push = False
             else:
                 # We don't have a capture source to try yet, wait for one to show up in the GUI.
@@ -213,7 +215,7 @@ class Camera:
                     return
                 self.frame_number = self.frame_number + 1
             elif self.cv2_camera is not None and self.cv2_camera.isOpened():
-                ret, image = self.cv2_camera.read()     # MJPEG Stream reconnects are currently limited by the hard coded 30 second timeout time on VideoCapture.read(). We can get around this by recompiling OpenCV or using a custom MJPEG stream imp.   
+                ret, image = self.cv2_camera.read()
                 if not ret:
                     self.cv2_camera.set(cv2.CAP_PROP_POS_FRAMES, 0)
                     raise RuntimeError(lang._instance.get_string("error.frame"))
@@ -221,6 +223,7 @@ class Camera:
             else:
                 # Switching from a Vive Facial Tracker to a CV2 camera
                 return
+                
             self.FRAME_SIZE = image.shape
             # Calculate FPS
             current_frame_time = time.time()    # Should be using "time.perf_counter()", not worth ~3x cycles?

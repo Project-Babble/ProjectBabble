@@ -5,7 +5,6 @@ description = "Affordable and Fully Opensource Mouth Tracker for VR"
 authors = ["SummerSigh", "RedHawk989"]
 license = "MIT"
 repository = "https://github.com/SummerSigh/ProjectBabble"
-package-mode = false
 
 [tool.poetry.dependencies]
 python = "~3.11.0"
@@ -16,7 +15,9 @@ numpy = "~1.23.5"
 pysimplegui = "^4.60.4"
 pydantic = "^1.10.2"
 pyserial = "^3.5"
-desktop-notifier = "^6.0.0"
+winotify = [ 
+    { version = "^1.1.0", platform = 'win32' }
+]
 onnxruntime-directml = "^1.15.0"
 
 colorama = "^0.4.6"
@@ -28,7 +29,7 @@ pygrabber = "^0.2"
 
 [tool.poetry.group.dev.dependencies]
 black = "^22.10.0"
-pyinstaller = "^6.11.1"
+pyinstaller = "^5.6.2"
 flake8 = "^5.0.4"
 
 
