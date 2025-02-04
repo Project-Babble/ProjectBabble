@@ -122,6 +122,8 @@ def main():
                         f'[{lang._instance.get_string("log.info")}] {lang._instance.get_string("babble.noToast")}'
                     )
         except:
+            await notification_manager.show_notification(appversion, latestversion, page_url)
+        except Exception as e:
             print(
                 f'[{lang._instance.get_string("log.info")}] {lang._instance.get_string("babble.noInternet")}.'
             )
