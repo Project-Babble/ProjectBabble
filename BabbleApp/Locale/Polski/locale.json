@@ -16,7 +16,6 @@
 	"general.recalibrate": "Skalibruj ponownie adres",
 	"general.recalibrateTooltip": "Adres OSC używany do re-kalibracji",
 	"general.uvcCameraSettings": "Ustawienia kamery UVC",
-	"general.windowFocus": "Interfejs wstrzymany",
 	"general.useRedChannel": "Użyj Czerwonego Kanału",
 	"general.useRedChannelTooltip": "Używa tylko czerwonego kanału do przechwytywania Omnicept",
 	"general.xResolution": "Rozdzielczość X",
@@ -152,5 +151,9 @@
 	"general.theme.system": "System",
 	"general.theme.light": "Jasny",
 	"general.theme.dark": "Ciemny",
-	"general.useOSCQuery": "Użyj OSCQuery"
+	"general.useOSCQuery": "Użyj OSCQuery",
+	"general.windowFocused": "Window Focused",
+	"general.disableCameraPreview": "Disable camera preview (everywhere)",
+	"general.oscDelayEnable": "Enable OSC delay",
+	"general.oscDelaySeconds": "OSC delay in seconds"
 }

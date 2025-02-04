@@ -16,7 +16,6 @@
 	"general.recalibrate": "重新校正位址",
 	"general.recalibrateTooltip": "用於重新校正的 OSC 位址",
 	"general.uvcCameraSettings": "UVC 攝影機設定",
-	"general.windowFocus": "介面已暫停",
 	"general.useRedChannel": "使用紅色通道",
 	"general.useRedChannelTooltip": "僅使用紅色通道進行 Omnicept 擷取",
 	"general.xResolution": "X 軸解析度",
@@ -149,8 +148,12 @@
 	"calibration.minRightValue": "右側最小值",
 	"calibration.maxRightValue": "右側最大值",
 	"general.theme": "Theme",
-	"general.theme.system": "System",
-	"general.theme.light": "Light",
-	"general.theme.dark": "Dark",
-	"general.useOSCQuery": "Use OSCQuery"
+	"general.theme.system": "系統",
+	"general.theme.light": "淺色",
+	"general.theme.dark": "暗色",
+	"general.useOSCQuery": "Use OSCQuery",
+	"general.windowFocused": "Window Focused",
+	"general.disableCameraPreview": "Disable camera preview (everywhere)",
+	"general.oscDelayEnable": "Enable OSC delay",
+	"general.oscDelaySeconds": "OSC delay in seconds"
 }

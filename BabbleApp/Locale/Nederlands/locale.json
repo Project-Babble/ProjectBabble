@@ -16,7 +16,6 @@
 	"general.recalibrate": "Herkalibratie adres",
 	"general.recalibrateTooltip": "OSC-adres die we gebruiken voor het herkalibreren",
 	"general.uvcCameraSettings": "UVC Camera Instellingen",
-	"general.windowFocus": "Interface Gepauzeerd",
 	"general.useRedChannel": "Gebruik Rood Kanaal",
 	"general.useRedChannelTooltip": "Gebruikt alleen het rode kanaal",
 	"general.xResolution": "X Resolutie",
@@ -152,5 +151,9 @@
 	"general.theme.system": "System",
 	"general.theme.light": "Light",
 	"general.theme.dark": "Dark",
-	"general.useOSCQuery": "Use OSCQuery"
+	"general.useOSCQuery": "Use OSCQuery",
+	"general.windowFocused": "Window Focused",
+	"general.disableCameraPreview": "Disable camera preview (everywhere)",
+	"general.oscDelayEnable": "Enable OSC delay",
+	"general.oscDelaySeconds": "OSC delay in seconds"
 }
