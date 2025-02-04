@@ -11,4 +11,4 @@ robocopy %babblepath%\BabbleApp\Models %babblepath%\BabbleApp\dist\Babble_App\Mo
 cd %babblepath%\BabbleApp\dist\Babble_App\Models
 rmdir /s /q dev
 
-start /D %innopath% cmd /k ISCC %babblepath%\scripts\installer.iss
+::start /D %innopath% cmd /k ISCC %babblepath%\scripts\installer.iss
