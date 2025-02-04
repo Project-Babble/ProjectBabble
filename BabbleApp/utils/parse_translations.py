@@ -23,5 +23,5 @@ def parse_translations(output_folder, input_translations_csv):
             
 if __name__ == "__main__":
     output_folder = r"parsed_translations"
-    input_translations_csv = r"C:\Users\Thomas\Desktop\PythonProjects\BabbleApp\ProjectBabble\BabbleApp\utils\all_translations.csv"
+    input_translations_csv = r"C:\Users\T\Desktop\PythonProjects\BabbleApp\ProjectBabble\BabbleApp\utils\all_translations.csv"
     parse_translations(output_folder, input_translations_csv)
