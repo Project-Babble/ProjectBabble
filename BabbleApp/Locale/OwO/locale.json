@@ -152,7 +152,7 @@
 	"general.theme.light": "Lwight~ >.<",
 	"general.theme.dark": "Dawk~ owo",
 	"general.useOSCQuery": "Use OSCQuewy",
-	"general.windowFocused": "Window Focused",
+	"general.windowFocus": "Window Focused",
 	"general.disableCameraPreview": "toggwe camerwa pweview",
 	"general.oscDelayEnable": "Enawbel OSC fwame deway",
 	"general.oscDelaySeconds": "OSC deway in seconds:"

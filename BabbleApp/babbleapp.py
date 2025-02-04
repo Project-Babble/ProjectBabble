@@ -105,7 +105,7 @@ def main():
                 try:
                     if is_nt:
                         cwd = os.getcwd()
-                        icon = cwd + "\Images\logo.ico"
+                        icon = cwd + r"\Images\logo.ico"
                         toast = Notification(
                             app_id=lang._instance.get_string("babble.name"),
                             title=lang._instance.get_string("babble.updatePresent"),

@@ -144,7 +144,7 @@ class SettingsWidget:
             ],
             [
                 sg.Text(
-                    f'{lang._instance.get_string("general.osc_delay_enable")}',
+                    f'{lang._instance.get_string("general.oscDelayEnable")}',
                     background_color=bg_color_highlight,
                 ),
                 sg.Checkbox(
@@ -153,19 +153,19 @@ class SettingsWidget:
                     key=self.gui_osc_delay_enable,
                     background_color=bg_color_highlight,
                     size=(0, 10),
-                    tooltip=f'{lang._instance.get_string("general.osc_delay_enable")}.',
+                    tooltip=f'{lang._instance.get_string("general.oscDelayEnable")}.',
                 ),
             ],
             [
                 sg.Text(
-                    f'{lang._instance.get_string("general.osc_delay_seconds")}:',
+                    f'{lang._instance.get_string("general.oscDelaySeconds")}:',
                     background_color=bg_color_highlight,
                 ),
                 sg.InputText(
                     self.config.gui_osc_delay_seconds,
                     key=self.gui_osc_delay_seconds,
                     size=(0, 10),
-                    tooltip=f'{lang._instance.get_string("general.osc_delay_seconds")}.',
+                    tooltip=f'{lang._instance.get_string("general.oscDelaySeconds")}.',
                 ),
             ],
             [

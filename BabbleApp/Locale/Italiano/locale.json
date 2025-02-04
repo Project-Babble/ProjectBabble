@@ -152,7 +152,7 @@
 	"general.theme.light": "Chiaro",
 	"general.theme.dark": "Scuro",
 	"general.useOSCQuery": "Usa OSCQuery",
-	"general.windowFocused": "Finestra Attiva",
+	"general.windowFocus": "Finestra Attiva",
 	"general.disableCameraPreview": "Disable camera preview (everywhere)",
 	"general.oscDelayEnable": "Enable OSC delay",
 	"general.oscDelaySeconds": "OSC delay in seconds"

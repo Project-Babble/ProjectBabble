@@ -152,7 +152,7 @@
 	"general.theme.light": "Light",
 	"general.theme.dark": "Dark",
 	"general.useOSCQuery": "Use OSCQuery",
-	"general.windowFocused": "Window Focused",
+	"general.windowFocus": "Window Focused",
 	"general.disableCameraPreview": "Disable camera preview (everywhere)",
 	"general.oscDelayEnable": "Enable OSC delay",
 	"general.oscDelaySeconds": "OSC delay in seconds"
