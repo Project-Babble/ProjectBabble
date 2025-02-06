@@ -13,7 +13,7 @@ from lang_manager import LocaleStringManager as lang
 
 from colorama import Fore
 from config import BabbleConfig, BabbleSettingsConfig
-from utils.misc_utils import get_camera_index_by_name, list_camera_names
+from utils.misc_utils import get_camera_index_by_name, list_camera_names, is_nt
 
 from vivefacialtracker.vivetracker import ViveTracker
 from vivefacialtracker.camera_controller import FTCameraController
