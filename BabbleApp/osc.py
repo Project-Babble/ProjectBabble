@@ -1,5 +1,5 @@
 from pythonosc import udp_client, osc_server, dispatcher
-from utils.misc_utils import PlaySound, SND_FILENAME, SND_ASYNC
+from utils.misc_utils import playSound, SND_FILENAME, SND_ASYNC
 import queue
 import threading
 from enum import IntEnum
@@ -152,7 +152,7 @@ class VRChatOSCReceiver:
         if osc_value:
             for cam in self.cams:
                 cam.babble_cnn.calibration_frame_counter = 300
-                PlaySound("Audio/start.wav", SND_FILENAME | SND_ASYNC)
+                playSound("Audio/start.wav", SND_FILENAME | SND_ASYNC)
 
     def run(self):
 

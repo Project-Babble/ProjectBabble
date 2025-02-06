@@ -1,14 +1,14 @@
 from collections import deque
 from queue import Queue, Empty
 from threading import Event, Thread
-import PySimpleGUI as sg
+import FreeSimpleGUI as sg
 import cv2
 from babble_processor import BabbleProcessor, CamInfoOrigin
 from camera import Camera, CameraState, MAX_RESOLUTION
 from config import BabbleConfig
 from osc import Tab
 from utils.misc_utils import (
-    PlaySound,
+    playSound,
     SND_FILENAME,
     SND_ASYNC,
     list_camera_names,
@@ -441,7 +441,7 @@ class CameraWidget:
                 values[self.use_calibration] == True
             ):  # Don't start recording if the calibration filter is disabled.
                 self.babble_cnn.calibration_frame_counter = 1500
-                PlaySound("Audio/start.wav", SND_FILENAME | SND_ASYNC)
+                playSound("Audio/start.wav", SND_FILENAME | SND_ASYNC)
 
         if event == self.gui_stop_calibration:
             if (

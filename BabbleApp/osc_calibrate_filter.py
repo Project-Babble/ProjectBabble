@@ -1,7 +1,7 @@
 import numpy as np
 from math import log
 from enum import IntEnum
-from utils.misc_utils import PlaySound, SND_FILENAME, SND_ASYNC
+from utils.misc_utils import playSound, SND_FILENAME, SND_ASYNC
 from lang_manager import LocaleStringManager as lang
 
 
@@ -57,7 +57,7 @@ class cal:
                     f'[{lang._instance.get_string("log.info")}] Calibration completed.'
                 )
 
-                PlaySound("Audio/completed.wav", SND_FILENAME | SND_ASYNC)
+                playSound("Audio/completed.wav", SND_FILENAME | SND_ASYNC)
 
             if self.settings.calibration_mode == "Neutral":
                 self.min_max_array = np.fromstring(

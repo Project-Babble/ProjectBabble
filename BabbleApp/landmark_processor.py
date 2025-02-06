@@ -11,9 +11,7 @@ import numpy as np
 import cv2
 from enum import Enum
 from one_euro_filter import OneEuroFilter
-from utils.misc_utils import PlaySound, SND_FILENAME, SND_ASYNC
-#import importlib
-#from osc import Tab
+from utils.misc_utils import playSound, SND_FILENAME, SND_ASYNC, onnx_providers
 from osc_calibrate_filter import *
 from tab import CamInfo, CamInfoOrigin
 from landmark_model_loader import *
@@ -34,7 +32,7 @@ def run_once(f):
 async def delayed_setting_change(setting, value):
     await asyncio.sleep(5)
     setting = value
-    PlaySound('Audio/completed.wav', SND_FILENAME | SND_ASYNC)
+    playSound('Audio/completed.wav', SND_FILENAME | SND_ASYNC)
 
 
 
@@ -96,9 +94,14 @@ class LandmarkProcessor:
         self.opts.add_session_config_entry("session.intra_op.allow_spinning", "0")  # ~3% savings worth ~6ms avg latency. Not noticeable at 60fps?
         self.opts.enable_mem_pattern = False
         if self.runtime in ("ONNX", "Default (ONNX)"):    # ONNX
-            if self.use_gpu: provider = 'DmlExecutionProvider'
-            else: provider = "CPUExecutionProvider"  # Build onnxruntime to get both DML and OpenVINO
-            self.sess = ort.InferenceSession(f'{self.model}onnx/model.onnx', self.opts, providers=[provider, ], provider_options=[{'device_id': self.gpu_index}]) # Load Babble CNN until PFLD has been converted
+            if self.use_gpu: 
+                provider = onnx_providers
+            else: 
+                provider = [onnx_providers[-1]]
+            self.sess = ort.InferenceSession(
+                f'{self.model}onnx/model.onnx', 
+                self.opts, 
+                providers=onnx_providers)
             self.input_name = self.sess.get_inputs()[0].name
             self.output_name = self.sess.get_outputs()[0].name
         try:
