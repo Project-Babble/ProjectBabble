@@ -31,8 +31,7 @@ import numpy as np
 from utils.misc_utils import os_type
 
 if os_type == 'Linux':
-    import v4l2py as v4l
-    import v4l2py.device as v4ld
+    import v4l2
 elif os_type == 'Windows':
     import pygrabber.dshow_graph as pgdsg
     import pygrabber.dshow_ids as pgdsi
@@ -50,7 +49,7 @@ class FTCamera:
         class Control:
             """Control defined by the hardware."""
             def __init__(self: "FTCamera.ControlInfo",
-                         control: v4ld.BaseControl) -> None:
+                         control: int) -> None:
                 self._control = control
                 self.name = control.name
                 self.type = None
@@ -61,18 +60,17 @@ class FTCamera:
                 self.clipping: bool = False
                 self.choices: dict[int: str] = {}
                 match control.type:
-                    case v4ld.ControlType.INTEGER:
+                    case v4l2.uapi.V4L2_CTRL_TYPE_INTEGER:
                         self.type = FTCamera.ControlType.INTEGER
                         self.minimum = control.minimum
                         self.maximum = control.maximum
                         self.step = control.step
                         self.default = control.default
                         self.clipping = control.clipping
-                    case v4ld.ControlType.BOOLEAN:
+                    case v4l2.uapi.V4L2_CTRL_TYPE_BOOLEAN:
                         self.type = FTCamera.ControlType.BOOLEAN
                         self.default = control.default
-
-                    case v4ld.ControlType.MENU:
+                    case v4l2.uapi.V4L2_CTRL_TYPE_MENU:
                         self.type = FTCamera.ControlType.SELECT
                         self.choices = dict(control.data)
                         self.default = control.default
@@ -167,7 +165,7 @@ class FTCamera:
         """
         self._index: int = index
         if os_type == 'Linux':
-            self._device: v4l.Device = None
+            self._device: v4l2.VideoDevice = None
         elif os_type == 'Windows':
             self._device: pgdsg.VideoInput = None
             self._filter_graph: pgdsg.FilterGraph = None
@@ -212,7 +210,7 @@ class FTCamera:
             return
         FTCamera._logger.info("FTCamera.open: index {}".format(self._index))
         if os_type == 'Linux':
-            self._device = v4l.Device.from_id(self._index)
+            self._device = v4l2.VideoDevice(self._index)
             self._device.open()
         elif os_type == 'Windows':
             self._filter_graph = pgdsg.FilterGraph()
@@ -250,8 +248,7 @@ class FTCamera:
             for x in self._device.info.formats:
                 FTCamera._logger.info("- {}".format(x))
             self._format = next(x for x in self._device.info.formats
-                                if x.pixel_format == v4l.PixelFormat.YUYV
-                                and x.type == v4ld.BufferType.VIDEO_CAPTURE)
+                                if x.pixel_format == v4l2.PixelFormat.YUYV)
         elif os_type == 'Windows':
             for x in self._filter_video.get_formats():
                 FTCamera._logger.info(x)
@@ -273,7 +270,7 @@ class FTCamera:
             for x in self._device.info.frame_sizes:
                 FTCamera._logger.info("- {}".format(x))
             self._frame_size = next(x for x in self._device.info.frame_sizes
-                                    if x.pixel_format == v4l.PixelFormat.YUYV
+                                    if x.pixel_format == v4l2.PixelFormat.YUYV
                                     and x.min_fps >= 30)
         elif os_type == 'Windows':
             fsize = next(x for x in self._filter_video.get_formats()
@@ -294,11 +291,7 @@ class FTCamera:
     def _set_frame_format(self: 'FTCamera') -> None:
         """Activates the found format and size."""
         if os_type == 'Linux':
-            self._device.set_format(
-                buffer_type=v4ld.BufferType.VIDEO_CAPTURE,
-                width=self._frame_size.width,
-                height=self._frame_size.height,
-                pixel_format=self._format.pixel_format)
+            self._device.set_format()
         elif os_type == 'Windows':
             self._filter_video.set_format(self._frame_size.index)
 
@@ -364,7 +357,7 @@ class FTCamera:
 
     if os_type == 'Linux':
         @property
-        def device(self: 'FTCamera') -> v4l.Device:
+        def device(self: 'FTCamera') -> v4l2.VideoDevice:
             """Video4Linux device if open or None if closed."""
             return self._device
     elif os_type == 'Windows':
@@ -457,7 +450,7 @@ class FTCamera:
             self._process_frame(image)
 
     if os_type == 'Linux':
-        def _process_frame(self: 'FTCamera', frame: v4l.Frame) -> None:
+        def _process_frame(self: 'FTCamera', frame) -> None:
             """Process captured frames.
 
             Operates only on YUV422 format right now. Calls _decode_yuv422
@@ -472,7 +465,7 @@ class FTCamera:
 
             try:
                 match frame.pixel_format:
-                    case v4l.PixelFormat.YUYV:
+                    case v4l2.PixelFormat.YUYV:
                         self._decode_yuv422(frame.data)
                     case _:
                         FTCamera._logger.error(
