@@ -287,6 +287,7 @@ class CameraWidget:
         # self.babble_landmark_thread.start()
         self.camera_thread = Thread(target=self.camera.run)
         self.camera_thread.start()
+        
 
     def stop(self):
         # If we're not running yet, bail
@@ -481,32 +482,32 @@ class CameraWidget:
             )
             window[self.gui_tracking_fps].update(self._movavg_fps(self.camera.fps))
             window[self.gui_tracking_bps].update(self._movavg_bps(self.camera.bps))
-
-        if self.in_roi_mode:
-            try:
-                if self.roi_queue.empty():
-                    self.capture_event.set()
-                maybe_image = self.roi_queue.get(block=False)
-                self.maybe_image = maybe_image
-                imgbytes = cv2.imencode(".ppm", maybe_image[0])[1].tobytes()
-                graph = window[self.gui_roi_selection]
-                if self.figure:
-                    graph.delete_figure(self.figure)
-                # INCREDIBLY IMPORTANT ERASE. Drawing images does NOT overwrite the buffer, the fucking
-                # graph keeps every image fed in until you call this. Therefore we have to make sure we
-                # erase before we redraw, otherwise we'll leak memory *very* quickly.
-                graph.erase()
-                graph.draw_image(data=imgbytes, location=(0, 0))
-                if None not in (self.x0, self.y0, self.x1, self.y1):
-                    self.figure = graph.draw_rectangle(
-                        (self.x0, self.y0), (self.x1, self.y1), line_color="#6f4ca1"
-                    )
-            except Empty:
-                pass
-        else:
-            if needs_roi_set:
-                window[self.gui_roi_message].update(visible=True)
-                return
+        if not self.settings_config.gui_disable_camera_preview: #If not hiding the image
+            if self.in_roi_mode:
+                try:
+                    if self.roi_queue.empty():
+                        self.capture_event.set()
+                    maybe_image = self.roi_queue.get(block=False)
+                    self.maybe_image = maybe_image
+                    imgbytes = cv2.imencode(".ppm", maybe_image[0])[1].tobytes()
+                    graph = window[self.gui_roi_selection]
+                    if self.figure:
+                        graph.delete_figure(self.figure)
+                    # INCREDIBLY IMPORTANT ERASE. Drawing images does NOT overwrite the buffer, the fucking
+                    # graph keeps every image fed in until you call this. Therefore we have to make sure we
+                    # erase before we redraw, otherwise we'll leak memory *very* quickly.
+                    graph.erase()
+                    graph.draw_image(data=imgbytes, location=(0, 0))
+                    if None not in (self.x0, self.y0, self.x1, self.y1):
+                        self.figure = graph.draw_rectangle(
+                            (self.x0, self.y0), (self.x1, self.y1), line_color="#6f4ca1"
+                        )
+                except Empty:
+                    pass
+            else:
+                if needs_roi_set:
+                    window[self.gui_roi_message].update(visible=True)
+                    return
             try:
                 window[self.gui_roi_message].update(visible=False)
                 (maybe_image, cam_info) = self.image_queue.get(block=False)
@@ -515,3 +516,7 @@ class CameraWidget:
 
             except Empty:
                 pass
+        else: # We are hiding the previews and crop feed.
+            window[self.gui_roi_layout].update(visible=False)
+            window[self.gui_tracking_layout].update(visible=False)
+            self.in_roi_mode = False

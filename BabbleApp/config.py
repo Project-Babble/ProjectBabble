@@ -31,6 +31,9 @@ class BabbleSettingsConfig(BaseModel):
     gui_osc_port: int = 8888
     gui_osc_receiver_port: int = 9001
     gui_osc_recalibrate_address: str = "/avatar/parameters/babble_recalibrate"
+    gui_disable_camera_preview: bool = False
+    gui_osc_delay_enable: bool = False
+    gui_osc_delay_seconds: float = 0.01
     gui_update_check: bool = True
     gui_ROSC: bool = False
     gui_osc_location: str = ""

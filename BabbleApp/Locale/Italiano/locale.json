@@ -16,14 +16,13 @@
 	"general.recalibrate": "Ricalibra Indirizzo",
 	"general.recalibrateTooltip": "Indirizzo OSC che utilizziamo per ricalibrare",
 	"general.uvcCameraSettings": "Impostazioni Telecamera UVC",
-	"general.windowFocus": "Interfaccia in pausa",
 	"general.useRedChannel": "Usa Canale Rosso",
 	"general.useRedChannelTooltip": "Utilizza solo il canale rosso per la cattura Omnicept",
 	"general.xResolution": "Risoluzione X",
 	"general.xResolutionTooltip": "Risoluzione acquisizione X. Predefinito = 0",
 	"general.yResolution": "Risoluzione Y",
 	"general.yResolutionTooltip": "Risoluzione acquisizione Y. Predefinito = 0",
-	"general.framerate": "Frequenza dei fotogrammi\n\n",
+	"general.framerate": "Frequenza dei fotogrammi",
 	"general.framerateTooltip": "Acquisisci frequenza dei fotogrammi. Predefinito = 0",
 	"general.language": "Impostazioni Lingua",
 	"general.languageInstructions": "Riavvia l'app Babble per vedere i tuoi cambiamenti",
@@ -152,5 +151,9 @@
 	"general.theme.system": "Sistema",
 	"general.theme.light": "Chiaro",
 	"general.theme.dark": "Scuro",
-	"general.useOSCQuery": "Usa OSCQuery"
+	"general.useOSCQuery": "Usa OSCQuery",
+	"general.windowFocus": "Finestra Attiva",
+	"general.disableCameraPreview": "Disable camera preview (everywhere)",
+	"general.oscDelayEnable": "Enable OSC delay",
+	"general.oscDelaySeconds": "OSC delay in seconds"
 }

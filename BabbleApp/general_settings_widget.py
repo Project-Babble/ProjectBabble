@@ -15,6 +15,9 @@ class SettingsWidget:
         self.gui_osc_port = f"-OSCPORT{widget_id}-"
         self.gui_osc_receiver_port = f"OSCRECEIVERPORT{widget_id}-"
         self.gui_osc_recalibrate_address = f"OSCRECALIBRATEADDRESS{widget_id}-"
+        self.gui_osc_delay_enable = f"OSCDELAYENABLE{widget_id}-"
+        self.gui_osc_delay_seconds = f"OSCDELAYSECONDS{widget_id}-"
+        self.gui_disable_camera_preview = f"DISABLECAMERAPREVIEW{widget_id}-"
         self.gui_speed_coefficient = f"-SPEEDCOEFFICIENT{widget_id}-"
         self.gui_min_cutoff = f"-MINCUTOFF{widget_id}-"
         self.gui_ROSC = f"-ROSC{widget_id}-"
@@ -123,6 +126,46 @@ class SettingsWidget:
                     key=self.gui_osc_recalibrate_address,
                     size=(0, 10),
                     tooltip=f'{lang._instance.get_string("general.recalibrateTooltip")}.',
+                ),
+            ],
+            [
+                sg.Text(
+                    f'{lang._instance.get_string("general.disableCameraPreview")}',
+                    background_color=bg_color_highlight,
+                ),
+                sg.Checkbox(
+                    "",
+                    default=self.config.gui_disable_camera_preview,
+                    key=self.gui_disable_camera_preview,
+                    background_color=bg_color_highlight,
+                    size=(0, 10),
+                    tooltip=f'{lang._instance.get_string("general.disableCameraPreview")}.',
+                ),
+            ],
+            [
+                sg.Text(
+                    f'{lang._instance.get_string("general.oscDelayEnable")}',
+                    background_color=bg_color_highlight,
+                ),
+                sg.Checkbox(
+                    "",
+                    default=self.config.gui_osc_delay_enable,
+                    key=self.gui_osc_delay_enable,
+                    background_color=bg_color_highlight,
+                    size=(0, 10),
+                    tooltip=f'{lang._instance.get_string("general.oscDelayEnable")}.',
+                ),
+            ],
+            [
+                sg.Text(
+                    f'{lang._instance.get_string("general.oscDelaySeconds")}:',
+                    background_color=bg_color_highlight,
+                ),
+                sg.InputText(
+                    self.config.gui_osc_delay_seconds,
+                    key=self.gui_osc_delay_seconds,
+                    size=(0, 10),
+                    tooltip=f'{lang._instance.get_string("general.oscDelaySeconds")}.',
                 ),
             ],
             [
@@ -282,6 +325,24 @@ class SettingsWidget:
         # Update check option
         if self.config.gui_update_check != values[self.gui_update_check]:
             self.config.gui_update_check = values[self.gui_update_check]
+            changed = True
+
+        # Update disable camera preview option
+        value = values[self.gui_disable_camera_preview]
+        if self.config.gui_disable_camera_preview != values[self.gui_disable_camera_preview]:
+            self.config.gui_disable_camera_preview = bool(values[self.gui_disable_camera_preview])
+            changed = True
+
+        # Update frame delay enable option
+        value = values[self.gui_osc_delay_enable]
+        if self.config.gui_osc_delay_enable != values[self.gui_osc_delay_enable]:
+            self.config.gui_osc_delay_enable = bool(values[self.gui_osc_delay_enable])
+            changed = True
+
+        # Update frame delay option
+        value = values[self.gui_osc_delay_seconds]
+        if self.config.gui_osc_delay_seconds != values[self.gui_osc_delay_seconds]:
+            self.config.gui_osc_delay_seconds = float(values[self.gui_osc_delay_seconds])
             changed = True
 
         # Update ROSC option
