@@ -16,7 +16,6 @@
 	"general.recalibrate": "Перекалибровать адрес",
 	"general.recalibrateTooltip": "Адрес OSC, который мы используем для перекалибровки",
 	"general.uvcCameraSettings": "Настройки UVC-камеры",
-	"general.windowFocus": "Интерфейс приостановлен",
 	"general.useRedChannel": "Использовать красный канал",
 	"general.useRedChannelTooltip": "Использует только красный канал для захвата Omnicept",
 	"general.xResolution": "Разрешение X",
@@ -152,5 +151,9 @@
 	"general.theme.system": "System",
 	"general.theme.light": "Light",
 	"general.theme.dark": "Dark",
-	"general.useOSCQuery": "Use OSCQuery"
+	"general.useOSCQuery": "Use OSCQuery",
+	"general.windowFocus": "Window Focused",
+	"general.disableCameraPreview": "Disable camera preview (everywhere)",
+	"general.oscDelayEnable": "Enable OSC delay",
+	"general.oscDelaySeconds": "OSC delay in seconds"
 }

@@ -16,7 +16,6 @@
 	"general.recalibrate": "重校准地址",
 	"general.recalibrateTooltip": "用于重新校准的OSC地址",
 	"general.uvcCameraSettings": "USB UVC摄像头设定",
-	"general.windowFocus": "界面已暂停",
 	"general.useRedChannel": "使用红色通道",
 	"general.useRedChannelTooltip": "仅使用红色通道进行Omnicept捕获",
 	"general.xResolution": "X轴分辨率",
@@ -152,5 +151,9 @@
 	"general.theme.system": "系统",
 	"general.theme.light": "浅色主题",
 	"general.theme.dark": "深色主题",
-	"general.useOSCQuery": "使用OSC查询"
+	"general.useOSCQuery": "使用OSC查询",
+	"general.windowFocus": "Window Focused",
+	"general.disableCameraPreview": "Disable camera preview (everywhere)",
+	"general.oscDelayEnable": "Enable OSC delay",
+	"general.oscDelaySeconds": "OSC delay in seconds"
 }

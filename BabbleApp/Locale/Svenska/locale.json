@@ -16,7 +16,6 @@
 	"general.recalibrate": "Kalibreringsadress",
 	"general.recalibrateTooltip": "OSC Adress för kalibrering",
 	"general.uvcCameraSettings": "UVC Kamera Inställningar",
-	"general.windowFocus": "Gränssnittet pausat",
 	"general.useRedChannel": "Använd Röd Kanal",
 	"general.useRedChannelTooltip": "Använd endast den röda kanalen för Omnicept-avläsning",
 	"general.xResolution": "X Upplösning",
@@ -152,5 +151,9 @@
 	"general.theme.system": "System",
 	"general.theme.light": "Ljust",
 	"general.theme.dark": "Mörkt",
-	"general.useOSCQuery": "Använd OSCQuery"
+	"general.useOSCQuery": "Använd OSCQuery",
+	"general.windowFocus": "Window Focused",
+	"general.disableCameraPreview": "Disable camera preview (everywhere)",
+	"general.oscDelayEnable": "Enable OSC delay",
+	"general.oscDelaySeconds": "OSC delay in seconds"
 }

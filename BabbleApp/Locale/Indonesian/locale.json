@@ -16,7 +16,6 @@
 	"general.recalibrate": "Kalibarsi ulang Address",
 	"general.recalibrateTooltip": "Alamat OSC kami gunakan untuk kalibrasi ulang",
 	"general.uvcCameraSettings": "Pengaturan Kamera UVC",
-	"general.windowFocus": "Antarmuka Dijeda",
 	"general.useRedChannel": "Gunakan Channel Merah",
 	"general.useRedChannelTooltip": "Hanya menggunakan channel merah untuk Omnicept capture",
 	"general.xResolution": "X Resolusi",
@@ -152,5 +151,9 @@
 	"general.theme.system": "Sistem",
 	"general.theme.light": "Terang",
 	"general.theme.dark": "Gelap",
-	"general.useOSCQuery": "Gunakan OSCQuery"
+	"general.useOSCQuery": "Gunakan OSCQuery",
+	"general.windowFocus": "Window Focused",
+	"general.disableCameraPreview": "Disable camera preview (everywhere)",
+	"general.oscDelayEnable": "Enable OSC delay",
+	"general.oscDelaySeconds": "OSC delay in seconds"
 }
