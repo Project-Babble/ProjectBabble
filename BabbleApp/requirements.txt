@@ -15,4 +15,3 @@ comtypes==1.4.8;
 pygrabber==0.2;
 psutil==6.1.1;
 requests==2.32.3;
-git+https://github.com/tomba/pyv4l2.git; platform_system == "Linux"
