@@ -312,6 +312,12 @@ class SettingsWidget:
                 window[self.gui_osc_receiver_port].update(value)
                 values[self.gui_osc_receiver_port] = value
 
+
+        # Update OSC location if it has changed
+        if self.config.gui_osc_location != values[self.gui_osc_location]:
+            self.config.gui_osc_location = values[self.gui_osc_location]
+            changed = True
+
         # Update OSC address if it has changed
         if self.config.gui_osc_address != values[self.gui_osc_address]:
             self.config.gui_osc_address = values[self.gui_osc_address]
