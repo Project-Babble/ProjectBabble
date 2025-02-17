@@ -13,5 +13,6 @@ colorama==0.4.6;
 desktop-notifier==6.0.0;
 comtypes==1.4.8; 
 pygrabber==0.2;
-psutil==6.1.1;
+psutil==7.0.0;
 requests==2.32.3;
+v4l2py==3.0.0;
