@@ -186,6 +186,6 @@ SND_FILENAME = SND_ASYNC = 1
 if os_type == 'Windows':
     import winsound
 
-    playSound = winsound.playSound
+    playSound = winsound.PlaySound
     SND_FILENAME = winsound.SND_FILENAME
     SND_ASYNC = winsound.SND_ASYNC
