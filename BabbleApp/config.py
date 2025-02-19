@@ -2,7 +2,7 @@ import json
 import os.path
 import shutil
 
-from utils.misc_utils import EnsurePath
+from utils.misc_utils import ensurePath
 from tab import Tab
 from pydantic import BaseModel
 from typing import Union
@@ -64,7 +64,7 @@ class BabbleConfig(BaseModel):
 
     @staticmethod
     def load():
-        EnsurePath()
+        ensurePath()
 
         if not os.path.exists(CONFIG_FILE_NAME):
             return BabbleConfig()
@@ -84,7 +84,7 @@ class BabbleConfig(BaseModel):
             return load_config
 
     def save(self):
-        EnsurePath()
+        ensurePath()
 
         # make sure this is only called if there is a change
         if os.path.exists(CONFIG_FILE_NAME):

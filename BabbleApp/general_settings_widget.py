@@ -1,4 +1,4 @@
-import PySimpleGUI as sg
+import FreeSimpleGUI as sg
 from lang_manager import LocaleStringManager as lang
 from config import BabbleSettingsConfig
 from osc import Tab
