@@ -1,16 +1,20 @@
-onnxruntime==1.19.2
-opencv_python==4.10.0.84
-pillow==11.0.0
-pysimplegui==4.70.1
-python_osc==1.9.0
-torch==2.4.1
-torchvision==0.19.1
-pydantic==1.10.18
-pyserial==3.5
-colorama==0.4.6
-desktop-notifier==6.0.0
-comtypes==1.4.8
-pygrabber==0.2
-poetry
-v4l2py
-psutil
+onnxruntime==1.19.2; 
+onnxruntime-directml==1.19.2; platform_system == "Windows"
+onnxruntime-gpu==1.19.2; platform_system == "Linux"
+torch==2.6.0;
+torchvision==0.21.0;
+opencv_python==4.11.0.86;
+pillow==11.0.0;
+FreeSimpleGUI==5.1.1;
+python_osc==1.9.0;
+pydantic==2.10.6;
+pyserial==3.5;
+colorama==0.4.6;
+desktop-notifier==6.0.0;
+comtypes==1.4.8; 
+pygrabber==0.2;
+psutil==7.0.0;
+requests==2.32.3;
+v4l2py==3.0.0;
+sounddevice=0.5.1;
+soundfile-0.13.1;

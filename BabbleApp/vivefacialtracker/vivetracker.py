@@ -32,10 +32,9 @@ import ctypes
 import time
 import cv2 as cv
 import numpy as np
+from utils.misc_utils import os_type
 
-isLinux = platform.system() == 'Linux'
-
-if isLinux:
+if os_type == 'Linux':
     import fcntl
 
     _IOC_NRBITS = 8
@@ -65,7 +64,7 @@ if isLinux:
     def _IOWR(type_, nr, size):
         return _IOC(_IOC_READ | _IOC_WRITE, type_, nr, _IOC_TYPECHECK(size))
 
-else:
+elif os_type == 'Windows':
     import pygrabber.dshow_graph as pgdsg
     import comtypes as comt
     import ctypes.wintypes as ctwt
@@ -325,7 +324,7 @@ class ViveTracker:
     _XU_TASK_GET = 0x51
     _XU_REG_SENSOR = 0xab
 
-    if isLinux:
+    if os_type == 'Linux':
         _UVC_SET_CUR = 0x01
         _UVC_GET_CUR = 0x81
         _UVC_GET_MIN = 0x82
@@ -348,7 +347,7 @@ class ViveTracker:
 
     _logger = logging.getLogger("evcta.ViveTracker")
 
-    if isLinux:
+    if os_type == 'Linux':
         def __init__(self: 'ViveTracker', fd: int) -> None:
             """Create VIVE Face Tracker instance.
 
@@ -369,7 +368,7 @@ class ViveTracker:
                 raise Exception("Missing camera file descriptor")
             self._fd: int = fd
             self._init_common()
-    else:
+    elif os_type == 'Windows':
         def __init__(self: 'ViveTracker', device: pgdsg.VideoInput,
                      index: int) -> None:
             """Create VIVE Face Tracker instance.
@@ -417,7 +416,7 @@ class ViveTracker:
             self._dataTest[254] = 0x53
             self._dataTest[255] = 0x54
 
-    if isLinux:
+    if os_type == 'Linux':
         @staticmethod
         def is_camera_vive_tracker(device: 'v4l.Device') -> bool:
             """Detect if this is a VIVE Face Tracker.
@@ -432,7 +431,7 @@ class ViveTracker:
             ViveTracker._logger.info("is_camera_vive_tracker: '{}' -> {}".
                                      format(device.info.card, check))
             return check
-    else:
+    elif os_type == 'Windows':
         @staticmethod
         def is_camera_vive_tracker(device: 'pgdsg.VideoInput') -> bool:
             check = "HTC Multimedia Camera" in device.Name
@@ -452,7 +451,7 @@ class ViveTracker:
             bool: True if the device is identified as a Vive Face Tracker, False otherwise.
         """
 
-        if isLinux:
+        if os_type == 'Linux':
             try:
                 # Ensure the provided device name exists
                 if not os.path.exists(device_name):
@@ -481,9 +480,9 @@ class ViveTracker:
         Deactivates data stream."""
         ViveTracker._logger.info("dispose vive tracker")
 
-        if isLinux:
+        if os_type == 'Linux':
             self._deactivate_tracker()
-        else:
+        elif os_type == 'Windows':
             self._deactivate_tracker()
             self._close_controller()
 
@@ -516,7 +515,7 @@ class ViveTracker:
 
         return cv.merge((lum, lum, lum))
 
-    if not isLinux:
+    if os_type == 'Windows':
         def _open_controller(self: 'ViveTracker') -> None:
             if self._xu_control:
                 return
@@ -578,13 +577,13 @@ class ViveTracker:
         Keyword arguments:
         selector --- Selector
         """
-        if isLinux:
+        if os_type == 'Linux':
             length = (ctypes.c_uint8 * 2)(0, 0)
             c = ViveTracker._uvc_xu_control_query(
                 4, selector, ViveTracker._UVC_GET_LEN, 2, length)
             fcntl.ioctl(self._fd, ViveTracker._UVCIOC_CTRL_QUERY, c)
             return (length[1] << 8) + length[0]
-        else:
+        elif os_type == 'Windows':
             return _control_propery_request_len(
                 self._xu_control, 2, self._xu_node_index)
 
@@ -596,11 +595,11 @@ class ViveTracker:
         selector --- Selector
         data -- Buffer to store response to. Has to be 384 bytes long.
         """
-        if isLinux:
+        if os_type == 'Linux':
             c = ViveTracker._uvc_xu_control_query(
                 4, selector, ViveTracker._UVC_GET_CUR, len(data), data)
             fcntl.ioctl(self._fd, ViveTracker._UVCIOC_CTRL_QUERY, c)
-        else:
+        elif os_type == 'Windows':
             xuprop = KSP_NODE(
                 KSPROPERTY(GUID_EXT_CTRL_UNIT, selector,
                            KSPROPERTY_TYPE_GET | KSPROPERTY_TYPE_TOPOLOGY),
@@ -628,11 +627,11 @@ class ViveTracker:
         selector --- Selector
         data -- Data to send. Has to be 384 bytes long.
         """
-        if isLinux:
+        if os_type == 'Linux':
             c = ViveTracker._uvc_xu_control_query(
                 4, selector, ViveTracker._UVC_SET_CUR, len(data), data)
             fcntl.ioctl(self._fd, ViveTracker._UVCIOC_CTRL_QUERY, c)
-        else:
+        elif os_type == 'Windows':
             xuprop = KSP_NODE(
                 KSPROPERTY(GUID_EXT_CTRL_UNIT, selector,
                            KSPROPERTY_TYPE_SET | KSPROPERTY_TYPE_TOPOLOGY),
@@ -825,9 +824,9 @@ class ViveTracker:
         uses 384. If this is not the case then this is most probebly
         something else but not a VIVE Face Tracker.
         """
-        if isLinux:
+        if os_type == 'Linux':
             length = self._get_len()
-        else:
+        elif os_type == 'Windows':
             length = _control_propery_request_len(
                 self._xu_control, 2, self._xu_node_index)
         if length == 384:

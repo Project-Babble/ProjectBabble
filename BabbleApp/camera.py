@@ -12,7 +12,7 @@ import serial.tools.list_ports
 from lang_manager import LocaleStringManager as lang
 from colorama import Fore
 from config import BabbleConfig, BabbleSettingsConfig
-from utils.misc_utils import get_camera_index_by_name, list_camera_names, is_nt
+from utils.misc_utils import get_camera_index_by_name, list_camera_names, os_type
 
 from vivefacialtracker.vivetracker import ViveTracker
 from vivefacialtracker.camera_controller import FTCameraController
@@ -321,7 +321,7 @@ class Camera:
             rate = 115200 if sys.platform == "darwin" else 3000000  # Higher baud rate not working on macOS
             conn = serial.Serial(baudrate=rate, port=port, xonxoff=False, dsrdtr=False, rtscts=False)
             # Set explicit buffer size for serial. This function is Windows only!
-            if is_nt:
+            if os_type == 'Windows':
                 conn.set_buffer_size(rx_size=BUFFER_SIZE, tx_size=BUFFER_SIZE)
 
             print(

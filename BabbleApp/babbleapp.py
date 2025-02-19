@@ -17,7 +17,7 @@ Copyright (c) 2023 Project Babble <3
 """
 
 import os
-import PySimpleGUI as sg
+import FreeSimpleGUI as sg
 import queue
 import requests
 import threading
@@ -33,13 +33,13 @@ from general_settings_widget import SettingsWidget
 from algo_settings_widget import AlgoSettingsWidget
 from calib_settings_widget import CalibSettingsWidget
 from notification_manager import NotificationManager
-from utils.misc_utils import EnsurePath, is_nt, bg_color_highlight, bg_color_clear
+from utils.misc_utils import ensurePath, os_type, bg_color_highlight, bg_color_clear
 from lang_manager import LocaleStringManager as lang
 from logger import setup_logging
 
 winmm = None
 
-if is_nt:
+if os_type == 'Windows':
     try:
         from ctypes import windll
         winmm = windll.winmm
@@ -99,7 +99,7 @@ async def check_for_updates(config, notification_manager):
             )
 
 async def async_main():
-    EnsurePath()
+    ensurePath()
     setup_logging()
 
     # Get Configuration

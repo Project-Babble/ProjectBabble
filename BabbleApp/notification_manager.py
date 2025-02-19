@@ -5,7 +5,7 @@ import asyncio
 from pathlib import Path
 from desktop_notifier import DesktopNotifier, Urgency, Button, Icon, DEFAULT_SOUND
 from lang_manager import LocaleStringManager as lang
-from utils.misc_utils import  is_nt
+from utils.misc_utils import os_type
 
 class NotificationManager:
     def __init__(self):
@@ -46,6 +46,6 @@ class NotificationManager:
         self.loop = asyncio.get_running_loop()
         
         # Add non nt signal handlers
-        if not is_nt:
+        if not os_type == 'Windows':
             self.loop.add_signal_handler(signal.SIGINT, self.stop_event.set)
             self.loop.add_signal_handler(signal.SIGTERM, self.stop_event.set)

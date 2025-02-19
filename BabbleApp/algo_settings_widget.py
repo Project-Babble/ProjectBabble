@@ -1,4 +1,4 @@
-import PySimpleGUI as sg
+import FreeSimpleGUI as sg
 from config import BabbleSettingsConfig
 from osc import Tab
 from queue import Queue
