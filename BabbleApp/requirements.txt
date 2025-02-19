@@ -16,5 +16,5 @@ pygrabber==0.2;
 psutil==7.0.0;
 requests==2.32.3;
 v4l2py==3.0.0;
-sounddevice=0.5.1;
-soundfile-0.13.1;
+sounddevice==0.5.1;
+soundfile==0.13.1;
