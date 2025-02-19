@@ -3,14 +3,13 @@ from queue import Queue, Empty
 from threading import Event, Thread
 import FreeSimpleGUI as sg
 import cv2
+import os
 from babble_processor import BabbleProcessor, CamInfoOrigin
 from camera import Camera, CameraState, MAX_RESOLUTION
 from config import BabbleConfig
 from osc import Tab
 from utils.misc_utils import (
     playSound,
-    SND_FILENAME,
-    SND_ASYNC,
     list_camera_names,
     get_camera_index_by_name,
     bg_color_highlight,
@@ -18,7 +17,6 @@ from utils.misc_utils import (
     is_valid_int_input
 )
 from lang_manager import LocaleStringManager as lang
-
 
 class CameraWidget:
     def __init__(self, widget_id: Tab, main_config: BabbleConfig, osc_queue: Queue):
@@ -441,7 +439,7 @@ class CameraWidget:
                 values[self.use_calibration] == True
             ):  # Don't start recording if the calibration filter is disabled.
                 self.babble_cnn.calibration_frame_counter = 1500
-                playSound("Audio/start.wav", SND_FILENAME | SND_ASYNC)
+                playSound(os.path.join("Audio", "start.wav"))
 
         if event == self.gui_stop_calibration:
             if (

@@ -1,5 +1,5 @@
 from pythonosc import udp_client, osc_server, dispatcher
-from utils.misc_utils import playSound, SND_FILENAME, SND_ASYNC
+from utils.misc_utils import playSound
 import queue
 import threading
 from enum import IntEnum
@@ -7,8 +7,8 @@ import time
 from config import BabbleConfig
 import traceback
 import math
+import os
 from lang_manager import LocaleStringManager as lang
-
 
 class Tab(IntEnum):
     CAM = 0
@@ -16,9 +16,7 @@ class Tab(IntEnum):
     ALGOSETTINGS = 2
     CALIBRATION = 3
 
-
 import numpy as np
-
 
 def delay_output_osc(array, delay_seconds, self):
     time.sleep(delay_seconds)
@@ -152,7 +150,7 @@ class VRChatOSCReceiver:
         if osc_value:
             for cam in self.cams:
                 cam.babble_cnn.calibration_frame_counter = 300
-                playSound("Audio/start.wav", SND_FILENAME | SND_ASYNC)
+                playSound(os.path.join("Audio", "start.wav"))
 
     def run(self):
 

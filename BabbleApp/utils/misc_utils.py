@@ -7,6 +7,8 @@ import platform
 import cv2
 import re
 import subprocess
+import sounddevice as sd
+import soundfile as sf
 
 bg_color_highlight = "#424042"
 bg_color_clear = "#242224"
@@ -169,23 +171,15 @@ def get_camera_index_by_name(name):
 
     return None
 
-
-# Placeholder for sound functions on Windows
-def playSound(*args, **kwargs):
-    pass
-
+# Set environment variable before importing sounddevice. Value is not important.
+os.environ["SD_ENABLE_ASIO"] = "1"
+def playSound(file):
+    data, fs = sf.read(file)
+    sd.play(data, fs)
+    sd.wait()
 
 # Handle debugging virtual envs.
 def ensurePath():
     if os.path.exists(os.path.join(os.getcwd(), "BabbleApp")):
         os.chdir(os.path.join(os.getcwd(), "BabbleApp"))
 
-
-SND_FILENAME = SND_ASYNC = 1
-
-if os_type == 'Windows':
-    import winsound
-
-    playSound = winsound.PlaySound
-    SND_FILENAME = winsound.SND_FILENAME
-    SND_ASYNC = winsound.SND_ASYNC

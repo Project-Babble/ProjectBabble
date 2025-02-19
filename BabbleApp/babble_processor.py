@@ -11,7 +11,7 @@ import numpy as np
 import cv2
 from enum import Enum
 from one_euro_filter import OneEuroFilter
-from utils.misc_utils import playSound, SND_FILENAME, SND_ASYNC, onnx_providers
+from utils.misc_utils import playSound, onnx_providers
 import importlib
 from osc import Tab
 from osc_calibrate_filter import *
@@ -37,7 +37,7 @@ def run_once(f):
 async def delayed_setting_change(setting, value):
     await asyncio.sleep(5)
     setting = value
-    playSound("Audio/completed.wav", SND_FILENAME | SND_ASYNC)
+    playSound(os.path.join("Audio", "completed.wav"))
 
 
 class BabbleProcessor:

@@ -11,7 +11,7 @@ import numpy as np
 import cv2
 from enum import Enum
 from one_euro_filter import OneEuroFilter
-from utils.misc_utils import playSound, SND_FILENAME, SND_ASYNC, onnx_providers
+from utils.misc_utils import playSound, onnx_providers
 from osc_calibrate_filter import *
 from tab import CamInfo, CamInfoOrigin
 from landmark_model_loader import *
@@ -28,13 +28,10 @@ def run_once(f):
     wrapper.has_run = False
     return wrapper
 
-
 async def delayed_setting_change(setting, value):
     await asyncio.sleep(5)
     setting = value
-    playSound('Audio/completed.wav', SND_FILENAME | SND_ASYNC)
-
-
+    playSound(os.path.join("Audio", "completed.wav"))
 
 class LandmarkProcessor:
     def __init__(

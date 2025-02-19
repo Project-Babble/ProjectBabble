@@ -1,17 +1,15 @@
 import numpy as np
 from math import log
 from enum import IntEnum
-from utils.misc_utils import playSound, SND_FILENAME, SND_ASYNC
+from utils.misc_utils import playSound
+import os
 from lang_manager import LocaleStringManager as lang
-
 
 class CamId(IntEnum):
     CAM = 0
     SETTINGS = 1
 
-
 class cal:
-
     def __init__(self):
         self.calibration_frame_counter = None
         self.calibrated_array = None
@@ -57,7 +55,7 @@ class cal:
                     f'[{lang._instance.get_string("log.info")}] Calibration completed.'
                 )
 
-                playSound("Audio/completed.wav", SND_FILENAME | SND_ASYNC)
+                playSound(os.path.join("Audio", "completed.wav"))
 
             if self.settings.calibration_mode == "Neutral":
                 self.min_max_array = np.fromstring(
