@@ -150,7 +150,10 @@ def get_camera_index_by_name(name):
     # On Linux, we use device paths like '/dev/video0' and match directly
     # OpenCV expects the actual /dev/video#, not the offset into the device list
     if os_type == "Linux":
-        return int(str.replace(name,"/dev/video",""));
+        if (name.startswith("/dev/ttyACM")):
+            return int(str.replace(name,"/dev/ttyACM",""));
+        else:
+            return int(str.replace(name,"/dev/video",""));
 
     # On Windows, match by camera name
     elif os_type == 'Windows':

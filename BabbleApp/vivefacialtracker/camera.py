@@ -271,7 +271,7 @@ class FTCamera:
             for x in self._device.info.frame_sizes:
                 FTCamera._logger.info("- {}".format(x))
             self._frame_size = next(x for x in self._device.info.frame_sizes
-                                    if x.pixel_format == v4l2.PixelFormat.YUYV
+                                    if x.pixel_format == v4l.PixelFormat.YUYV
                                     and x.min_fps >= 30)
         elif os_type == 'Windows':
             fsize = next(x for x in self._filter_video.get_formats()
@@ -362,7 +362,7 @@ class FTCamera:
 
     if os_type == 'Linux':
         @property
-        def device(self: 'FTCamera') -> v4l2.VideoDevice:
+        def device(self: 'FTCamera') -> v4l.Device:
             """Video4Linux device if open or None if closed."""
             return self._device
     elif os_type == 'Windows':
@@ -470,7 +470,7 @@ class FTCamera:
 
             try:
                 match frame.pixel_format:
-                    case v4l2.PixelFormat.YUYV:
+                    case v4l.PixelFormat.YUYV:
                         self._decode_yuv422(frame.data)
                     case _:
                         FTCamera._logger.error(
