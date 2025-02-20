@@ -11,7 +11,7 @@ import numpy as np
 import cv2
 from enum import Enum
 from one_euro_filter import OneEuroFilter
-from utils.misc_utils import PlaySound, SND_FILENAME, SND_ASYNC
+from utils.misc_utils import playSound, onnx_providers
 import importlib
 from osc import Tab
 from osc_calibrate_filter import *
@@ -37,7 +37,7 @@ def run_once(f):
 async def delayed_setting_change(setting, value):
     await asyncio.sleep(5)
     setting = value
-    PlaySound("Audio/completed.wav", SND_FILENAME | SND_ASYNC)
+    playSound(os.path.join("Audio", "completed.wav"))
 
 
 class BabbleProcessor:
@@ -86,6 +86,8 @@ class BabbleProcessor:
         self.runtime = self.settings.gui_runtime
         self.use_gpu = self.settings.gui_use_gpu
         self.gpu_index = self.settings.gui_gpu_index
+        config_default: BabbleConfig = BabbleConfig()
+        self.default_model = config_default.settings.gui_model_file
         self.output = []
         self.val_list = []
         self.calibrate_config = np.empty((1, 45))
@@ -100,15 +102,26 @@ class BabbleProcessor:
         self.opts.enable_mem_pattern = False
         if self.runtime in ("ONNX", "Default (ONNX)"):  # ONNX
             if self.use_gpu:
-                provider = "DmlExecutionProvider"
+                provider = onnx_providers
             else:
-                provider = "CPUExecutionProvider"  # Build onnxruntime to get both DML and OpenVINO
-            self.sess = ort.InferenceSession(
-                f"{self.model}onnx/model.onnx",
-                self.opts,
-                providers=[provider],
-                provider_options=[{"device_id": self.gpu_index}],
-            )
+                provider = [onnx_providers[-1]]
+            try:
+                self.sess = ort.InferenceSession(
+                    f"{self.model}/onnx/model.onnx",
+                    self.opts,
+                    providers=provider,
+                )
+            except:                                                 # Load default model if we can't find the specified model
+                print(
+                f'\033[91m[{lang._instance.get_string("log.error")}] {lang._instance.get_string("error.modelLoad")} {self.model}\033[0m'
+                )
+                print(f'\033[91mLoading Default model: {self.default_model}.\033[0m')
+                self.sess = ort.InferenceSession(
+                    f"{self.default_model}/onnx/model.onnx",  
+                    self.opts,
+                    providers=[provider],
+                    provider_options=[{"device_id": self.gpu_index}],
+                )
             self.input_name = self.sess.get_inputs()[0].name
             self.output_name = self.sess.get_outputs()[0].name
         try:

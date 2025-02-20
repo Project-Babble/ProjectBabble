@@ -2,7 +2,7 @@ import json
 import os.path
 import shutil
 
-from utils.misc_utils import EnsurePath
+from utils.misc_utils import ensurePath
 from tab import Tab
 from pydantic import BaseModel
 from typing import Union
@@ -31,11 +31,14 @@ class BabbleSettingsConfig(BaseModel):
     gui_osc_port: int = 8888
     gui_osc_receiver_port: int = 9001
     gui_osc_recalibrate_address: str = "/avatar/parameters/babble_recalibrate"
+    gui_disable_camera_preview: bool = False
+    gui_osc_delay_enable: bool = False
+    gui_osc_delay_seconds: float = 0.01
     gui_update_check: bool = True
     gui_ROSC: bool = False
     gui_osc_location: str = ""
     gui_multiply: float = 1
-    gui_model_file: str = "Models/3MEFFB0E7MSE/"
+    gui_model_file: str = "Models/EFFB0E5BS224V6.3.4"
     gui_runtime: str = "ONNX"
     gui_use_gpu: bool = False
     gui_gpu_index: int = 0
@@ -61,7 +64,7 @@ class BabbleConfig(BaseModel):
 
     @staticmethod
     def load():
-        EnsurePath()
+        ensurePath()
 
         if not os.path.exists(CONFIG_FILE_NAME):
             return BabbleConfig()
@@ -81,7 +84,7 @@ class BabbleConfig(BaseModel):
             return load_config
 
     def save(self):
-        EnsurePath()
+        ensurePath()
 
         # make sure this is only called if there is a change
         if os.path.exists(CONFIG_FILE_NAME):

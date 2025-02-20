@@ -1,4 +1,4 @@
-import PySimpleGUI as sg
+import FreeSimpleGUI as sg
 from config import BabbleSettingsConfig
 from osc import Tab
 from queue import Queue
@@ -41,6 +41,7 @@ class AlgoSettingsWidget:
                     size=(32),
                     tooltip=f'{lang._instance.get_string("algorithm.modelFileTooptip")}.',
                 ),
+                sg.FolderBrowse(),
                 sg.Text(
                     f'{lang._instance.get_string("algorithm.inferenceThreads")}:',
                     background_color=bg_color_highlight,

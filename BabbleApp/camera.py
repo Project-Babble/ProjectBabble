@@ -3,18 +3,21 @@ from cv2.typing import *
 import numpy as np
 import queue
 import serial
-import serial.tools.list_ports
-import threading
+import sys
 import time
+import traceback
+import threading
+from enum import Enum
+import serial.tools.list_ports
 from lang_manager import LocaleStringManager as lang
-
 from colorama import Fore
 from config import BabbleConfig, BabbleSettingsConfig
-from utils.misc_utils import get_camera_index_by_name, list_camera_names
-from enum import Enum
-import sys
 from PIL import Image
 from io import BytesIO
+from utils.misc_utils import get_camera_index_by_name, list_camera_names, os_type
+
+from vivefacialtracker.vivetracker import ViveTracker
+from vivefacialtracker.camera_controller import FTCameraController
 
 WAIT_TIME = 0.1
 BUFFER_SIZE = 32768
@@ -26,6 +29,7 @@ MAX_RESOLUTION: int = 600
 #  packet (packet-size bytes)
 ETVR_HEADER = b"\xff\xa0\xff\xa1"
 ETVR_HEADER_LEN = 6
+PORTS = ("COM", "/dev/ttyACM")
 
 
 class CameraState(Enum):
@@ -56,6 +60,7 @@ class Camera:
         self.cancellation_event = cancellation_event
         self.current_capture_source = config.capture_source
         self.cv2_camera: "cv2.VideoCapture" = None
+        self.vft_camera: FTCameraController = None
 
         self.serial_connection = None
         self.last_frame_time = time.time()
@@ -63,6 +68,7 @@ class Camera:
         self.bps = 0
         self.start = True
         self.buffer = b""
+        self.frame_number = 0
         self.FRAME_SIZE = [0, 0]
 
         self.error_message = f'{Fore.YELLOW}[{lang._instance.get_string("log.warn")}] {lang._instance.get_string("info.enterCaptureOne")} {{}} {lang._instance.get_string("info.enterCaptureTwo")}{Fore.RESET}'
@@ -80,6 +86,8 @@ class Camera:
                 print(
                     f'{Fore.CYAN}[{lang._instance.get_string("log.info")}] {lang._instance.get_string("info.exitCaptureThread")}{Fore.RESET}'
                 )
+                if self.vft_camera is not None:
+                    self.vft_camera.close()
                 return
             should_push = True
             # If things aren't open, retry until they are. Don't let read requests come in any earlier
@@ -88,7 +96,16 @@ class Camera:
                 self.config.capture_source is not None
                 and self.config.capture_source != ""
             ):
-                if "COM" in str(self.config.capture_source):
+                self.current_capture_source = self.config.capture_source
+                isSerial = any(x in str(self.config.capture_source) for x in PORTS)
+                
+                if isSerial:
+                    if self.cv2_camera is not None:
+                        self.cv2_camera.release()
+                        self.cv2_camera = None
+                    if self.vft_camera is not None:
+                        self.vft_camera.close()
+                    self.device_is_vft = False
                     if (
                         self.serial_connection is None
                         or self.camera_status == CameraState.DISCONNECTED
@@ -97,34 +114,59 @@ class Camera:
                         port = self.config.capture_source
                         self.current_capture_source = port
                         self.start_serial_connection(port)
-                else:
-                    if (
+                elif ViveTracker.is_device_vive_tracker(self.config.capture_source):
+                    if self.cv2_camera is not None:
+                        self.cv2_camera.release()
+                        self.cv2_camera = None
+                    self.device_is_vft = True
+
+                    if self.vft_camera is None:
+                        print(self.error_message.format(self.config.capture_source))
+                        # capture_source is an index into a list of devices, so it should be treated as such
+                        if self.cancellation_event.wait(WAIT_TIME):
+                            return
+                        try:
+                            # Only create the camera once, reuse it
+                            self.vft_camera = FTCameraController(get_camera_index_by_name(self.config.capture_source))
+                            self.vft_camera.open()
+                            should_push = False
+                        except Exception:
+                            print(traceback.format_exc())
+                            if self.vft_camera is not None:
+                                self.vft_camera.close()
+                    else:
+                        # If the camera is already open it don't spam it!!
+                        if (not self.vft_camera.is_open):
+                            self.vft_camera.open()
+                            should_push = False
+                elif (
                         self.cv2_camera is None
                         or not self.cv2_camera.isOpened()
                         or self.camera_status == CameraState.DISCONNECTED
-                        or self.config.capture_source != self.current_capture_source
+                        #or get_camera_index_by_name(self.config.capture_source) != self.current_capture_source 
+                        or self.config.capture_source != self.current_capture_source 
                     ):
+                        if self.vft_camera is not None:
+                            self.vft_camera.close()
+                        self.device_is_vft = False
+                        
                         print(self.error_message.format(self.config.capture_source))
                         # This requires a wait, otherwise we can error and possible screw up the camera
                         # firmware. Fickle things.
                         if self.cancellation_event.wait(WAIT_TIME):
                             return
-
                         if self.config.capture_source not in self.camera_list:
                             self.current_capture_source = self.config.capture_source
                         else:
-                            self.current_capture_source = get_camera_index_by_name(
-                                self.config.capture_source
-                            )
+                            self.current_capture_source = get_camera_index_by_name(self.config.capture_source)
 
                         if self.config.use_ffmpeg:
                             self.cv2_camera = cv2.VideoCapture(
                                 self.current_capture_source, cv2.CAP_FFMPEG
                             )
                         else:
-                            self.cv2_camera = cv2.VideoCapture(
-                                self.current_capture_source
-                            )
+                            self.cv2_camera = cv2.VideoCapture()
+                            self.cv2_camera.open(self.current_capture_source)
 
                         if not self.settings.gui_cam_resolution_x == 0:
                             self.cv2_camera.set(
@@ -143,6 +185,8 @@ class Camera:
                         should_push = False
             else:
                 # We don't have a capture source to try yet, wait for one to show up in the GUI.
+                if self.vft_camera is not None:
+                    self.vft_camera.close()
                 if self.cancellation_event.wait(WAIT_TIME):
                     self.camera_status = CameraState.DISCONNECTED
                     return
@@ -152,24 +196,34 @@ class Camera:
             if should_push and not self.capture_event.wait(timeout=0.02):
                 continue
             if self.config.capture_source is not None:
-                ports = ("COM", "/dev/tty")
-                if any(x in str(self.config.capture_source) for x in ports):
+                if isSerial:
                     self.get_serial_camera_picture(should_push)
                 else:
                     self.__del__()
-                    self.get_cv2_camera_picture(should_push)
+                    self.get_camera_picture(should_push)
                 if not should_push:
                     # if we get all the way down here, consider ourselves connected
                     self.camera_status = CameraState.CONNECTED
 
-    def get_cv2_camera_picture(self, should_push):
+    def get_camera_picture(self, should_push):
         try:
-            ret, image = self.cv2_camera.read()
-            if not ret:
-                self.cv2_camera.set(cv2.CAP_PROP_POS_FRAMES, 0)
-                raise RuntimeError(lang._instance.get_string("error.frame"))
+            image = None
+            # Is the current camera a Vive Facial Tracker and have we opened a connection to it before?
+            if self.vft_camera is not None and self.device_is_vft:
+                image = self.vft_camera.get_image()
+                if image is None:
+                    return
+                self.frame_number = self.frame_number + 1
+            elif self.cv2_camera is not None and self.cv2_camera.isOpened():
+                ret, image = self.cv2_camera.read()     # MJPEG Stream reconnects are currently limited by the hard coded 30 second timeout time on VideoCapture.read(). We can get around this by recompiling OpenCV or using a custom MJPEG stream imp.   
+                if not ret:
+                    self.cv2_camera.set(cv2.CAP_PROP_POS_FRAMES, 0)
+                    raise RuntimeError(lang._instance.get_string("error.frame"))
+                self.frame_number = self.cv2_camera.get(cv2.CAP_PROP_POS_FRAMES) + 1
+            else:
+                # Switching from a Vive Facial Tracker to a CV2 camera
+                return
             self.FRAME_SIZE = image.shape
-            frame_number = self.cv2_camera.get(cv2.CAP_PROP_POS_FRAMES)
             # Calculate FPS
             current_frame_time = time.time()    # Should be using "time.perf_counter()", not worth ~3x cycles?
             delta_time = current_frame_time - self.last_frame_time
@@ -180,8 +234,9 @@ class Camera:
             self.bps = image.nbytes * self.fps
 
             if should_push:
-                self.push_image_to_queue(image, frame_number + 1, self.fps)
+                self.push_image_to_queue(image, self.frame_number, self.fps)
         except Exception:
+            FTCameraController._logger.exception("get_image")
             print(
                 f'{Fore.YELLOW}[{lang._instance.get_string("log.warn")}] {lang._instance.get_string("warn.captureProblem")}{Fore.RESET}'
             )
@@ -267,18 +322,20 @@ class Camera:
         try:
             rate = 115200 if sys.platform == "darwin" else 3000000  # Higher baud rate not working on macOS
             conn = serial.Serial(baudrate=rate, port=port, xonxoff=False, dsrdtr=False, rtscts=False)
-            # Set explicit buffer size for serial.
-            conn.set_buffer_size(rx_size=BUFFER_SIZE, tx_size=BUFFER_SIZE)
+            # Set explicit buffer size for serial. This function is Windows only!
+            if os_type == 'Windows':
+                conn.set_buffer_size(rx_size=BUFFER_SIZE, tx_size=BUFFER_SIZE)
 
             print(
                 f'{Fore.CYAN}[{lang._instance.get_string("log.info")}] {lang._instance.get_string("info.ETVRConnected")} {port}{Fore.RESET}'
             )
             self.serial_connection = conn
             self.camera_status = CameraState.CONNECTED
-        except Exception:
+        except Exception as e:
             print(
                 f'{Fore.CYAN}[{lang._instance.get_string("log.info")}] {lang._instance.get_string("info.ETVRFailiure")} {port}{Fore.RESET}'
             )
+            print(e)
             self.camera_status = CameraState.DISCONNECTED
 
     def clamp_max_res(self, image: MatLike) -> MatLike:

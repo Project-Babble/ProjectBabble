@@ -7,15 +7,22 @@ import platform
 import cv2
 import re
 import subprocess
+import sounddevice as sd
+import soundfile as sf
 
 bg_color_highlight = "#424042"
 bg_color_clear = "#242224"
 
+onnx_providers = [
+    "DmlExecutionProvider",
+    "CUDAExecutionProvider",
+    "CPUExecutionProvider",
+]
+
 # Detect the operating system
-is_nt = os.name == "nt"
 os_type = platform.system()
 
-if is_nt:
+if os_type == 'Windows':
     from pygrabber.dshow_graph import FilterGraph
     graph = FilterGraph()
 
@@ -71,20 +78,16 @@ def is_uvc_device(device):
 def list_linux_uvc_devices():
     """List UVC video devices on Linux (excluding metadata devices)"""
     try:
-        result = subprocess.run(["v4l2-ctl", "--list-devices"], stdout=subprocess.PIPE)
-        output = result.stdout.decode("utf-8")
-
-        lines = output.splitlines()
+        # v4l2-ctl --list-devices breaks if video devices are non-sequential.
+        # So this might be better?
+        result = glob.glob("/dev/video*");
         devices = []
         current_device = None
-        for line in lines:
-            if not line.startswith("\t"):
-                current_device = line.strip()
-            else:
-                if "/dev/video" in line and is_uvc_device(line.strip()):
-                    devices.append(
-                        line.strip()
-                    )  # We return the path like '/dev/video0'
+        for line in result:
+            if is_uvc_device(line):
+                devices.append(
+                    line
+                )  # We return the path like '/dev/video0'
 
         return devices
 
@@ -95,7 +98,7 @@ def list_linux_uvc_devices():
 def list_camera_names():
     """Cross-platform function to list camera names"""
 
-    if is_nt:
+    if os_type == 'Windows':
         # On Windows, use pygrabber to list devices
         cam_list = graph.get_input_devices()
         return cam_list + list_serial_ports()
@@ -147,13 +150,15 @@ def get_camera_index_by_name(name):
     cam_list = list_camera_names()
 
     # On Linux, we use device paths like '/dev/video0' and match directly
+    # OpenCV expects the actual /dev/video#, not the offset into the device list
     if os_type == "Linux":
-        for i, device_path in enumerate(cam_list):
-            if device_path == name:
-                return i
+        if (name.startswith("/dev/ttyACM")):
+            return int(str.replace(name,"/dev/ttyACM",""));
+        else:
+            return int(str.replace(name,"/dev/video",""));
 
     # On Windows, match by camera name
-    elif is_nt:
+    elif os_type == 'Windows':
         for i, device_name in enumerate(cam_list):
             if device_name == name:
                 return i
@@ -166,23 +171,15 @@ def get_camera_index_by_name(name):
 
     return None
 
-
-# Placeholder for sound functions on Windows
-def PlaySound(*args, **kwargs):
-    pass
-
+# Set environment variable before importing sounddevice. Value is not important.
+os.environ["SD_ENABLE_ASIO"] = "1"
+def playSound(file):
+    data, fs = sf.read(file)
+    sd.play(data, fs)
+    sd.wait()
 
 # Handle debugging virtual envs.
-def EnsurePath():
+def ensurePath():
     if os.path.exists(os.path.join(os.getcwd(), "BabbleApp")):
         os.chdir(os.path.join(os.getcwd(), "BabbleApp"))
 
-
-SND_FILENAME = SND_ASYNC = 1
-
-if is_nt:
-    import winsound
-
-    PlaySound = winsound.PlaySound
-    SND_FILENAME = winsound.SND_FILENAME
-    SND_ASYNC = winsound.SND_ASYNC
