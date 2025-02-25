@@ -36,6 +36,7 @@ from notification_manager import NotificationManager
 from utils.misc_utils import ensurePath, os_type, bg_color_highlight, bg_color_clear
 from lang_manager import LocaleStringManager as lang
 from logger import setup_logging
+from constants import UIConstants, AppConstants
 
 winmm = None
 
@@ -80,9 +81,17 @@ async def check_for_updates(config, notification_manager):
     if config.settings.gui_update_check:
         try:
             response = requests.get(
-                "https://api.github.com/repos/Project-Babble/ProjectBabble/releases/latest"
+                "https://api.github.com/repos/Project-Babble/ProjectBabble/releases/latest",
+                timeout=10  # Add timeout
             )
-            latestversion = response.json()["name"]
+            response.raise_for_status()  # Will raise exception for HTTP errors
+            
+            data = response.json()
+            latestversion = data.get("name")
+            
+            if not latestversion:
+                print(f'[{lang._instance.get_string("log.warn")}] {lang._instance.get_string("babble.invalidVersionFormat")}')
+                return
 
             if appversion == latestversion:
                 print(
@@ -93,10 +102,30 @@ async def check_for_updates(config, notification_manager):
                     f'\033[93m[{lang._instance.get_string("log.info")}] {lang._instance.get_string("babble.needUpdateOne")} [{appversion}] {lang._instance.get_string("babble.needUpdateTwo")} [{latestversion}] {lang._instance.get_string("babble.needUpdateThree")}.\033[0m'
                 )
                 await notification_manager.show_notification(appversion, latestversion, page_url)
+        except requests.exceptions.Timeout:
+            print(f'[{lang._instance.get_string("log.info")}] {lang._instance.get_string("babble.updateTimeout")}')
+        except requests.exceptions.HTTPError as e:
+            print(f'[{lang._instance.get_string("log.info")}] {lang._instance.get_string("babble.updateHttpError")}: {e}')
+        except requests.exceptions.ConnectionError:
+            print(f'[{lang._instance.get_string("log.info")}] {lang._instance.get_string("babble.noInternet")}')
         except Exception as e:
-            print(
-                f'[{lang._instance.get_string("log.info")}] {lang._instance.get_string("babble.noInternet")}. Error: {e}'
-            )
+            print(f'[{lang._instance.get_string("log.info")}] {lang._instance.get_string("babble.updateCheckFailed")}: {e}')            
+class ThreadManager:
+    def __init__(self):
+        self.threads = []
+    
+    def add_thread(self, thread):
+        self.threads.append(thread)
+        thread.start()
+        
+    def shutdown_all(self):
+        for thread in self.threads:
+            if hasattr(thread, 'shutdown') and callable(thread.shutdown):
+                thread.shutdown()
+        
+        for thread in self.threads:
+            if thread.is_alive():
+                thread.join()
 
 async def async_main():
     ensurePath()
@@ -124,10 +153,12 @@ async def async_main():
 
     timerResolution(True)
 
+    thread_manager = ThreadManager()
+
     osc_queue: queue.Queue[tuple[bool, int, int]] = queue.Queue(maxsize=10)
     osc = VRChatOSC(cancellation_event, osc_queue, config)
     osc_thread = threading.Thread(target=osc.run)
-    osc_thread.start()
+    thread_manager.add_thread(osc_thread)
 
     cams = [
         CameraWidget(Tab.CAM, config, osc_queue),
@@ -217,59 +248,50 @@ async def async_main():
     if config.settings.gui_ROSC:
         osc_receiver = VRChatOSCReceiver(cancellation_event, config, cams)
         osc_receiver_thread = threading.Thread(target=osc_receiver.run)
-        osc_receiver_thread.start()
+        thread_manager.add_thread(osc_receiver_thread)
         ROSC = True
 
     # Create the window
     window = sg.Window(
-        f"{appversion}", layout, icon="Images/logo.ico", background_color=bg_color_clear
+        f"{AppConstants.VERSION}", layout, icon="Images/logo.ico", background_color=bg_color_clear
     )
+    
+    # Run the main loop
+    await main_loop(window, config, cams, settings, cancellation_event)
+    
+    # Cleanup after main loop exits
+    timerResolution(False)
+    print(f'\033[94m[{lang._instance.get_string("log.info")}] {lang._instance.get_string("babble.exit")}\033[0m')
 
-    tint = 33
+async def main_loop(window, config, cams, settings, cancellation_event):
+    tint = AppConstants.DEFAULT_WINDOW_FOCUS_REFRESH
     fs = False
+    
     while True:
-        # First off, check for any events from the GUI
         event, values = window.read(timeout=tint)
-
-        # If we're in either mode and someone hits q, quit immediately
+        
         if event in ("Exit", sg.WIN_CLOSED):
-            for (
-                cam
-            ) in (
-                cams
-            ):  # yes we only have one cam page but im just gonna leave this incase
+            # Exit code here
+            for cam in cams:
                 cam.stop()
             cancellation_event.set()
-            # shut down worker threads
-            osc_thread.join()
-            # TODO: find a way to have this function run on join maybe??
-            # threading.Event() wont work because pythonosc spawns its own thread.
-            # only way i can see to get around this is an ugly while loop that only checks if a threading event is triggered
-            # and then call the pythonosc shutdown function
-            if ROSC:
-                osc_receiver.shutdown()
-                osc_receiver_thread.join()
-            timerResolution(False)
-            print(
-                f'\033[94m[{lang._instance.get_string("log.info")}] {lang._instance.get_string("babble.exit")}\033[0m'
-            )
             return
-
+        
         try:
             # If window isn't in focus increase timeout and stop loop early
             if window.TKroot.focus_get():
                 if fs:
                     fs = False
-                    tint = 33
-                    window["-WINFOCUS-"].update(visible=False)
-                    window["-WINFOCUS-"].hide_row()
+                    tint = AppConstants.DEFAULT_WINDOW_FOCUS_REFRESH
+                    window[UIConstants.WINDOW_FOCUS_KEY].update(visible=False)
+                    window[UIConstants.WINDOW_FOCUS_KEY].hide_row()
                     window.refresh()
             else:
                 if not fs:
                     fs = True
-                    tint = 100
-                    window["-WINFOCUS-"].update(visible=True)
-                    window["-WINFOCUS-"].unhide_row()
+                    tint = AppConstants.UNFOCUSED_WINDOW_REFRESH
+                    window[UIConstants.WINDOW_FOCUS_KEY].update(visible=True)
+                    window[UIConstants.WINDOW_FOCUS_KEY].unhide_row()
                 continue
         except KeyError:
             pass
@@ -336,6 +358,10 @@ async def async_main():
             if setting.started():
                 setting.render(window, event, values)
         
+        # Rather than await asyncio.sleep(0), yield control periodically
+        await asyncio.sleep(0.001)  # Small sleep to allow other tasks to rundef main():
+    asyncio.run(async_main())
+
 def main():
     asyncio.run(async_main())
 
