@@ -253,8 +253,7 @@ async def async_main():
 
     # Create the window
     window = sg.Window(
-        f"{AppConstants.VERSION}", layout, icon="Images/logo.ico", background_color=bg_color_clear
-    )
+        f"{AppConstants.VERSION}", layout, icon=os.path.join('Images', 'logo.ico'), background_color=bg_color_clear    )
     
     # Run the main loop
     await main_loop(window, config, cams, settings, cancellation_event)

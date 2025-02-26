@@ -1,6 +1,6 @@
-onnxruntime==1.20.1; 
+onnxruntime==1.19.2; 
 onnxruntime-directml==1.19.2; platform_system == "Windows"
-onnxruntime-gpu==1.20.1; platform_system == "Linux"
+onnxruntime-gpu==1.19.2; platform_system == "Linux"
 torch==2.6.0;
 torchvision==0.21.0;
 opencv_python==4.11.0.86;
