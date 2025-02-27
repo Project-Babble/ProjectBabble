@@ -52,17 +52,6 @@ os.system("color")  # init ANSI color
 # Random environment variable to speed up webcam opening on the MSMF backend.
 # https://github.com/opencv/opencv/issues/17687
 os.environ["OPENCV_VIDEOIO_MSMF_ENABLE_HW_TRANSFORMS"] = "0"
-
-WINDOW_NAME = "Babble App"
-CAM_NAME = "-CAMWIDGET-"
-SETTINGS_NAME = "-SETTINGSWIDGET-"
-ALGO_SETTINGS_NAME = "-ALGOSETTINGSWIDGET-"
-CALIB_SETTINGS_NAME = "-CALIBSETTINGSWIDGET-"
-CAM_RADIO_NAME = "-CAMRADIO-"
-SETTINGS_RADIO_NAME = "-SETTINGSRADIO-"
-ALGO_SETTINGS_RADIO_NAME = "-ALGOSETTINGSRADIO-"
-CALIB_SETTINGS_RADIO_NAME = "-CALIBSETTINGSRADIO-"
-
 page_url = "https://github.com/Project-Babble/ProjectBabble/releases/latest"
 appversion = "Babble v2.0.7"
 
@@ -102,6 +91,7 @@ async def check_for_updates(config, notification_manager):
                     f'\033[93m[{lang._instance.get_string("log.info")}] {lang._instance.get_string("babble.needUpdateOne")} [{appversion}] {lang._instance.get_string("babble.needUpdateTwo")} [{latestversion}] {lang._instance.get_string("babble.needUpdateThree")}.\033[0m'
                 )
                 await notification_manager.show_notification(appversion, latestversion, page_url)
+                
         except requests.exceptions.Timeout:
             print(f'[{lang._instance.get_string("log.info")}] {lang._instance.get_string("babble.updateTimeout")}')
         except requests.exceptions.HTTPError as e:
@@ -109,23 +99,48 @@ async def check_for_updates(config, notification_manager):
         except requests.exceptions.ConnectionError:
             print(f'[{lang._instance.get_string("log.info")}] {lang._instance.get_string("babble.noInternet")}')
         except Exception as e:
-            print(f'[{lang._instance.get_string("log.info")}] {lang._instance.get_string("babble.updateCheckFailed")}: {e}')            
+            print(f'[{lang._instance.get_string("log.info")}] {lang._instance.get_string("babble.updateCheckFailed")}: {e}')
+
 class ThreadManager:
-    def __init__(self):
-        self.threads = []
-    
-    def add_thread(self, thread):
-        self.threads.append(thread)
+    def __init__(self, cancellation_event):
+        """Initialize ThreadManager with a cancellation event for signaling threads."""
+        self.threads = []  # List of (thread, shutdown_obj) tuples
+        self.cancellation_event = cancellation_event
+        self.logger = logging.getLogger("ThreadManager")
+
+    def add_thread(self, thread, shutdown_obj=None):
+        """Add a thread and its optional shutdown object to the manager."""
+        self.threads.append((thread, shutdown_obj))
         thread.start()
-        
-    def shutdown_all(self):
-        for thread in self.threads:
-            if hasattr(thread, 'shutdown') and callable(thread.shutdown):
-                thread.shutdown()
-        
-        for thread in self.threads:
+        self.logger.debug(f"Started thread: {thread.name}")
+
+    def shutdown_all(self, timeout=5.0):
+        """Shutdown all managed threads with a configurable timeout."""
+        self.logger.info("Initiiating shutdown of all threads")
+        self.cancellation_event.set()  # Signal all threads to stop
+
+        # Call shutdown methods on associated objects if available
+        for thread, shutdown_obj in self.threads:
+            if shutdown_obj and hasattr(shutdown_obj, 'shutdown') and callable(shutdown_obj.shutdown):
+                try:
+                    self.logger.debug(f"Calling shutdown on {shutdown_obj}")
+                    shutdown_obj.shutdown()
+                except Exception as e:
+                    self.logger.error(f"Error shutting down {shutdown_obj}: {e}")
+
+        # Join threads with the specified timeout
+        for thread, _ in self.threads:
             if thread.is_alive():
-                thread.join()
+                self.logger.debug(f"Joining thread: {thread.name} with timeout {timeout}s")
+                thread.join(timeout=timeout)
+
+        # Remove terminated threads from the list
+        self.threads = [(t, s) for t, s in self.threads if t.is_alive()]
+
+        if self.threads:
+            self.logger.warning(f"{len(self.threads)} threads still alive: {[t.name for t, _ in self.threads]}")
+        else:
+            self.logger.info("All threads terminated successfully")        
 
 async def async_main():
     ensurePath()
@@ -153,13 +168,12 @@ async def async_main():
 
     timerResolution(True)
 
-    thread_manager = ThreadManager()
+    thread_manager = ThreadManager(cancellation_event)
 
     osc_queue: queue.Queue[tuple[bool, int, int]] = queue.Queue(maxsize=10)
     osc = VRChatOSC(cancellation_event, osc_queue, config)
-    osc_thread = threading.Thread(target=osc.run)
-    thread_manager.add_thread(osc_thread)
-
+    osc_thread = threading.Thread(target=osc.run, name="OSCThread")
+    thread_manager.add_thread(osc_thread, shutdown_obj=osc)
     cams = [
         CameraWidget(Tab.CAM, config, osc_queue),
     ]
@@ -177,56 +191,56 @@ async def async_main():
                 "TABSELECTRADIO",
                 background_color=bg_color_clear,
                 default=(config.cam_display_id == Tab.CAM),
-                key=CAM_RADIO_NAME,
+                key=UIConstants.CAM_RADIO_NAME,
             ),
             sg.Radio(
                 lang._instance.get_string("babble.settingsPage"),
                 "TABSELECTRADIO",
                 background_color=bg_color_clear,
                 default=(config.cam_display_id == Tab.SETTINGS),
-                key=SETTINGS_RADIO_NAME,
+                key=UIConstants.SETTINGS_RADIO_NAME,
             ),
             sg.Radio(
                 lang._instance.get_string("babble.algoSettingsPage"),
                 "TABSELECTRADIO",
                 background_color=bg_color_clear,
                 default=(config.cam_display_id == Tab.ALGOSETTINGS),
-                key=ALGO_SETTINGS_RADIO_NAME,
+                key=UIConstants.ALGO_SETTINGS_RADIO_NAME,
             ),
             sg.Radio(
                 lang._instance.get_string("babble.calibrationPage"),
                 "TABSELECTRADIO",
                 background_color=bg_color_clear,
                 default=(config.cam_display_id == Tab.CALIBRATION),
-                key=CALIB_SETTINGS_RADIO_NAME,
+                key=UIConstants.CALIB_SETTINGS_RADIO_NAME,
             ),
         ],
         [
             sg.Column(
                 cams[0].widget_layout,
                 vertical_alignment="top",
-                key=CAM_NAME,
+                key=UIConstants.CAM_NAME,
                 visible=(config.cam_display_id in [Tab.CAM]),
                 background_color=bg_color_highlight,
             ),
             sg.Column(
                 settings[0].widget_layout,
                 vertical_alignment="top",
-                key=SETTINGS_NAME,
+                key=UIConstants.SETTINGS_NAME,
                 visible=(config.cam_display_id in [Tab.SETTINGS]),
                 background_color=bg_color_highlight,
             ),
             sg.Column(
                 settings[1].widget_layout,
                 vertical_alignment="top",
-                key=ALGO_SETTINGS_NAME,
+                key=UIConstants.ALGO_SETTINGS_NAME,
                 visible=(config.cam_display_id in [Tab.ALGOSETTINGS]),
                 background_color=bg_color_highlight,
             ),
             sg.Column(
                 settings[2].widget_layout,
                 vertical_alignment="top",
-                key=CALIB_SETTINGS_NAME,
+                key=UIConstants.CALIB_SETTINGS_NAME,
                 visible=(config.cam_display_id in [Tab.CALIBRATION]),
                 background_color=bg_color_highlight,
             ),
@@ -247,8 +261,8 @@ async def async_main():
     # the cam needs to be running before it is passed to the OSC
     if config.settings.gui_ROSC:
         osc_receiver = VRChatOSCReceiver(cancellation_event, config, cams)
-        osc_receiver_thread = threading.Thread(target=osc_receiver.run)
-        thread_manager.add_thread(osc_receiver_thread)
+        osc_receiver_thread = threading.Thread(target=osc_receiver.run, name="OSCReceiverThread")
+        thread_manager.add_thread(osc_receiver_thread, shutdown_obj=osc_receiver)
         ROSC = True
 
     # Create the window
@@ -256,13 +270,13 @@ async def async_main():
         f"{AppConstants.VERSION}", layout, icon=os.path.join('Images', 'logo.ico'), background_color=bg_color_clear    )
     
     # Run the main loop
-    await main_loop(window, config, cams, settings, cancellation_event)
+    await main_loop(window, config, cams, settings, thread_manager)
     
     # Cleanup after main loop exits
     timerResolution(False)
     print(f'\033[94m[{lang._instance.get_string("log.info")}] {lang._instance.get_string("babble.exit")}\033[0m')
 
-async def main_loop(window, config, cams, settings, cancellation_event):
+async def main_loop(window, config, cams, settings, thread_manager):
     tint = AppConstants.DEFAULT_WINDOW_FOCUS_REFRESH
     fs = False
     
@@ -273,7 +287,8 @@ async def main_loop(window, config, cams, settings, cancellation_event):
             # Exit code here
             for cam in cams:
                 cam.stop()
-            cancellation_event.set()
+            thread_manager.shutdown_all()
+            window.close()
             return
         
         try:
@@ -295,57 +310,57 @@ async def main_loop(window, config, cams, settings, cancellation_event):
         except KeyError:
             pass
 
-        if values[CAM_RADIO_NAME] and config.cam_display_id != Tab.CAM:
+        if values[UIConstants.CAM_RADIO_NAME] and config.cam_display_id != Tab.CAM:
             cams[0].start()
             settings[0].stop()
             settings[1].stop()
             settings[2].stop()
-            window[CAM_NAME].update(visible=True)
-            window[SETTINGS_NAME].update(visible=False)
-            window[ALGO_SETTINGS_NAME].update(visible=False)
-            window[CALIB_SETTINGS_NAME].update(visible=False)
+            window[UIConstants.CAM_NAME].update(visible=True)
+            window[UIConstants.SETTINGS_NAME].update(visible=False)
+            window[UIConstants.ALGO_SETTINGS_NAME].update(visible=False)
+            window[UIConstants.CALIB_SETTINGS_NAME].update(visible=False)
             config.cam_display_id = Tab.CAM
             config.save()
 
-        elif values[SETTINGS_RADIO_NAME] and config.cam_display_id != Tab.SETTINGS:
+        elif values[UIConstants.SETTINGS_RADIO_NAME] and config.cam_display_id != Tab.SETTINGS:
             cams[0].stop()
             settings[1].stop()
             settings[2].stop()
             settings[0].start()
-            window[CAM_NAME].update(visible=False)
-            window[SETTINGS_NAME].update(visible=True)
-            window[ALGO_SETTINGS_NAME].update(visible=False)
-            window[CALIB_SETTINGS_NAME].update(visible=False)
+            window[UIConstants.CAM_NAME].update(visible=False)
+            window[UIConstants.SETTINGS_NAME].update(visible=True)
+            window[UIConstants.ALGO_SETTINGS_NAME].update(visible=False)
+            window[UIConstants.CALIB_SETTINGS_NAME].update(visible=False)
             config.cam_display_id = Tab.SETTINGS
             config.save()
 
         elif (
-            values[ALGO_SETTINGS_RADIO_NAME]
+            values[UIConstants.ALGO_SETTINGS_RADIO_NAME]
             and config.cam_display_id != Tab.ALGOSETTINGS
         ):
             cams[0].stop()
             settings[0].stop()
             settings[2].stop()
             settings[1].start()
-            window[CAM_NAME].update(visible=False)
-            window[SETTINGS_NAME].update(visible=False)
-            window[ALGO_SETTINGS_NAME].update(visible=True)
-            window[CALIB_SETTINGS_NAME].update(visible=False)
+            window[UIConstants.CAM_NAME].update(visible=False)
+            window[UIConstants.SETTINGS_NAME].update(visible=False)
+            window[UIConstants.ALGO_SETTINGS_NAME].update(visible=True)
+            window[UIConstants.CALIB_SETTINGS_NAME].update(visible=False)
             config.cam_display_id = Tab.ALGOSETTINGS
             config.save()
 
         elif (
-            values[CALIB_SETTINGS_RADIO_NAME]
+            values[UIConstants.CALIB_SETTINGS_RADIO_NAME]
             and config.cam_display_id != Tab.CALIBRATION
         ):
             cams[0].start()  # Allow tracking to continue in calibration tab
             settings[0].stop()
             settings[1].stop()
             settings[2].start()
-            window[CAM_NAME].update(visible=False)
-            window[SETTINGS_NAME].update(visible=False)
-            window[ALGO_SETTINGS_NAME].update(visible=False)
-            window[CALIB_SETTINGS_NAME].update(visible=True)
+            window[UIConstants.CAM_NAME].update(visible=False)
+            window[UIConstants.SETTINGS_NAME].update(visible=False)
+            window[UIConstants.ALGO_SETTINGS_NAME].update(visible=False)
+            window[UIConstants.CALIB_SETTINGS_NAME].update(visible=True)
             config.cam_display_id = Tab.CALIBRATION
             config.save()
 
