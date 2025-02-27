@@ -419,6 +419,10 @@ class CameraWidget:
 
         if event == self.gui_autoroi:
             print(lang._instance.get_string("info.setROI"))
+            if self.maybe_image is None:
+                # Skip rendering or use a default/placeholder image
+                return  # Or handle appropriately
+            
             output = self.maybe_image[0].shape
             self.config.roi_window_x = 0
             self.config.roi_window_y = 0
