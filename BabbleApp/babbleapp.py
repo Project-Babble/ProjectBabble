@@ -40,13 +40,16 @@ from constants import UIConstants, AppConstants
 
 winmm = None
 
-if os_type == 'Windows':
+if os_type == "Windows":
     try:
         from ctypes import windll
+
         winmm = windll.winmm
     except OSError:
-        print(f'\033[91m[{lang._instance.get_string("log.error")}] {lang._instance.get_string("error.winmm")}.\033[0m')
-        
+        print(
+            f'\033[91m[{lang._instance.get_string("log.error")}] {lang._instance.get_string("error.winmm")}.\033[0m'
+        )
+
 os.system("color")  # init ANSI color
 
 # Random environment variable to speed up webcam opening on the MSMF backend.
@@ -55,13 +58,16 @@ os.environ["OPENCV_VIDEOIO_MSMF_ENABLE_HW_TRANSFORMS"] = "0"
 page_url = "https://github.com/Project-Babble/ProjectBabble/releases/latest"
 appversion = "Babble v2.0.7"
 
+
 def timerResolution(toggle):
     if winmm != None:
         if toggle:
             rc = c_int(winmm.timeBeginPeriod(1))
             if rc.value != 0:
                 # TIMEERR_NOCANDO = 97
-                print(f'\033[93m[{lang._instance.get_string("log.warn")}] {lang._instance.get_string("warn.timerRes")} {rc.value}\033[0m')
+                print(
+                    f'\033[93m[{lang._instance.get_string("log.warn")}] {lang._instance.get_string("warn.timerRes")} {rc.value}\033[0m'
+                )
         else:
             winmm.timeEndPeriod(1)
 
@@ -71,15 +77,17 @@ async def check_for_updates(config, notification_manager):
         try:
             response = requests.get(
                 "https://api.github.com/repos/Project-Babble/ProjectBabble/releases/latest",
-                timeout=10  # Add timeout
+                timeout=10,  # Add timeout
             )
             response.raise_for_status()  # Will raise exception for HTTP errors
-            
+
             data = response.json()
             latestversion = data.get("name")
-            
+
             if not latestversion:
-                print(f'[{lang._instance.get_string("log.warn")}] {lang._instance.get_string("babble.invalidVersionFormat")}')
+                print(
+                    f'[{lang._instance.get_string("log.warn")}] {lang._instance.get_string("babble.invalidVersionFormat")}'
+                )
                 return
 
             if appversion == latestversion:
@@ -90,16 +98,27 @@ async def check_for_updates(config, notification_manager):
                 print(
                     f'\033[93m[{lang._instance.get_string("log.info")}] {lang._instance.get_string("babble.needUpdateOne")} [{appversion}] {lang._instance.get_string("babble.needUpdateTwo")} [{latestversion}] {lang._instance.get_string("babble.needUpdateThree")}.\033[0m'
                 )
-                await notification_manager.show_notification(appversion, latestversion, page_url)
-                
+                await notification_manager.show_notification(
+                    appversion, latestversion, page_url
+                )
+
         except requests.exceptions.Timeout:
-            print(f'[{lang._instance.get_string("log.info")}] {lang._instance.get_string("babble.updateTimeout")}')
+            print(
+                f'[{lang._instance.get_string("log.info")}] {lang._instance.get_string("babble.updateTimeout")}'
+            )
         except requests.exceptions.HTTPError as e:
-            print(f'[{lang._instance.get_string("log.info")}] {lang._instance.get_string("babble.updateHttpError")}: {e}')
+            print(
+                f'[{lang._instance.get_string("log.info")}] {lang._instance.get_string("babble.updateHttpError")}: {e}'
+            )
         except requests.exceptions.ConnectionError:
-            print(f'[{lang._instance.get_string("log.info")}] {lang._instance.get_string("babble.noInternet")}')
+            print(
+                f'[{lang._instance.get_string("log.info")}] {lang._instance.get_string("babble.noInternet")}'
+            )
         except Exception as e:
-            print(f'[{lang._instance.get_string("log.info")}] {lang._instance.get_string("babble.updateCheckFailed")}: {e}')
+            print(
+                f'[{lang._instance.get_string("log.info")}] {lang._instance.get_string("babble.updateCheckFailed")}: {e}'
+            )
+
 
 class ThreadManager:
     def __init__(self, cancellation_event):
@@ -121,7 +140,11 @@ class ThreadManager:
 
         # Call shutdown methods on associated objects if available
         for thread, shutdown_obj in self.threads:
-            if shutdown_obj and hasattr(shutdown_obj, 'shutdown') and callable(shutdown_obj.shutdown):
+            if (
+                shutdown_obj
+                and hasattr(shutdown_obj, "shutdown")
+                and callable(shutdown_obj.shutdown)
+            ):
                 try:
                     self.logger.debug(f"Calling shutdown on {shutdown_obj}")
                     shutdown_obj.shutdown()
@@ -131,16 +154,21 @@ class ThreadManager:
         # Join threads with the specified timeout
         for thread, _ in self.threads:
             if thread.is_alive():
-                self.logger.debug(f"Joining thread: {thread.name} with timeout {timeout}s")
+                self.logger.debug(
+                    f"Joining thread: {thread.name} with timeout {timeout}s"
+                )
                 thread.join(timeout=timeout)
 
         # Remove terminated threads from the list
         self.threads = [(t, s) for t, s in self.threads if t.is_alive()]
 
         if self.threads:
-            self.logger.warning(f"{len(self.threads)} threads still alive: {[t.name for t, _ in self.threads]}")
+            self.logger.warning(
+                f"{len(self.threads)} threads still alive: {[t.name for t, _ in self.threads]}"
+            )
         else:
-            self.logger.info("All threads terminated successfully")        
+            self.logger.info("All threads terminated successfully")
+
 
 async def async_main():
     ensurePath()
@@ -153,13 +181,13 @@ async def async_main():
     lang("Locale", config.settings.gui_language)
 
     config.save()
-    
+
     notification_manager = NotificationManager()
     await notification_manager.initialize()
-    
+
     # Run the update check
     await check_for_updates(config, notification_manager)
-    
+
     # Uncomment for low-level Vive Facial Tracker logging
     # logging.basicConfig(filename='BabbleApp.log', filemode='w', encoding='utf-8', level=logging.INFO)
 
@@ -246,7 +274,17 @@ async def async_main():
             ),
         ],
         # Keep at bottom!
-        [sg.Text(f'- - -  {lang._instance.get_string("general.windowFocus")}  - - -', key="-WINFOCUS-", background_color=bg_color_clear, text_color="#F0F0F0", justification="center", expand_x=True, visible=False)],
+        [
+            sg.Text(
+                f'- - -  {lang._instance.get_string("general.windowFocus")}  - - -',
+                key="-WINFOCUS-",
+                background_color=bg_color_clear,
+                text_color="#F0F0F0",
+                justification="center",
+                expand_x=True,
+                visible=False,
+            )
+        ],
     ]
 
     if config.cam_display_id in [Tab.CAM]:
@@ -261,28 +299,37 @@ async def async_main():
     # the cam needs to be running before it is passed to the OSC
     if config.settings.gui_ROSC:
         osc_receiver = VRChatOSCReceiver(cancellation_event, config, cams)
-        osc_receiver_thread = threading.Thread(target=osc_receiver.run, name="OSCReceiverThread")
+        osc_receiver_thread = threading.Thread(
+            target=osc_receiver.run, name="OSCReceiverThread"
+        )
         thread_manager.add_thread(osc_receiver_thread, shutdown_obj=osc_receiver)
         ROSC = True
 
     # Create the window
     window = sg.Window(
-        f"{AppConstants.VERSION}", layout, icon=os.path.join('Images', 'logo.ico'), background_color=bg_color_clear    )
-    
+        f"{AppConstants.VERSION}",
+        layout,
+        icon=os.path.join("Images", "logo.ico"),
+        background_color=bg_color_clear,
+    )
+
     # Run the main loop
     await main_loop(window, config, cams, settings, thread_manager)
-    
+
     # Cleanup after main loop exits
     timerResolution(False)
-    print(f'\033[94m[{lang._instance.get_string("log.info")}] {lang._instance.get_string("babble.exit")}\033[0m')
+    print(
+        f'\033[94m[{lang._instance.get_string("log.info")}] {lang._instance.get_string("babble.exit")}\033[0m'
+    )
+
 
 async def main_loop(window, config, cams, settings, thread_manager):
     tint = AppConstants.DEFAULT_WINDOW_FOCUS_REFRESH
     fs = False
-    
+
     while True:
         event, values = window.read(timeout=tint)
-        
+
         if event in ("Exit", sg.WIN_CLOSED):
             # Exit code here
             for cam in cams:
@@ -290,7 +337,7 @@ async def main_loop(window, config, cams, settings, thread_manager):
             thread_manager.shutdown_all()
             window.close()
             return
-        
+
         try:
             # If window isn't in focus increase timeout and stop loop early
             if window.TKroot.focus_get():
@@ -322,7 +369,10 @@ async def main_loop(window, config, cams, settings, thread_manager):
             config.cam_display_id = Tab.CAM
             config.save()
 
-        elif values[UIConstants.SETTINGS_RADIO_NAME] and config.cam_display_id != Tab.SETTINGS:
+        elif (
+            values[UIConstants.SETTINGS_RADIO_NAME]
+            and config.cam_display_id != Tab.SETTINGS
+        ):
             cams[0].stop()
             settings[1].stop()
             settings[2].stop()
@@ -371,13 +421,15 @@ async def main_loop(window, config, cams, settings, thread_manager):
         for setting in settings:
             if setting.started():
                 setting.render(window, event, values)
-        
+
         # Rather than await asyncio.sleep(0), yield control periodically
         await asyncio.sleep(0.001)  # Small sleep to allow other tasks to rundef main():
     asyncio.run(async_main())
 
+
 def main():
     asyncio.run(async_main())
+
 
 if __name__ == "__main__":
     main()
