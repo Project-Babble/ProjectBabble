@@ -15,7 +15,7 @@ jobs:
     - uses: actions/checkout@v2
 
     - name: Package Application
-      uses: JackMcKew/pyinstaller-action-windows@main
+      uses: joschua-rgb/pyinstaller-action-windows@main
       with:
         path: BabbleApp
 
