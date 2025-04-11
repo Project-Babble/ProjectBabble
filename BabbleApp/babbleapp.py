@@ -32,7 +32,6 @@ from osc import VRChatOSCReceiver, VRChatOSC
 from general_settings_widget import SettingsWidget
 from algo_settings_widget import AlgoSettingsWidget
 from calib_settings_widget import CalibSettingsWidget
-from notification_manager import NotificationManager
 from utils.misc_utils import ensurePath, os_type, bg_color_highlight, bg_color_clear
 from lang_manager import LocaleStringManager as lang
 from logger import setup_logging
@@ -181,12 +180,6 @@ async def async_main():
     lang("Locale", config.settings.gui_language)
 
     config.save()
-
-    notification_manager = NotificationManager()
-    await notification_manager.initialize()
-
-    # Run the update check
-    await check_for_updates(config, notification_manager)
 
     # Uncomment for low-level Vive Facial Tracker logging
     # logging.basicConfig(filename='BabbleApp.log', filemode='w', encoding='utf-8', level=logging.INFO)

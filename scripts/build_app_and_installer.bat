@@ -1,6 +1,6 @@
 :: File paths will all need to be updated to your setup
 
-set babblepath=X:\Documents\GitHub\ProjectBabble
+set babblepath=C:\Documents\GitHub\ProjectBabble
 set innopath="C:\Program Files (x86)\Inno Setup 6"
 
 cd /d %babblepath%\BabbleApp

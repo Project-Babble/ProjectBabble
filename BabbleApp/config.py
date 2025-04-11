@@ -25,7 +25,7 @@ class BabbleCameraConfig(BaseModel):
 
 
 class BabbleSettingsConfig(BaseModel):
-    gui_min_cutoff: str = "0.9"
+    gui_min_cutoff: str = "3"
     gui_speed_coefficient: str = "0.9"
     gui_osc_address: str = "127.0.0.1"
     gui_osc_port: int = 8888
@@ -38,7 +38,7 @@ class BabbleSettingsConfig(BaseModel):
     gui_ROSC: bool = False
     gui_osc_location: str = ""
     gui_multiply: float = 1
-    gui_model_file: str = "Models/EFFB0E5BS224V6.3.4"
+    gui_model_file: str = "Models/EFFB0E11BS128V7.5"
     gui_runtime: str = "ONNX"
     gui_use_gpu: bool = False
     gui_gpu_index: int = 0
