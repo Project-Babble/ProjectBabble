@@ -171,10 +171,13 @@ class ThreadManager:
 
 async def async_main():
     ensurePath()
-    setup_logging()
 
     # Get Configuration
     config: BabbleConfig = BabbleConfig.load()
+    
+    # Init logging. TODO: Initiate before "BabbleConfig.load()"?
+    if config.settings.gui_logging:
+        setup_logging()
 
     # Init locale manager
     lang("Locale", config.settings.gui_language)

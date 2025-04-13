@@ -2,6 +2,8 @@
 	"general.header": "Allgemeine Einstellungen",
 	"general.checkForUpdates": "Nach Updates suchen",
 	"general.toolTip": "Beim Start nach Updates suchen",
+	"general.logging": "Protokollierung aktivieren",
+	"general.loggingTooltip": "Protokolldatei zum debuggen speichern. (Neustart erforderlich)",
 	"general.oscSettings": "OSC Einstellungen",
 	"general.locationPrefix": "Sprache Präfix",
 	"general.locationTooltip": "OSC Adressen-Präfix",
