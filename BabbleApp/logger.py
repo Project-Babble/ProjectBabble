@@ -4,6 +4,7 @@ import os
 import sys
 import platform
 import psutil
+from logging.handlers import RotatingFileHandler
 
 def strip_ansi_codes(text):
     """Remove ANSI color codes from a string."""
@@ -39,18 +40,16 @@ def log_system_info(logger):
 
 
 def setup_logging():
-    # Determine the user's Documents directory
-    #documents_dir = os.path.join(os.path.expanduser("~"), "Documents")
-    documents_dir = "./Logs"
-    log_dir = os.path.join(documents_dir, "ProjectBabble")
+    # Log to program directory
+    log_dir = "./Logs"
     os.makedirs(log_dir, exist_ok=True)
-    log_file = os.path.join(log_dir, "latest.log")
+    log_file = os.path.join(log_dir, "ProjectBabble.log")
 
     # Set up logging
     logger = logging.getLogger("debug_logger")
     logger.setLevel(logging.DEBUG)
 
-    file_handler = logging.FileHandler(log_file, mode='w', encoding='utf-8')
+    file_handler = RotatingFileHandler(log_file, mode='w', maxBytes=2000000, backupCount=1, encoding='utf-8')
     file_handler.setLevel(logging.DEBUG)
     formatter = logging.Formatter('%(asctime)s - %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
     file_handler.setFormatter(formatter)
