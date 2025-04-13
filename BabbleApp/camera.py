@@ -113,7 +113,9 @@ class Camera:
                     ):
                         port = self.config.capture_source
                         self.current_capture_source = port
-                        self.start_serial_connection(port)
+                        if self.start_serial_connection(port):
+                            time.sleep(0.3)
+                            continue
                 elif ViveTracker.is_device_vive_tracker(self.config.capture_source):
                     if self.cv2_camera is not None:
                         self.cv2_camera.release()
@@ -312,13 +314,13 @@ class Camera:
         if self.serial_connection is not None and self.serial_connection.is_open:
             # Do nothing. The connection is already open on this port.
             if self.serial_connection.port == port:
-                return
+                return False
             # Otherwise, close the connection before trying to reopen.
             self.serial_connection.close()
         com_ports = [tuple(p) for p in list(serial.tools.list_ports.comports())]
         # Do not try connecting if no such port i.e. device was unplugged.
         if not any(p for p in com_ports if port in p):
-            return
+            return True
         try:
             rate = 115200 if sys.platform == "darwin" else 3000000  # Higher baud rate not working on macOS
             conn = serial.Serial(baudrate=rate, port=port, xonxoff=False, dsrdtr=False, rtscts=False)
@@ -326,17 +328,15 @@ class Camera:
             if os_type == 'Windows':
                 conn.set_buffer_size(rx_size=BUFFER_SIZE, tx_size=BUFFER_SIZE)
 
-            print(
-                f'{Fore.CYAN}[{lang._instance.get_string("log.info")}] {lang._instance.get_string("info.ETVRConnected")} {port}{Fore.RESET}'
-            )
+            print(f'{Fore.CYAN}[{lang._instance.get_string("log.info")}] {lang._instance.get_string("info.ETVRConnected")} {port}{Fore.RESET}')
             self.serial_connection = conn
             self.camera_status = CameraState.CONNECTED
+            return False
         except Exception as e:
-            print(
-                f'{Fore.CYAN}[{lang._instance.get_string("log.info")}] {lang._instance.get_string("info.ETVRFailiure")} {port}{Fore.RESET}'
-            )
+            print(f'{Fore.CYAN}[{lang._instance.get_string("log.info")}] {lang._instance.get_string("info.ETVRFailiure")} {port}{Fore.RESET}')
             print(e)
             self.camera_status = CameraState.DISCONNECTED
+            return True
 
     def clamp_max_res(self, image: MatLike) -> MatLike:
         shape = image.shape
