@@ -72,7 +72,9 @@ class FTCameraController:
         self.is_open = True
         FTCameraController._logger.info("FTCameraController.open: start process")
         self._proc_queue = multiprocessing.Queue(maxsize=1)
-        self._proc_read = multiprocessing.Process(target=self._read_process, args=(self._proc_queue,))
+        # Set daemon=True to ensure the process terminates when the main process exits
+        # This helps prevent spawning multiple GUI windows in PyInstaller builds
+        self._proc_read = multiprocessing.Process(target=self._read_process, args=(self._proc_queue,), daemon=True)
         self._proc_read.start()
 
     def _reopen(self: 'FTCameraController') -> None:

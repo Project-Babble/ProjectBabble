@@ -299,11 +299,13 @@ async def async_main():
         ROSC = True
 
     # Create the window
+    # Use finalize=True to ensure the window is created only once
     window = sg.Window(
         f"{AppConstants.VERSION}",
         layout,
         icon=os.path.join("Images", "logo.ico"),
         background_color=bg_color_clear,
+        finalize=True
     )
 
     # Run the main loop

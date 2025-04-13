@@ -214,8 +214,24 @@ class Camera:
                 if image is None:
                     return
                 self.frame_number = self.frame_number + 1
+                # Ensure we have a valid image for cropping mode
+                if image.size == 0:
+                    print(f'{Fore.YELLOW}[{lang._instance.get_string("log.warn")}] Empty frame from VFT camera{Fore.RESET}')
+                    return
             elif self.cv2_camera is not None and self.cv2_camera.isOpened():
-                ret, image = self.cv2_camera.read()     # MJPEG Stream reconnects are currently limited by the hard coded 30 second timeout time on VideoCapture.read(). We can get around this by recompiling OpenCV or using a custom MJPEG stream imp.   
+                # Implement a timeout mechanism to prevent hanging on MJPEG streams
+                start_time = time.time()
+                ret, image = self.cv2_camera.read()     # MJPEG Stream reconnects are currently limited by the hard coded 30 second timeout time on VideoCapture.read().
+                # If read takes too long, reset the connection
+                if time.time() - start_time > 5:  # 5 second timeout instead of waiting for 30 seconds
+                    print(f'{Fore.YELLOW}[{lang._instance.get_string("log.warn")}] MJPEG stream timeout, reconnecting...{Fore.RESET}')
+                    self.cv2_camera.release()
+                    if self.config.use_ffmpeg:
+                        self.cv2_camera = cv2.VideoCapture(self.current_capture_source, cv2.CAP_FFMPEG)
+                    else:
+                        self.cv2_camera = cv2.VideoCapture()
+                        self.cv2_camera.open(self.current_capture_source)
+                    ret, image = self.cv2_camera.read()   
                 if not ret:
                     self.cv2_camera.set(cv2.CAP_PROP_POS_FRAMES, 0)
                     raise RuntimeError(lang._instance.get_string("error.frame"))
