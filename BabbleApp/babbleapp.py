@@ -23,7 +23,6 @@ import requests
 import threading
 import asyncio
 import logging
-from ctypes import c_int
 from babble_model_loader import *
 from camera_widget import CameraWidget
 from config import BabbleConfig
@@ -41,8 +40,7 @@ winmm = None
 
 if os_type == "Windows":
     try:
-        from ctypes import windll
-
+        from ctypes import windll, c_int
         winmm = windll.winmm
     except OSError:
         print(
