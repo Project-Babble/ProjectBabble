@@ -12,7 +12,7 @@ class MJPEGVideoCapture:
         self.byte_buffer = b""
         self.frame = None
         self.running = False
-        self.lock = threading.Lock()
+        self.frame_ready = False
         self.thread = None
 
     def open(self):
@@ -24,7 +24,7 @@ class MJPEGVideoCapture:
     def _update(self):
         while self.running:
             try:
-                self.stream = self.session.get(self.url, stream=True, timeout=0.5)
+                self.stream = self.session.get(self.url, stream=True, timeout=1)
                 for chunk in self.stream.iter_content(chunk_size=1024):
                     if not self.running:
                         break
@@ -41,8 +41,8 @@ class MJPEGVideoCapture:
                             if image.size != 0:
                                 frame = cv2.imdecode(image, cv2.IMREAD_COLOR)
                                 if frame is not None:
-                                    with self.lock:
-                                        self.frame = frame  # Always update to the latest frame
+                                    self.frame = frame  # Always update to the latest frame
+                                    self.frame_ready = True
                         else:
                             break
             except requests.RequestException:
@@ -51,14 +51,21 @@ class MJPEGVideoCapture:
                 continue
 
     def read(self):
-        #with self.lock:
-        # Return whether a frame exists and its copy
-        if self.frame is not None:
-            #time.sleep(self.sleep_time)
-            return True, self.frame.copy()
-        else:
-            #time.sleep(self.sleep_time)
-            return False, None
+    # Return whether a frame exists and its copy
+        start = time.time()
+        while True:
+            if self.frame is not None and self.frame_ready:
+                #time.sleep(self.sleep_time)
+                self.frame_old = self.frame
+                self.frame_ready = False
+                return True, self.frame.copy()
+            else:
+                end = time.time()
+                time.sleep(1/120)
+                if end-start>1: 
+                    return False, None
+
+            #return False, None
 
     def isOpened(self):
        return self.running
