@@ -2,6 +2,8 @@
 	"general.header": "常规设置",
 	"general.checkForUpdates": "检查更新",
 	"general.toolTip": "启动时检查更新",
+	"general.logging": "启用日志记录",
+	"general.loggingTooltip": "保存日志文件以进行调试。(需要重启)",
 	"general.oscSettings": "OSC设置",
 	"general.locationPrefix": "位置前缀",
 	"general.locationTooltip": "OSC地址前缀",

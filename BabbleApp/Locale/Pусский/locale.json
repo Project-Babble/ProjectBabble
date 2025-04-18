@@ -2,6 +2,8 @@
 	"general.header": "Общие настройки",
 	"general.checkForUpdates": "Проверить обновления",
 	"general.toolTip": "Включить проверку обновлений при запуске",
+	"general.logging": "Включить ведение журнала",
+	"general.loggingTooltip": "Сохранить файл журнала для отладки. (Необходим перезапуск)",
 	"general.oscSettings": "Настройки OSC",
 	"general.locationPrefix": "Префикс местоположения",
 	"general.locationTooltip": "Префикс для адреса OSC",

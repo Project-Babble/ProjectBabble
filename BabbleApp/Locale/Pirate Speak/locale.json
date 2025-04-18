@@ -2,6 +2,8 @@
 	"general.header": "Cap'n's Quarters",
 	"general.checkForUpdates": "Scour fer Booty Updates",
 	"general.toolTip": "Toggle update check when ye set sail",
+	"general.logging": "Commence Loggin'",
+	"general.loggingTooltip": "Stow log file fer fixin! (Needin' restart)",
 	"general.oscSettings": "OSC Riggin's",
 	"general.locationPrefix": "Treasure Map Prefix",
 	"general.locationTooltip": "Prefix fer yer OSC coordinates",

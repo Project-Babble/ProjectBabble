@@ -2,6 +2,8 @@
 	"general.header": "Ustawienia główne",
 	"general.checkForUpdates": "Sprawdź aktualizacje",
 	"general.toolTip": "Automatyczne sprawdzanie aktualizacji przy włączeniu",
+	"general.logging": "Włącz logowanie",
+	"general.loggingTooltip": "Zapisz plik dziennika do debugowania. (Wymagany restart)",
 	"general.oscSettings": "Ustawienia OSC",
 	"general.locationPrefix": "Location Prefix",
 	"general.locationTooltip": "Prefix for OSC address",

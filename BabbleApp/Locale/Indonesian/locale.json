@@ -2,6 +2,8 @@
 	"general.header": "Pengaturan Umum",
 	"general.checkForUpdates": "Periksa Pembaruan",
 	"general.toolTip": "Aktifkan Memeriksa perbaruan saat buka aplikasi",
+	"general.logging": "Aktifkan Pencatatan",
+	"general.loggingTooltip": "Simpan berkas log untuk debugging. (Memulai ulang diperlukan)",
 	"general.oscSettings": "Pengaturan OSC",
 	"general.locationPrefix": "Awalan Lokasi",
 	"general.locationTooltip": "Awalan untuk OSC address",

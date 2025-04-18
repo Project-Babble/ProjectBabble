@@ -2,6 +2,8 @@
 	"general.header": "一般設定",
 	"general.checkForUpdates": "檢查更新",
 	"general.toolTip": "開啟時檢查更新",
+	"general.logging": "啟用日誌記錄",
+	"general.loggingTooltip": "保存日誌文件以進行除錯。(需要重啟)",
 	"general.oscSettings": "OSC 設定",
 	"general.locationPrefix": "位置前綴",
 	"general.locationTooltip": "OSC 位址的前綴",
