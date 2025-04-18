@@ -19,6 +19,8 @@ from utils.misc_utils import get_camera_index_by_name, list_camera_names, os_typ
 from vivefacialtracker.vivetracker import ViveTracker
 from vivefacialtracker.camera_controller import FTCameraController
 
+from mjpeg_streamer import MJPEGVideoCapture
+
 WAIT_TIME = 0.1
 BUFFER_SIZE = 32768
 MAX_RESOLUTION: int = 600
@@ -61,6 +63,7 @@ class Camera:
         self.current_capture_source = config.capture_source
         self.cv2_camera: "cv2.VideoCapture" = None
         self.vft_camera: FTCameraController = None
+        self.http: bool = None
 
         self.serial_connection = None
         self.last_frame_time = time.time()
@@ -156,6 +159,8 @@ class Camera:
                         if self.cancellation_event.wait(WAIT_TIME):
                             return
                         if self.config.capture_source not in self.camera_list:
+                            if "http://" in str(self.config.capture_source): self.http=True
+                            else: self.http=False
                             self.current_capture_source = self.config.capture_source
                         else:
                             self.current_capture_source = get_camera_index_by_name(self.config.capture_source)
@@ -165,23 +170,27 @@ class Camera:
                                 self.current_capture_source, cv2.CAP_FFMPEG
                             )
                         else:
-                            self.cv2_camera = cv2.VideoCapture()
-                            self.cv2_camera.open(self.current_capture_source)
-
-                        if not self.settings.gui_cam_resolution_x == 0:
-                            self.cv2_camera.set(
-                                cv2.CAP_PROP_FRAME_WIDTH,
-                                self.settings.gui_cam_resolution_x,
-                            )
-                        if not self.settings.gui_cam_resolution_y == 0:
-                            self.cv2_camera.set(
-                                cv2.CAP_PROP_FRAME_HEIGHT,
-                                self.settings.gui_cam_resolution_y,
-                            )
-                        if not self.settings.gui_cam_framerate == 0:
-                            self.cv2_camera.set(
-                                cv2.CAP_PROP_FPS, self.settings.gui_cam_framerate
-                            )
+                            if not self.http:
+                                self.cv2_camera = cv2.VideoCapture()
+                                self.cv2_camera.open(self.current_capture_source)
+                            else:
+                                self.cv2_camera = MJPEGVideoCapture(self.current_capture_source)
+                                self.cv2_camera.open()
+                        if not self.http:
+                            if not self.settings.gui_cam_resolution_x == 0:
+                                self.cv2_camera.set(
+                                    cv2.CAP_PROP_FRAME_WIDTH,
+                                    self.settings.gui_cam_resolution_x,
+                                )
+                            if not self.settings.gui_cam_resolution_y == 0:
+                                self.cv2_camera.set(
+                                    cv2.CAP_PROP_FRAME_HEIGHT,
+                                    self.settings.gui_cam_resolution_y,
+                                )
+                            if not self.settings.gui_cam_framerate == 0:
+                                self.cv2_camera.set(
+                                    cv2.CAP_PROP_FPS, self.settings.gui_cam_framerate
+                                )
                         should_push = False
             else:
                 # We don't have a capture source to try yet, wait for one to show up in the GUI.
@@ -216,22 +225,24 @@ class Camera:
                 self.frame_number = self.frame_number + 1
             elif self.cv2_camera is not None and self.cv2_camera.isOpened():
                 ret, image = self.cv2_camera.read()     # MJPEG Stream reconnects are currently limited by the hard coded 30 second timeout time on VideoCapture.read(). We can get around this by recompiling OpenCV or using a custom MJPEG stream imp.   
-                if not ret:
-                    self.cv2_camera.set(cv2.CAP_PROP_POS_FRAMES, 0)
-                    raise RuntimeError(lang._instance.get_string("error.frame"))
-                self.frame_number = self.cv2_camera.get(cv2.CAP_PROP_POS_FRAMES) + 1
-            else:
-                # Switching from a Vive Facial Tracker to a CV2 camera
-                return
-            self.FRAME_SIZE = image.shape
-            # Calculate FPS
-            current_frame_time = time.time()    # Should be using "time.perf_counter()", not worth ~3x cycles?
-            delta_time = current_frame_time - self.last_frame_time
-            self.last_frame_time = current_frame_time
-            current_fps = 1 / delta_time if delta_time > 0 else 0
-            # Exponential moving average (EMA). ~1100ns savings, delicious..
-            self.fps = 0.02 * current_fps + 0.98 * self.fps
-            self.bps = image.nbytes * self.fps
+                if ret and image is not None:
+                    if not ret:
+                        if not self.http:
+                            self.cv2_camera.set(cv2.CAP_PROP_POS_FRAMES, 0)
+                        raise RuntimeError(lang._instance.get_string("error.frame"))
+                    self.frame_number = self.cv2_camera.get(cv2.CAP_PROP_POS_FRAMES) + 1
+                else:
+                    # Switching from a Vive Facial Tracker to a CV2 camera
+                    return
+                self.FRAME_SIZE = image.shape
+                # Calculate FPS
+                current_frame_time = time.time()    # Should be using "time.perf_counter()", not worth ~3x cycles?
+                delta_time = current_frame_time - self.last_frame_time
+                self.last_frame_time = current_frame_time
+                current_fps = 1 / delta_time if delta_time > 0 else 0
+                # Exponential moving average (EMA). ~1100ns savings, delicious..
+                self.fps = 0.02 * current_fps + 0.98 * self.fps
+                self.bps = image.nbytes * self.fps
 
             if should_push:
                 self.push_image_to_queue(image, self.frame_number, self.fps)
