@@ -50,3 +50,6 @@ class OneEuroFilter:
             self.t_prev = t
 
             return x_hat
+        else:
+            self.x_prev = x
+            return x
