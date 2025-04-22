@@ -28,4 +28,4 @@ def run_model(self):
         #     output[i] = max(min(output[i], 1), 0)
         ## Clip values between 0 - 1
         output = np.clip(output, 0, 1)
-    self.output = output
+        self.output = output
