@@ -64,14 +64,22 @@ def setup_logging():
             self.log_level = log_level
 
         def write(self, message):
-            message = strip_ansi_codes(message)
-            if message.strip():
-                logger.log(self.log_level, message.strip())
-            self.stream.write(message)
-            self.stream.flush()
+            if self.stream:
+                message = strip_ansi_codes(message)
+                if message.strip():
+                    logger.log(self.log_level, message.strip())
+                try:
+                    self.stream.write(message)
+                    self.stream.flush()
+                except AttributeError:
+                    pass
 
         def flush(self):
-            self.stream.flush()
+            if self.stream:
+                try:
+                    self.stream.flush()
+                except AttributeError:
+                    pass
 
     sys.stdout = StreamToLogger(sys.stdout, logging.INFO)
     sys.stderr = StreamToLogger(sys.stderr, logging.ERROR)
