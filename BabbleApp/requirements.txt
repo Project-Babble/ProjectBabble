@@ -10,7 +10,6 @@ python_osc==1.9.0;
 pydantic==2.10.6;
 pyserial==3.5;
 colorama==0.4.6;
-desktop-notifier==6.0.0;
 comtypes==1.4.8; 
 pygrabber==0.2;
 psutil==7.0.0;
