@@ -95,13 +95,8 @@ class Camera:
             should_push = True
             # If things aren't open, retry until they are. Don't let read requests come in any earlier
             # than this, otherwise we can deadlock (valve reference) ourselves.
-            if (
-                self.config.capture_source is not None
-                and self.config.capture_source != ""
-            ):
-                self.current_capture_source = self.config.capture_source
+            if self.config.capture_source not in (None, ""):
                 isSerial = any(x in str(self.config.capture_source) for x in PORTS)
-                
                 if isSerial:
                     if self.cv2_camera is not None:
                         self.cv2_camera.release()
