@@ -5,7 +5,7 @@ import shutil
 from utils.misc_utils import ensurePath
 from tab import Tab
 from pydantic import BaseModel
-from typing import Union
+from typing import Union, Optional
 from lang_manager import LocaleStringManager as lang
 
 CONFIG_FILE_NAME: str = "babble_settings.json"
@@ -25,6 +25,7 @@ class BabbleCameraConfig(BaseModel):
 
 
 class BabbleSettingsConfig(BaseModel):
+    widget_id: Optional[int] = None
     gui_min_cutoff: str = "3"
     gui_speed_coefficient: str = "0.9"
     gui_osc_address: str = "127.0.0.1"

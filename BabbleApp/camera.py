@@ -11,7 +11,7 @@ from enum import Enum
 import serial.tools.list_ports
 from lang_manager import LocaleStringManager as lang
 from colorama import Fore
-from config import BabbleConfig, BabbleSettingsConfig
+from config import BabbleConfig, BabbleSettingsConfig, BabbleCameraConfig
 from PIL import Image
 from io import BytesIO
 from utils.misc_utils import get_camera_index_by_name, list_camera_names, os_type

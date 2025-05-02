@@ -79,6 +79,8 @@
 	"algorithm.minFrequencyCutoffTooltip": "",
 	"algorithm.speedCoefficient": "Speed Coefficient",
 	"algorithm.speedCoefficientTooltip": "",
+	"algorithm.clearCalibration": "Clear Calibration",
+	"algorithm.clearCalibrationTooltip": "Reset all calibration values to their defaults",
 	"camera.selectEntireFrame": "Select Entire Frame",
 	"camera.selectEntireFrameTooltip": "Automatically set ROI",
 	"camera.rotation": "Rotation",
