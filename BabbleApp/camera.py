@@ -31,7 +31,7 @@ MAX_RESOLUTION: int = 600
 #  packet (packet-size bytes)
 ETVR_HEADER = b"\xff\xa0\xff\xa1"
 ETVR_HEADER_LEN = 6
-PORTS = ("COM", "/dev/ttyACM")
+PORTS = ("COM", "/dev/ttyACM", "/dev/tty.usbmodem", "/dev/cu.usbmodem")
 
 
 class CameraState(Enum):
@@ -317,6 +317,7 @@ class Camera:
 
                     if should_push:
                         self.push_image_to_queue(image, int(current_fps), self.fps)
+
                 # Discard the serial buffer. This is due to the fact that it,
                 # may build up some outdated frames. A bit of a workaround here tbh.
                 # Do this at the end to give buffer time to refill.
@@ -343,9 +344,15 @@ class Camera:
             # Otherwise, close the connection before trying to reopen.
             self.serial_connection.close()
         com_ports = [tuple(p) for p in list(serial.tools.list_ports.comports())]
+
+        # evil macOS hack
+        if "/dev/tty.usbmodem" in port:
+            port = port.replace("/dev/tty.usbmodem", "/dev/cu.usbmodem")
+
         # Do not try connecting if no such port i.e. device was unplugged.
         if not any(p for p in com_ports if port in p):
             return
+
         try:
             rate = (
                 115200 if sys.platform == "darwin" else 3000000
