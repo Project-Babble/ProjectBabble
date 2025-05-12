@@ -6,6 +6,7 @@ from queue import Queue
 from threading import Event
 from utils.misc_utils import bg_color_highlight, bg_color_clear, is_valid_int_input
 
+
 class SettingsWidget:
     def __init__(
         self, widget_id: Tab, main_config: BabbleSettingsConfig, osc_queue: Queue
@@ -306,12 +307,13 @@ class SettingsWidget:
                 self.config.gui_osc_receiver_port = int(value)
                 changed = True
         else:
-            print(f'\033[91m[{lang._instance.get_string("log.error")}] {lang._instance.get_string("error.oscPort")}\033[0m')
+            print(
+                f'\033[91m[{lang._instance.get_string("log.error")}] {lang._instance.get_string("error.oscPort")}\033[0m'
+            )
             if not is_valid_int_input(value):
                 value = value[:-1]
                 window[self.gui_osc_receiver_port].update(value)
                 values[self.gui_osc_receiver_port] = value
-
 
         # Update OSC location if it has changed
         if self.config.gui_osc_location != values[self.gui_osc_location]:
@@ -324,8 +326,13 @@ class SettingsWidget:
             changed = True
 
         # Update recalibrate address if it has changed
-        if self.config.gui_osc_recalibrate_address != values[self.gui_osc_recalibrate_address]:
-            self.config.gui_osc_recalibrate_address = values[self.gui_osc_recalibrate_address]
+        if (
+            self.config.gui_osc_recalibrate_address
+            != values[self.gui_osc_recalibrate_address]
+        ):
+            self.config.gui_osc_recalibrate_address = values[
+                self.gui_osc_recalibrate_address
+            ]
             changed = True
 
         # Update check option
@@ -335,8 +342,13 @@ class SettingsWidget:
 
         # Update disable camera preview option
         value = values[self.gui_disable_camera_preview]
-        if self.config.gui_disable_camera_preview != values[self.gui_disable_camera_preview]:
-            self.config.gui_disable_camera_preview = bool(values[self.gui_disable_camera_preview])
+        if (
+            self.config.gui_disable_camera_preview
+            != values[self.gui_disable_camera_preview]
+        ):
+            self.config.gui_disable_camera_preview = bool(
+                values[self.gui_disable_camera_preview]
+            )
             changed = True
 
         # Update frame delay enable option
@@ -348,7 +360,9 @@ class SettingsWidget:
         # Update frame delay option
         value = values[self.gui_osc_delay_seconds]
         if self.config.gui_osc_delay_seconds != values[self.gui_osc_delay_seconds]:
-            self.config.gui_osc_delay_seconds = float(values[self.gui_osc_delay_seconds])
+            self.config.gui_osc_delay_seconds = float(
+                values[self.gui_osc_delay_seconds]
+            )
             changed = True
 
         # Update ROSC option
