@@ -143,13 +143,12 @@ class Camera:
                         self.cv2_camera is None
                         or not self.cv2_camera.isOpened()
                         or self.camera_status == CameraState.DISCONNECTED
-                        #or get_camera_index_by_name(self.config.capture_source) != self.current_capture_source 
-                        or self.config.capture_source != self.current_capture_source 
+                        or get_camera_index_by_name(self.config.capture_source) != self.current_capture_source
                     ):
                         if self.vft_camera is not None:
                             self.vft_camera.close()
                         self.device_is_vft = False
-                        
+
                         print(self.error_message.format(self.config.capture_source))
                         # This requires a wait, otherwise we can error and possible screw up the camera
                         # firmware. Fickle things.
@@ -221,7 +220,7 @@ class Camera:
                     return
                 self.frame_number = self.frame_number + 1
             elif self.cv2_camera is not None and self.cv2_camera.isOpened():
-                ret, image = self.cv2_camera.read()     # MJPEG Stream reconnects are currently limited by the hard coded 30 second timeout time on VideoCapture.read(). We can get around this by recompiling OpenCV or using a custom MJPEG stream imp.   
+                ret, image = self.cv2_camera.read()     # MJPEG Stream reconnects are currently limited by the hard coded 30 second timeout time on VideoCapture.read(). We can get around this by recompiling OpenCV or using a custom MJPEG stream imp.
                 if ret and image is not None:
                     if not ret:
                         if not self.http:
