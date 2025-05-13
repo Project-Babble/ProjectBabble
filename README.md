@@ -5,7 +5,7 @@ Project Babble is a source first mouth tracking project designed to work with an
 </h3>
 
 ## Interested in selling babble hardware?
-By defualt Project Babble is under a non-commerical license! Please contact us at projectbabblevr@gmail.com to obtain a commercial license!
+By default Project Babble is under a non-commerical license! Please contact us at projectbabblevr@gmail.com to obtain a commercial license!
 
 ## Table of Contents
 - [Features](#features)
