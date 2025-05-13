@@ -1,5 +1,6 @@
 import typing
 import serial
+import serial.tools.list_ports
 import sys
 import glob
 import os
@@ -124,25 +125,16 @@ def list_serial_ports():
         :returns:
             A list of the serial ports available on the system
     """
-    if sys.platform.startswith("win"):
-        ports = ["COM%s" % (i + 1) for i in range(256)]
-    elif sys.platform.startswith("linux") or sys.platform.startswith("cygwin"):
-        # this excludes your current terminal "/dev/tty"
-        ports = glob.glob("/dev/tty[A-Za-z]*")
-    elif sys.platform.startswith("darwin"):
-        ports = glob.glob("/dev/tty.*")
-    else:
+    if not sys.platform.startswith(("win", "linux", "cygwin", "darwin")):
         raise EnvironmentError("Unsupported platform")
 
-    result = []
-    for port in ports:
-        try:
-            s = serial.Serial(port)
-            s.close()
-            result.append(port)
-        except (OSError, serial.SerialException):
-            pass
-    return result
+    ports = []
+    try:
+        for s in serial.tools.list_ports.comports():
+            ports.append(s.device)
+    except (AttributeError, OSError, serial.SerialException):
+        pass
+    return sorted(ports)
 
 
 def get_camera_index_by_name(name):
