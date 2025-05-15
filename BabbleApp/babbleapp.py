@@ -23,7 +23,6 @@ import requests
 import threading
 import asyncio
 import logging
-from ctypes import c_int
 from babble_model_loader import *
 from camera_widget import CameraWidget
 from config import BabbleConfig
@@ -41,8 +40,7 @@ winmm = None
 
 if os_type == "Windows":
     try:
-        from ctypes import windll
-
+        from ctypes import windll, c_int
         winmm = windll.winmm
     except OSError:
         print(
@@ -171,10 +169,13 @@ class ThreadManager:
 
 async def async_main():
     ensurePath()
-    setup_logging()
 
     # Get Configuration
     config: BabbleConfig = BabbleConfig.load()
+    
+    # Init logging. TODO: Initiate before "BabbleConfig.load()"?
+    if config.settings.gui_logging:
+        setup_logging()
 
     # Init locale manager
     lang("Locale", config.settings.gui_language)

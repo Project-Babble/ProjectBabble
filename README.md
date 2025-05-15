@@ -5,7 +5,7 @@ Project Babble is a source first mouth tracking project designed to work with an
 </h3>
 
 ## Interested in selling babble hardware?
-By defualt Project Babble is under a non-commerical license! Please contact us at projectbabblevr@gmail.com to obtain a commercial license!
+By default Project Babble is under a non-commerical license! Please contact us at projectbabblevr@gmail.com to obtain a commercial license!
 
 ## Table of Contents
 - [Features](#features)
@@ -24,7 +24,7 @@ By defualt Project Babble is under a non-commerical license! Please contact us a
 Head to the releases section and [download the latest installer](https://github.com/Project-Babble/ProjectBabble/releases/latest).
 
 ### MacOS and Linux
-Install `git`, `curl` and a version of `python` (between `3.8` and `3.12`) for your distro.
+Install `git`, `curl` and a version of `python` (between `3.10` and `3.12`) for your distro.
 
 Then, copy paste and run the following script into the terminal of your choice:
 

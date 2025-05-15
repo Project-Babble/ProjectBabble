@@ -95,13 +95,8 @@ class Camera:
             should_push = True
             # If things aren't open, retry until they are. Don't let read requests come in any earlier
             # than this, otherwise we can deadlock (valve reference) ourselves.
-            if (
-                self.config.capture_source is not None
-                and self.config.capture_source != ""
-            ):
-                self.current_capture_source = self.config.capture_source
+            if self.config.capture_source not in (None, ""):
                 isSerial = any(x in str(self.config.capture_source) for x in PORTS)
-
                 if isSerial:
                     if self.cv2_camera is not None:
                         self.cv2_camera.release()
@@ -116,7 +111,9 @@ class Camera:
                     ):
                         port = self.config.capture_source
                         self.current_capture_source = port
-                        self.start_serial_connection(port)
+                        if self.start_serial_connection(port):
+                            time.sleep(0.3)
+                            continue
                 elif ViveTracker.is_device_vive_tracker(self.config.capture_source):
                     if self.cv2_camera is not None:
                         self.cv2_camera.release()
@@ -145,15 +142,26 @@ class Camera:
                             self.vft_camera.open()
                             should_push = False
                 elif (
-                    self.cv2_camera is None
-                    or not self.cv2_camera.isOpened()
-                    or self.camera_status == CameraState.DISCONNECTED
-                    # or get_camera_index_by_name(self.config.capture_source) != self.current_capture_source
-                    or self.config.capture_source != self.current_capture_source
-                ):
-                    if self.vft_camera is not None:
-                        self.vft_camera.close()
-                    self.device_is_vft = False
+                        self.cv2_camera is None
+                        or not self.cv2_camera.isOpened()
+                        or self.camera_status == CameraState.DISCONNECTED
+                        or get_camera_index_by_name(self.config.capture_source) != self.current_capture_source
+                    ):
+                        if self.vft_camera is not None:
+                            self.vft_camera.close()
+                        self.device_is_vft = False
+
+                        print(self.error_message.format(self.config.capture_source))
+                        # This requires a wait, otherwise we can error and possible screw up the camera
+                        # firmware. Fickle things.
+                        if self.cancellation_event.wait(WAIT_TIME):
+                            return
+                        if self.config.capture_source not in self.camera_list:
+                            if "http://" in str(self.config.capture_source): self.http=True
+                            else: self.http=False
+                            self.current_capture_source = self.config.capture_source
+                        else:
+                            self.current_capture_source = get_camera_index_by_name(self.config.capture_source)
 
                     print(self.error_message.format(self.config.capture_source))
                     # This requires a wait, otherwise we can error and possible screw up the camera
@@ -340,7 +348,7 @@ class Camera:
         if self.serial_connection is not None and self.serial_connection.is_open:
             # Do nothing. The connection is already open on this port.
             if self.serial_connection.port == port:
-                return
+                return False
             # Otherwise, close the connection before trying to reopen.
             self.serial_connection.close()
         com_ports = [tuple(p) for p in list(serial.tools.list_ports.comports())]
@@ -351,7 +359,7 @@ class Camera:
 
         # Do not try connecting if no such port i.e. device was unplugged.
         if not any(p for p in com_ports if port in p):
-            return
+            return True
 
         try:
             rate = (
@@ -364,17 +372,15 @@ class Camera:
             if os_type == "Windows":
                 conn.set_buffer_size(rx_size=BUFFER_SIZE, tx_size=BUFFER_SIZE)
 
-            print(
-                f'{Fore.CYAN}[{lang._instance.get_string("log.info")}] {lang._instance.get_string("info.ETVRConnected")} {port}{Fore.RESET}'
-            )
+            print(f'{Fore.CYAN}[{lang._instance.get_string("log.info")}] {lang._instance.get_string("info.ETVRConnected")} {port}{Fore.RESET}')
             self.serial_connection = conn
             self.camera_status = CameraState.CONNECTED
+            return False
         except Exception as e:
-            print(
-                f'{Fore.CYAN}[{lang._instance.get_string("log.info")}] {lang._instance.get_string("info.ETVRFailiure")} {port}{Fore.RESET}'
-            )
+            print(f'{Fore.CYAN}[{lang._instance.get_string("log.info")}] {lang._instance.get_string("info.ETVRFailiure")} {port}{Fore.RESET}')
             print(e)
             self.camera_status = CameraState.DISCONNECTED
+            return True
 
     def clamp_max_res(self, image: MatLike) -> MatLike:
         shape = image.shape
