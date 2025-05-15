@@ -1,22 +1,20 @@
-from collections import deque
 from queue import Queue, Empty
 from threading import Event, Thread
 import FreeSimpleGUI as sg
 import cv2
 import os
-from babble_processor import BabbleProcessor, CamInfoOrigin
+from babble_processor import BabbleProcessor
 from camera import Camera, CameraState, MAX_RESOLUTION
 from config import BabbleConfig
 from osc import Tab
 from utils.misc_utils import (
     playSound,
     list_camera_names,
-    get_camera_index_by_name,
     bg_color_highlight,
-    bg_color_clear,
-    is_valid_int_input
+    is_valid_int_input,
 )
 from lang_manager import LocaleStringManager as lang
+
 
 class CameraWidget:
     def __init__(self, widget_id: Tab, main_config: BabbleConfig, osc_queue: Queue):
@@ -62,7 +60,9 @@ class CameraWidget:
         self.capture_event = Event()
         self.capture_queue = Queue(maxsize=2)
         self.roi_queue = Queue(maxsize=2)
-        self.image_queue = Queue(maxsize=500) # This is needed to prevent the UI from freezing during widget changes.
+        self.image_queue = Queue(
+            maxsize=500
+        )  # This is needed to prevent the UI from freezing during widget changes.
 
         self.babble_cnn = BabbleProcessor(
             self.config,
@@ -212,7 +212,7 @@ class CameraWidget:
                     key=self.gui_camera_addr,
                     tooltip=lang._instance.get_string("camera.cameraAddressTooltip"),
                     enable_events=True,
-                    size=(20,0),
+                    size=(20, 0),
                 ),
                 sg.Button(
                     lang._instance.get_string("camera.refreshCameraList"),
@@ -286,7 +286,6 @@ class CameraWidget:
         self.camera_thread = Thread(target=self.camera.run)
         self.camera_thread.start()
 
-
     def stop(self):
         # If we're not running yet, bail
         if self.cancellation_event.is_set():
@@ -318,7 +317,7 @@ class CameraWidget:
                 # if value not in self.camera_list:
                 #    self.config.capture_source = value
                 # if "COM" not in value:
-                ports = ("COM", "/dev/ttyACM")
+                ports = ("COM", "/dev/ttyACM", "/dev/tty.usbmodem", "/dev/cu.usbmodem")
                 if any(x in str(value) for x in ports):
                     self.config.capture_source = value
                 else:
@@ -341,6 +340,8 @@ class CameraWidget:
                         and "udp" not in value
                         and "COM" not in value
                         and "/dev/ttyACM" not in value
+                        and "/dev/tty.usbmodem" not in value
+                        and "/dev/cu.usbmodem" not in value
                         and value not in self.camera_list
                     ):  # If http is not in camera address, add it.
                         self.config.capture_source = (
@@ -390,11 +391,15 @@ class CameraWidget:
             if self.settings_config.use_calibration == True:
                 window[self.gui_restart_calibration].update(disabled=False)
                 window[self.gui_stop_calibration].update(disabled=False)
-                print(f'[{lang._instance.get_string("log.info")}] {lang._instance.get_string("info.enabled")}')
+                print(
+                    f'[{lang._instance.get_string("log.info")}] {lang._instance.get_string("info.enabled")}'
+                )
             else:
                 window[self.gui_restart_calibration].update(disabled=True)
                 window[self.gui_stop_calibration].update(disabled=True)
-                print(f'[{lang._instance.get_string("log.info")}] {lang._instance.get_string("info.disabled")}')
+                print(
+                    f'[{lang._instance.get_string("log.info")}] {lang._instance.get_string("info.disabled")}'
+                )
 
         if event == "{}+UP".format(self.gui_roi_selection):
             # Event for mouse button up in ROI mode
@@ -435,8 +440,8 @@ class CameraWidget:
                 f'\033[94m[{lang._instance.get_string("log.info")}] {lang._instance.get_string("info.refreshedCameraList")}\033[0m'
             )
             self.camera_list = list_camera_names()
-            #print(self.camera_list)
-            window[self.gui_camera_addr].update(values=self.camera_list,size=(20,0))
+            # print(self.camera_list)
+            window[self.gui_camera_addr].update(values=self.camera_list, size=(20, 0))
 
         if event == self.gui_restart_calibration:
             if (
@@ -484,7 +489,9 @@ class CameraWidget:
             )
             window[self.gui_tracking_fps].update(self._movavg_fps(self.camera.fps))
             window[self.gui_tracking_bps].update(self._movavg_bps(self.camera.bps))
-        if not self.settings_config.gui_disable_camera_preview: #If not hiding the image
+        if (
+            not self.settings_config.gui_disable_camera_preview
+        ):  # If not hiding the image
             if self.in_roi_mode:
                 try:
                     if self.roi_queue.empty():
@@ -518,7 +525,7 @@ class CameraWidget:
 
             except Empty:
                 pass
-        else: # We are hiding the previews and crop feed.
+        else:  # We are hiding the previews and crop feed.
             window[self.gui_roi_layout].update(visible=False)
             window[self.gui_tracking_layout].update(visible=False)
             self.in_roi_mode = False

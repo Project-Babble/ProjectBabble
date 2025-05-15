@@ -41,6 +41,7 @@ winmm = None
 if os_type == "Windows":
     try:
         from ctypes import windll, c_int
+
         winmm = windll.winmm
     except OSError:
         print(
@@ -172,7 +173,7 @@ async def async_main():
 
     # Get Configuration
     config: BabbleConfig = BabbleConfig.load()
-    
+
     # Init logging. TODO: Initiate before "BabbleConfig.load()"?
     if config.settings.gui_logging:
         setup_logging()

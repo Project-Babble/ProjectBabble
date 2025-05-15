@@ -31,7 +31,7 @@ MAX_RESOLUTION: int = 600
 #  packet (packet-size bytes)
 ETVR_HEADER = b"\xff\xa0\xff\xa1"
 ETVR_HEADER_LEN = 6
-PORTS = ("COM", "/dev/ttyACM")
+PORTS = ("COM", "/dev/ttyACM", "/dev/tty.usbmodem", "/dev/cu.usbmodem")
 
 
 class CameraState(Enum):
@@ -127,7 +127,9 @@ class Camera:
                             return
                         try:
                             # Only create the camera once, reuse it
-                            self.vft_camera = FTCameraController(get_camera_index_by_name(self.config.capture_source))
+                            self.vft_camera = FTCameraController(
+                                get_camera_index_by_name(self.config.capture_source)
+                            )
                             self.vft_camera.open()
                             should_push = False
                         except Exception:
@@ -136,79 +138,102 @@ class Camera:
                                 self.vft_camera.close()
                     else:
                         # If the camera is already open it don't spam it!!
-                        if (not self.vft_camera.is_open):
+                        if not self.vft_camera.is_open:
                             self.vft_camera.open()
                             should_push = False
                 elif (
-                        self.cv2_camera is None
-                        or not self.cv2_camera.isOpened()
-                        or self.camera_status == CameraState.DISCONNECTED
-                        or get_camera_index_by_name(self.config.capture_source) != self.current_capture_source
-                    ):
-                        if self.vft_camera is not None:
-                            self.vft_camera.close()
-                        self.device_is_vft = False
+                    self.cv2_camera is None
+                    or not self.cv2_camera.isOpened()
+                    or self.camera_status == CameraState.DISCONNECTED
+                    or get_camera_index_by_name(self.config.capture_source)
+                    != self.current_capture_source
+                ):
+                    if self.vft_camera is not None:
+                        self.vft_camera.close()
+                    self.device_is_vft = False
 
-                        print(self.error_message.format(self.config.capture_source))
-                        # This requires a wait, otherwise we can error and possible screw up the camera
-                        # firmware. Fickle things.
-                        if self.cancellation_event.wait(WAIT_TIME):
-                            return
-                        if self.config.capture_source not in self.camera_list:
-                            if "http://" in str(self.config.capture_source): self.http=True
-                            else: self.http=False
-                            self.current_capture_source = self.config.capture_source
+                    print(self.error_message.format(self.config.capture_source))
+                    # This requires a wait, otherwise we can error and possible screw up the camera
+                    # firmware. Fickle things.
+                    if self.cancellation_event.wait(WAIT_TIME):
+                        return
+                    if self.config.capture_source not in self.camera_list:
+                        if "http://" in str(self.config.capture_source):
+                            self.http = True
                         else:
-                            self.current_capture_source = get_camera_index_by_name(self.config.capture_source)
+                            self.http = False
+                        self.current_capture_source = self.config.capture_source
+                    else:
+                        self.current_capture_source = get_camera_index_by_name(
+                            self.config.capture_source
+                        )
 
-                        if self.config.use_ffmpeg:
-                            self.cv2_camera = cv2.VideoCapture(
-                                self.current_capture_source, cv2.CAP_FFMPEG
-                            )
+                    print(self.error_message.format(self.config.capture_source))
+                    # This requires a wait, otherwise we can error and possible screw up the camera
+                    # firmware. Fickle things.
+                    if self.cancellation_event.wait(WAIT_TIME):
+                        return
+                    if self.config.capture_source not in self.camera_list:
+                        if "http://" in str(self.config.capture_source):
+                            self.http = True
                         else:
-                            if not self.http:
-                                self.cv2_camera = cv2.VideoCapture()
-                                self.cv2_camera.open(self.current_capture_source)
-                            else:
-                                self.cv2_camera = MJPEGVideoCapture(self.current_capture_source)
-                                self.cv2_camera.open()
+                            self.http = False
+                        self.current_capture_source = self.config.capture_source
+                    else:
+                        self.current_capture_source = get_camera_index_by_name(
+                            self.config.capture_source
+                        )
+
+                    if self.config.use_ffmpeg:
+                        self.cv2_camera = cv2.VideoCapture(
+                            self.current_capture_source, cv2.CAP_FFMPEG
+                        )
+                    else:
                         if not self.http:
-                            if not self.settings.gui_cam_resolution_x == 0:
-                                self.cv2_camera.set(
-                                    cv2.CAP_PROP_FRAME_WIDTH,
-                                    self.settings.gui_cam_resolution_x,
-                                )
-                            if not self.settings.gui_cam_resolution_y == 0:
-                                self.cv2_camera.set(
-                                    cv2.CAP_PROP_FRAME_HEIGHT,
-                                    self.settings.gui_cam_resolution_y,
-                                )
-                            if not self.settings.gui_cam_framerate == 0:
-                                self.cv2_camera.set(
-                                    cv2.CAP_PROP_FPS, self.settings.gui_cam_framerate
-                                )
-                        should_push = False
-            else:
-                # We don't have a capture source to try yet, wait for one to show up in the GUI.
-                if self.vft_camera is not None:
-                    self.vft_camera.close()
-                if self.cancellation_event.wait(WAIT_TIME):
-                    self.camera_status = CameraState.DISCONNECTED
-                    return
-            # Assuming we can access our capture source, wait for another thread to request a capture.
-            # Cycle every so often to see if our cancellation token has fired. This basically uses a
-            # python event as a context-less, resettable one-shot channel.
-            if should_push and not self.capture_event.wait(timeout=0.02):
-                continue
-            if self.config.capture_source is not None:
-                if isSerial:
-                    self.get_serial_camera_picture(should_push)
+                            self.cv2_camera = cv2.VideoCapture()
+                            self.cv2_camera.open(self.current_capture_source)
+                        else:
+                            self.cv2_camera = MJPEGVideoCapture(
+                                self.current_capture_source
+                            )
+                            self.cv2_camera.open()
+                    if not self.http:
+                        if not self.settings.gui_cam_resolution_x == 0:
+                            self.cv2_camera.set(
+                                cv2.CAP_PROP_FRAME_WIDTH,
+                                self.settings.gui_cam_resolution_x,
+                            )
+                        if not self.settings.gui_cam_resolution_y == 0:
+                            self.cv2_camera.set(
+                                cv2.CAP_PROP_FRAME_HEIGHT,
+                                self.settings.gui_cam_resolution_y,
+                            )
+                        if not self.settings.gui_cam_framerate == 0:
+                            self.cv2_camera.set(
+                                cv2.CAP_PROP_FPS, self.settings.gui_cam_framerate
+                            )
+                    should_push = False
                 else:
-                    self.__del__()
-                    self.get_camera_picture(should_push)
-                if not should_push:
-                    # if we get all the way down here, consider ourselves connected
-                    self.camera_status = CameraState.CONNECTED
+                    # We don't have a capture source to try yet, wait for one to show up in the GUI.
+                    if self.vft_camera is not None:
+                        self.vft_camera.close()
+                    if self.cancellation_event.wait(WAIT_TIME):
+                        self.camera_status = CameraState.DISCONNECTED
+                        return
+                # Assuming we can access our capture source, wait for another thread to request a capture.
+                # Cycle every so often to see if our cancellation token has fired. This basically uses a
+                # python event as a context-less, resettable one-shot channel.
+                if should_push and not self.capture_event.wait(timeout=0.02):
+                    continue
+                if self.config.capture_source is not None:
+                    if isSerial:
+                        self.get_serial_camera_picture(should_push)
+                    else:
+                        self.__del__()
+                        self.get_camera_picture(should_push)
+                    if not should_push:
+                        # if we get all the way down here, consider ourselves connected
+                        self.camera_status = CameraState.CONNECTED
 
     def get_camera_picture(self, should_push):
         try:
@@ -220,7 +245,9 @@ class Camera:
                     return
                 self.frame_number = self.frame_number + 1
             elif self.cv2_camera is not None and self.cv2_camera.isOpened():
-                ret, image = self.cv2_camera.read()     # MJPEG Stream reconnects are currently limited by the hard coded 30 second timeout time on VideoCapture.read(). We can get around this by recompiling OpenCV or using a custom MJPEG stream imp.
+                ret, image = (
+                    self.cv2_camera.read()
+                )  # MJPEG Stream reconnects are currently limited by the hard coded 30 second timeout time on VideoCapture.read(). We can get around this by recompiling OpenCV or using a custom MJPEG stream imp.
                 if ret and image is not None:
                     if not ret:
                         if not self.http:
@@ -232,7 +259,9 @@ class Camera:
                     return
                 self.FRAME_SIZE = image.shape
                 # Calculate FPS
-                current_frame_time = time.time()    # Should be using "time.perf_counter()", not worth ~3x cycles?
+                current_frame_time = (
+                    time.time()
+                )  # Should be using "time.perf_counter()", not worth ~3x cycles?
                 delta_time = current_frame_time - self.last_frame_time
                 self.last_frame_time = current_frame_time
                 current_fps = 1 / delta_time if delta_time > 0 else 0
@@ -267,7 +296,7 @@ class Camera:
 
     def get_next_jpeg_frame(self):
         beg, end = self.get_next_packet_bounds()
-        jpeg = self.buffer[beg: end + 2]
+        jpeg = self.buffer[beg : end + 2]
         self.buffer = self.buffer[end + 2 :]
         return jpeg
 
@@ -289,7 +318,9 @@ class Camera:
                         )
                         return
                     # Calculate FPS
-                    current_frame_time = time.time()    # Should be using "time.perf_counter()", not worth ~3x cycles?
+                    current_frame_time = (
+                        time.time()
+                    )  # Should be using "time.perf_counter()", not worth ~3x cycles?
                     delta_time = current_frame_time - self.last_frame_time
                     self.last_frame_time = current_frame_time
                     current_fps = 1 / delta_time if delta_time > 0 else 0
@@ -299,11 +330,14 @@ class Camera:
 
                     if should_push:
                         self.push_image_to_queue(image, int(current_fps), self.fps)
+
                 # Discard the serial buffer. This is due to the fact that it,
                 # may build up some outdated frames. A bit of a workaround here tbh.
                 # Do this at the end to give buffer time to refill.
                 if conn.in_waiting >= BUFFER_SIZE:
-                    print(f'{Fore.CYAN}[{lang._instance.get_string("log.info")}] {lang._instance.get_string("info.discardingSerial")} ({conn.in_waiting} bytes){Fore.RESET}')
+                    print(
+                        f'{Fore.CYAN}[{lang._instance.get_string("log.info")}] {lang._instance.get_string("info.discardingSerial")} ({conn.in_waiting} bytes){Fore.RESET}'
+                    )
                     conn.reset_input_buffer()
                     self.buffer = b""
 
@@ -323,22 +357,36 @@ class Camera:
             # Otherwise, close the connection before trying to reopen.
             self.serial_connection.close()
         com_ports = [tuple(p) for p in list(serial.tools.list_ports.comports())]
+
+        # evil macOS hack
+        if "/dev/tty.usbmodem" in port:
+            port = port.replace("/dev/tty.usbmodem", "/dev/cu.usbmodem")
+
         # Do not try connecting if no such port i.e. device was unplugged.
         if not any(p for p in com_ports if port in p):
             return True
+
         try:
-            rate = 115200 if sys.platform == "darwin" else 3000000  # Higher baud rate not working on macOS
-            conn = serial.Serial(baudrate=rate, port=port, xonxoff=False, dsrdtr=False, rtscts=False)
+            rate = (
+                115200 if sys.platform == "darwin" else 3000000
+            )  # Higher baud rate not working on macOS
+            conn = serial.Serial(
+                baudrate=rate, port=port, xonxoff=False, dsrdtr=False, rtscts=False
+            )
             # Set explicit buffer size for serial. This function is Windows only!
-            if os_type == 'Windows':
+            if os_type == "Windows":
                 conn.set_buffer_size(rx_size=BUFFER_SIZE, tx_size=BUFFER_SIZE)
 
-            print(f'{Fore.CYAN}[{lang._instance.get_string("log.info")}] {lang._instance.get_string("info.ETVRConnected")} {port}{Fore.RESET}')
+            print(
+                f'{Fore.CYAN}[{lang._instance.get_string("log.info")}] {lang._instance.get_string("info.ETVRConnected")} {port}{Fore.RESET}'
+            )
             self.serial_connection = conn
             self.camera_status = CameraState.CONNECTED
             return False
         except Exception as e:
-            print(f'{Fore.CYAN}[{lang._instance.get_string("log.info")}] {lang._instance.get_string("info.ETVRFailiure")} {port}{Fore.RESET}')
+            print(
+                f'{Fore.CYAN}[{lang._instance.get_string("log.info")}] {lang._instance.get_string("info.ETVRFailiure")} {port}{Fore.RESET}'
+            )
             print(e)
             self.camera_status = CameraState.DISCONNECTED
             return True
@@ -347,14 +395,14 @@ class Camera:
         shape = image.shape
         max_value = np.max(shape)
         if max_value > MAX_RESOLUTION:
-            scale: float = MAX_RESOLUTION/max_value
+            scale: float = MAX_RESOLUTION / max_value
             width: int = int(shape[1] * scale)
             height: int = int(shape[0] * scale)
             image = cv2.resize(image, (width, height))
 
             return image
-        else: return image
-
+        else:
+            return image
 
     def push_image_to_queue(self, image, frame_number, fps):
         # If there's backpressure, just yell. We really shouldn't have this unless we start getting

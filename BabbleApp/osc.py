@@ -10,17 +10,21 @@ import math
 import os
 from lang_manager import LocaleStringManager as lang
 
+
 class Tab(IntEnum):
     CAM = 0
     SETTINGS = 1
     ALGOSETTINGS = 2
     CALIBRATION = 3
 
+
 import numpy as np
+
 
 def delay_output_osc(array, delay_seconds, self):
     time.sleep(delay_seconds)
     output_osc(array, self)
+
 
 def output_osc(array, self):
     location = self.config.gui_osc_location
@@ -111,7 +115,9 @@ class VRChatOSC:
             delay_enable = self.config.gui_osc_delay_enable
             delay_seconds = self.config.gui_osc_delay_seconds
             if delay_enable:
-                threading.Thread(target=delay_output_osc, args=(cam_info.output, delay_seconds, self)).start() 
+                threading.Thread(
+                    target=delay_output_osc, args=(cam_info.output, delay_seconds, self)
+                ).start()
             else:
                 output_osc(cam_info.output, self)
 

@@ -5,9 +5,11 @@ from utils.misc_utils import playSound
 import os
 from lang_manager import LocaleStringManager as lang
 
+
 class CamId(IntEnum):
     CAM = 0
     SETTINGS = 1
+
 
 class cal:
     def __init__(self):

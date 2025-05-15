@@ -24,17 +24,21 @@ onnx_providers = [
 # Detect the operating system
 os_type = platform.system()
 
-if os_type == 'Windows':
+if os_type == "Windows":
     from pygrabber.dshow_graph import FilterGraph
+
     graph = FilterGraph()
+
 
 def is_valid_float_input(value):
     # Allow empty string, negative sign, or a float number
     return bool(re.match(r"^-?\d*\.?\d*$", value))
 
+
 def is_valid_int_input(value):
     # Allow empty string, negative sign, or an integer number
     return bool(re.match(r"^-?\d*$", value))
+
 
 def list_camera_names():
     cam_list = graph.get_input_devices()
@@ -44,10 +48,11 @@ def list_camera_names():
     cam_names = cam_names + list_serial_ports()
     return cam_names
 
+
 @contextlib.contextmanager
 def suppress_stderr():
     """Context manager to suppress stderr (used for OpenCV warnings)."""
-    with open(os.devnull, 'w') as devnull:
+    with open(os.devnull, "w") as devnull:
         old_stderr_fd = os.dup(2)
         os.dup2(devnull.fileno(), 2)
         try:
@@ -55,6 +60,7 @@ def suppress_stderr():
         finally:
             os.dup2(old_stderr_fd, 2)
             os.close(old_stderr_fd)
+
 
 def list_cameras_opencv():
     """Use OpenCV to check available cameras by index (fallback for Linux/macOS)"""
@@ -71,6 +77,7 @@ def list_cameras_opencv():
                 cap.release()
             index += 1
     return arr
+
 
 def is_uvc_device(device):
     """Check if the device is a UVC video device (not metadata)"""
@@ -95,14 +102,12 @@ def list_linux_uvc_devices():
     try:
         # v4l2-ctl --list-devices breaks if video devices are non-sequential.
         # So this might be better?
-        result = glob.glob("/dev/video*");
+        result = glob.glob("/dev/video*")
         devices = []
         current_device = None
         for line in result:
             if is_uvc_device(line):
-                devices.append(
-                    line
-                )  # We return the path like '/dev/video0'
+                devices.append(line)  # We return the path like '/dev/video0'
 
         return devices
 
@@ -113,7 +118,7 @@ def list_linux_uvc_devices():
 def list_camera_names():
     """Cross-platform function to list camera names"""
 
-    if os_type == 'Windows':
+    if os_type == "Windows":
         # On Windows, use pygrabber to list devices
         cam_list = graph.get_input_devices()
         return cam_list + list_serial_ports()
@@ -131,13 +136,13 @@ def list_camera_names():
 
 
 def list_serial_ports():
-    #print("DEBUG: Listed Serial Ports")
-    """ Lists serial port names
+    # print("DEBUG: Listed Serial Ports")
+    """Lists serial port names
 
-        :raises EnvironmentError:
-            On unsupported or unknown platforms
-        :returns:
-            A list of the serial ports available on the system
+    :raises EnvironmentError:
+        On unsupported or unknown platforms
+    :returns:
+        A list of the serial ports available on the system
     """
     if not sys.platform.startswith(("win", "linux", "cygwin", "darwin")):
         raise EnvironmentError("Unsupported platform")
@@ -158,13 +163,13 @@ def get_camera_index_by_name(name):
     # On Linux, we use device paths like '/dev/video0' and match directly
     # OpenCV expects the actual /dev/video#, not the offset into the device list
     if os_type == "Linux":
-        if (name.startswith("/dev/ttyACM")):
-            return int(str.replace(name,"/dev/ttyACM",""));
+        if name.startswith("/dev/ttyACM"):
+            return int(str.replace(name, "/dev/ttyACM", ""))
         else:
-            return int(str.replace(name,"/dev/video",""));
+            return int(str.replace(name, "/dev/video", ""))
 
     # On Windows, match by camera name
-    elif os_type == 'Windows':
+    elif os_type == "Windows":
         for i, device_name in enumerate(cam_list):
             if device_name == name:
                 return i
@@ -177,12 +182,16 @@ def get_camera_index_by_name(name):
 
     return None
 
+
 # Set environment variable before importing sounddevice. Value is not important.
 os.environ["SD_ENABLE_ASIO"] = "1"
+
+
 def playSound(file):
     data, fs = sf.read(file)
     sd.play(data, fs)
     sd.wait()
+
 
 # Handle debugging virtual envs.
 def ensurePath():
