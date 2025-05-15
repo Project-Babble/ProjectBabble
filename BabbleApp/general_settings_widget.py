@@ -347,7 +347,7 @@ class SettingsWidget:
         if self.config.gui_update_check != values[self.gui_update_check]:
             self.config.gui_update_check = values[self.gui_update_check]
             changed = True
-            
+
         # Logging option
         if self.config.gui_logging != values[self.gui_logging]:
             self.config.gui_logging = values[self.gui_logging]

@@ -142,26 +142,31 @@ class Camera:
                             self.vft_camera.open()
                             should_push = False
                 elif (
-                        self.cv2_camera is None
-                        or not self.cv2_camera.isOpened()
-                        or self.camera_status == CameraState.DISCONNECTED
-                        or get_camera_index_by_name(self.config.capture_source) != self.current_capture_source
-                    ):
-                        if self.vft_camera is not None:
-                            self.vft_camera.close()
-                        self.device_is_vft = False
+                    self.cv2_camera is None
+                    or not self.cv2_camera.isOpened()
+                    or self.camera_status == CameraState.DISCONNECTED
+                    or get_camera_index_by_name(self.config.capture_source)
+                    != self.current_capture_source
+                ):
+                    if self.vft_camera is not None:
+                        self.vft_camera.close()
+                    self.device_is_vft = False
 
-                        print(self.error_message.format(self.config.capture_source))
-                        # This requires a wait, otherwise we can error and possible screw up the camera
-                        # firmware. Fickle things.
-                        if self.cancellation_event.wait(WAIT_TIME):
-                            return
-                        if self.config.capture_source not in self.camera_list:
-                            if "http://" in str(self.config.capture_source): self.http=True
-                            else: self.http=False
-                            self.current_capture_source = self.config.capture_source
+                    print(self.error_message.format(self.config.capture_source))
+                    # This requires a wait, otherwise we can error and possible screw up the camera
+                    # firmware. Fickle things.
+                    if self.cancellation_event.wait(WAIT_TIME):
+                        return
+                    if self.config.capture_source not in self.camera_list:
+                        if "http://" in str(self.config.capture_source):
+                            self.http = True
                         else:
-                            self.current_capture_source = get_camera_index_by_name(self.config.capture_source)
+                            self.http = False
+                        self.current_capture_source = self.config.capture_source
+                    else:
+                        self.current_capture_source = get_camera_index_by_name(
+                            self.config.capture_source
+                        )
 
                     print(self.error_message.format(self.config.capture_source))
                     # This requires a wait, otherwise we can error and possible screw up the camera
@@ -208,27 +213,27 @@ class Camera:
                                 cv2.CAP_PROP_FPS, self.settings.gui_cam_framerate
                             )
                     should_push = False
-            else:
-                # We don't have a capture source to try yet, wait for one to show up in the GUI.
-                if self.vft_camera is not None:
-                    self.vft_camera.close()
-                if self.cancellation_event.wait(WAIT_TIME):
-                    self.camera_status = CameraState.DISCONNECTED
-                    return
-            # Assuming we can access our capture source, wait for another thread to request a capture.
-            # Cycle every so often to see if our cancellation token has fired. This basically uses a
-            # python event as a context-less, resettable one-shot channel.
-            if should_push and not self.capture_event.wait(timeout=0.02):
-                continue
-            if self.config.capture_source is not None:
-                if isSerial:
-                    self.get_serial_camera_picture(should_push)
                 else:
-                    self.__del__()
-                    self.get_camera_picture(should_push)
-                if not should_push:
-                    # if we get all the way down here, consider ourselves connected
-                    self.camera_status = CameraState.CONNECTED
+                    # We don't have a capture source to try yet, wait for one to show up in the GUI.
+                    if self.vft_camera is not None:
+                        self.vft_camera.close()
+                    if self.cancellation_event.wait(WAIT_TIME):
+                        self.camera_status = CameraState.DISCONNECTED
+                        return
+                # Assuming we can access our capture source, wait for another thread to request a capture.
+                # Cycle every so often to see if our cancellation token has fired. This basically uses a
+                # python event as a context-less, resettable one-shot channel.
+                if should_push and not self.capture_event.wait(timeout=0.02):
+                    continue
+                if self.config.capture_source is not None:
+                    if isSerial:
+                        self.get_serial_camera_picture(should_push)
+                    else:
+                        self.__del__()
+                        self.get_camera_picture(should_push)
+                    if not should_push:
+                        # if we get all the way down here, consider ourselves connected
+                        self.camera_status = CameraState.CONNECTED
 
     def get_camera_picture(self, should_push):
         try:
@@ -372,12 +377,16 @@ class Camera:
             if os_type == "Windows":
                 conn.set_buffer_size(rx_size=BUFFER_SIZE, tx_size=BUFFER_SIZE)
 
-            print(f'{Fore.CYAN}[{lang._instance.get_string("log.info")}] {lang._instance.get_string("info.ETVRConnected")} {port}{Fore.RESET}')
+            print(
+                f'{Fore.CYAN}[{lang._instance.get_string("log.info")}] {lang._instance.get_string("info.ETVRConnected")} {port}{Fore.RESET}'
+            )
             self.serial_connection = conn
             self.camera_status = CameraState.CONNECTED
             return False
         except Exception as e:
-            print(f'{Fore.CYAN}[{lang._instance.get_string("log.info")}] {lang._instance.get_string("info.ETVRFailiure")} {port}{Fore.RESET}')
+            print(
+                f'{Fore.CYAN}[{lang._instance.get_string("log.info")}] {lang._instance.get_string("info.ETVRFailiure")} {port}{Fore.RESET}'
+            )
             print(e)
             self.camera_status = CameraState.DISCONNECTED
             return True

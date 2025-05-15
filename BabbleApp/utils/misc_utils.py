@@ -39,6 +39,7 @@ def is_valid_int_input(value):
     # Allow empty string, negative sign, or an integer number
     return bool(re.match(r"^-?\d*$", value))
 
+
 def list_camera_names():
     cam_list = graph.get_input_devices()
     cam_names = []
@@ -47,10 +48,11 @@ def list_camera_names():
     cam_names = cam_names + list_serial_ports()
     return cam_names
 
+
 @contextlib.contextmanager
 def suppress_stderr():
     """Context manager to suppress stderr (used for OpenCV warnings)."""
-    with open(os.devnull, 'w') as devnull:
+    with open(os.devnull, "w") as devnull:
         old_stderr_fd = os.dup(2)
         os.dup2(devnull.fileno(), 2)
         try:
@@ -58,6 +60,7 @@ def suppress_stderr():
         finally:
             os.dup2(old_stderr_fd, 2)
             os.close(old_stderr_fd)
+
 
 def list_cameras_opencv():
     """Use OpenCV to check available cameras by index (fallback for Linux/macOS)"""
@@ -74,6 +77,7 @@ def list_cameras_opencv():
                 cap.release()
             index += 1
     return arr
+
 
 def is_uvc_device(device):
     """Check if the device is a UVC video device (not metadata)"""

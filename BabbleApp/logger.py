@@ -40,11 +40,13 @@ def log_system_info(logger):
     except Exception as e:
         logger.error(f"Failed to log system information: {e}")
 
+
 class _RotatingFileHandler(RotatingFileHandler):
     def doRollover(self):
         super().doRollover()
         # Include system info after rollover
         log_system_info(logging.getLogger("debug_logger"))
+
 
 def setup_logging():
     # Determine the user's Documents directory
@@ -58,7 +60,9 @@ def setup_logging():
     logger = logging.getLogger("debug_logger")
     logger.setLevel(logging.DEBUG)
 
-    file_handler = _RotatingFileHandler(log_file, mode='w', maxBytes=2000000, backupCount=1, encoding='utf-8')
+    file_handler = _RotatingFileHandler(
+        log_file, mode="w", maxBytes=2000000, backupCount=1, encoding="utf-8"
+    )
 
     file_handler.setLevel(logging.DEBUG)
     formatter = logging.Formatter(
