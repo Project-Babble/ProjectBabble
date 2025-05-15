@@ -62,7 +62,7 @@ class CameraWidget:
         self.capture_event = Event()
         self.capture_queue = Queue(maxsize=2)
         self.roi_queue = Queue(maxsize=2)
-        self.image_queue = Queue(maxsize=500) # This is needed to prevent the UI from freezing during widget changes. 
+        self.image_queue = Queue(maxsize=500) # This is needed to prevent the UI from freezing during widget changes.
 
         self.babble_cnn = BabbleProcessor(
             self.config,
@@ -285,7 +285,7 @@ class CameraWidget:
         # self.babble_landmark_thread.start()
         self.camera_thread = Thread(target=self.camera.run)
         self.camera_thread.start()
-        
+
 
     def stop(self):
         # If we're not running yet, bail
@@ -322,7 +322,7 @@ class CameraWidget:
                 if any(x in str(value) for x in ports):
                     self.config.capture_source = value
                 else:
-                    if is_valid_int_input(value): 
+                    if is_valid_int_input(value):
                         self.config.capture_source = int(value)
                     else:
                         self.config.capture_source = value
@@ -422,7 +422,7 @@ class CameraWidget:
             if self.maybe_image is None:
                 # Skip rendering or use a default/placeholder image
                 return  # Or handle appropriately
-            
+
             output = self.maybe_image[0].shape
             self.config.roi_window_x = 0
             self.config.roi_window_y = 0
