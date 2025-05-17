@@ -37,6 +37,7 @@
 	"error.frame": "获取帧时出现问题",
 	"error.size": "要显示的帧大小不相等",
 	"error.capture": "检测到帧捕获问题",
+	"error.modelLoad": "加载失败",
 	"warn.frameDrop": "丢弃帧：损坏的JPEG",
 	"warn.captureProblem": "捕获源问题，假设相机已断开连接，正在等待重新连接",
 	"warn.serialCapture": "串行捕获源问题，假设相机已断开连接，正在等待重新连接",

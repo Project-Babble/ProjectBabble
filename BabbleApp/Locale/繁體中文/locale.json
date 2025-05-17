@@ -37,6 +37,7 @@
 	"error.frame": "取得畫面時發生問題",
 	"error.size": "顯示畫面大小不一致",
 	"error.capture": "偵測到畫面擷取問題",
+	"error.modelLoad": "載入失敗",
 	"warn.frameDrop": "畫面遺失，JPEG 檔案損毀",
 	"warn.captureProblem": "擷取來源問題，假設攝影機已斷線，等待重新連線",
 	"warn.serialCapture": "序列埠擷取來源問題，假設攝影機已斷線，等待重新連線",

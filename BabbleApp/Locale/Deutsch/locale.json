@@ -37,6 +37,7 @@
 	"error.frame": "Problem beim Abrufen des Bildes",
 	"error.size": "Die Größe der anzuzeigenden Frames ist ungleich",
 	"error.capture": "Problem bei der Bilderfassung erkannt",
+	"error.modelLoad": "Fehler beim Laden",
 	"warn.frameDrop": "Frame-Drop. Beschädigtes JPEG",
 	"warn.captureProblem": "Problem mit der Aufnahmequelle. Kamera wurde getrennt, warte auf erneute Verbindung",
 	"warn.serialCapture": "Problem mit der seriellen Aufnahmequelle. Kamera wurde getrennt, warte auf erneute Verbindung",

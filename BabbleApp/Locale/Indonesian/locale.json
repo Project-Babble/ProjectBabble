@@ -37,6 +37,7 @@
 	"error.frame": "Masalah saat mendapatkan frame",
 	"error.size": "Ukuran bingkai untuk menampilkan gambar tidak setara",
 	"error.capture": "Terdeteksi masalah pada frame capture",
+	"error.modelLoad": "Gagal memuat",
 	"warn.frameDrop": "Frame drop. JPEG korup",
 	"warn.captureProblem": "Masalah sumber rekaman, perkiraan koneksi kamera terputus, menunggu koneksi ulang",
 	"warn.serialCapture": "Masalah sumber serial rekaman, perkiraan koneksi kamera terputus, menunggu koneksi ulang",

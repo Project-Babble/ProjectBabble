@@ -37,6 +37,7 @@
 	"error.frame": "Problem vid avläsning",
 	"error.size": "Bildrutornas storlek till displayen är ojämna",
 	"error.capture": "Problem med bildrutsavläsningen har upptäckts",
+	"error.modelLoad": "Kunde inte läsa in",
 	"warn.frameDrop": "Bildrutor tappas. Korrupt JPEG",
 	"warn.captureProblem": "Problem med bildkälla, Antar att kameran är frånkopplad, Inväntar återkoppling",
 	"warn.serialCapture": "Problem med serial avbildningskälla, Antar att kameran är frånkopplad, inväntar återkoppling",

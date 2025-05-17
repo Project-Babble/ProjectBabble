@@ -37,6 +37,7 @@
 	"error.frame": "Problema durante l'acquisizione del fotogramma",
 	"error.size": "Le dimensioni dei fotogrammi da visualizzare sono di dimensioni diverse",
 	"error.capture": "Rilevato problema nella cattura del fotogramma",
+	"error.modelLoad": "Caricamento fallito",
 	"warn.frameDrop": "Fotogramma perso. JPEG corrotto",
 	"warn.captureProblem": "Problema di acquisizione sorgente, supponendo che la telecamera sia disconnessa, in attesa di riconnessione",
 	"warn.serialCapture": "Problema di acquisizione da sorgente seriale, supponendo che la telecamera sia disconnessa, in attesa di riconnessione",
