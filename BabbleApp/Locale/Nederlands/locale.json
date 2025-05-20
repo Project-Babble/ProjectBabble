@@ -37,6 +37,7 @@
 	"error.frame": "Probleem bij het verkrijgen van beeld",
 	"error.size": "Formaat van de frames voor weergave zijn ongelijk",
 	"error.capture": "Probleem met frame opname gedetecteerd",
+	"error.modelLoad": "Laden mislukt",
 	"warn.frameDrop": "Framedaling. Corrupte JPEG",
 	"warn.captureProblem": "Probleem met opnamebron, verwacht losgekoppelde camera, wachten op nieuwe verbinding",
 	"warn.serialCapture": "Probleem met serieel opname bron, verwacht losgekoppelde camera, wachten op nieuwe verbinding",

@@ -37,6 +37,7 @@
 	"error.frame": "Problem while getting frame",
 	"error.size": "Size of frames to display are of unequal sizes",
 	"error.capture": "Frame capture issue detected",
+	"error.modelLoad": "Failed to load",
 	"warn.frameDrop": "Frame drop. Corrupted JPEG",
 	"warn.captureProblem": "Capture source problem, assuming camera disconnected, waiting to reconnect",
 	"warn.serialCapture": "Serial capture source problem, assuming camera disconnected, waiting to reconnect",

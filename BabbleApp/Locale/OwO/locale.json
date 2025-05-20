@@ -37,6 +37,7 @@
 	"error.frame": "Pwobwem while getting fwame >3<",
 	"error.size": "Size of fwames to dispway awe of uneqwuaw sizes",
 	"error.capture": "Fwame captuwe issue detecwed ;n;",
+	"error.modelLoad": "Faiwed to woad",
 	"warn.frameDrop": "Fwame dwop. Cowwupted JPEG >.<",
 	"warn.captureProblem": "Captuwe souwce pwobwem, assuwming camewa disconnetwed, waiting fow weconnect",
 	"warn.serialCapture": "sewiaw captuwe sawse pwoblem, asswuming camewa diwsconnected, waiting fow weconnect",
