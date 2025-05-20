@@ -119,8 +119,8 @@ class BabbleProcessor:
                 self.sess = ort.InferenceSession(
                     f"{self.default_model}/onnx/model.onnx",  
                     self.opts,
-                    providers=[provider],
-                    provider_options=[{"device_id": self.gpu_index}],
+                    providers=provider,
+                    provider_options=[{"device_id": self.gpu_index}, {"device_id": self.gpu_index}, {}], # We need a dict entry for each EP in our providers list
                 )
             self.input_name = self.sess.get_inputs()[0].name
             self.output_name = self.sess.get_outputs()[0].name
