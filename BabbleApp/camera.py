@@ -143,7 +143,7 @@ class Camera:
                         self.cv2_camera is None
                         or not self.cv2_camera.isOpened()
                         or self.camera_status == CameraState.DISCONNECTED
-                        or get_camera_index_by_name(self.config.capture_source) != self.current_capture_source
+                        or self.config.capture_source != self.current_capture_source
                     ):
                         if self.vft_camera is not None:
                             self.vft_camera.close()
