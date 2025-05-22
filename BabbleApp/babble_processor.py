@@ -98,7 +98,9 @@ class BabbleProcessor:
         self.opts.inter_op_num_threads = 1
         self.opts.intra_op_num_threads = settings.gui_inference_threads
         self.opts.graph_optimization_level = ort.GraphOptimizationLevel.ORT_ENABLE_ALL
-        self.opts.add_session_config_entry("session.intra_op.allow_spinning", "0")  # ~3% savings worth ~6ms avg latency. Not noticeable at 60fps?
+        self.opts.add_session_config_entry(
+            "session.intra_op.allow_spinning", "0"
+        )  # ~3% savings worth ~6ms avg latency. Not noticeable at 60fps?
         self.opts.enable_mem_pattern = False
         if self.runtime in ("ONNX", "Default (ONNX)"):  # ONNX
             if self.use_gpu:
@@ -111,13 +113,13 @@ class BabbleProcessor:
                     self.opts,
                     providers=provider,
                 )
-            except:                                                 # Load default model if we can't find the specified model
+            except:  # Load default model if we can't find the specified model
                 print(
-                f'\033[91m[{lang._instance.get_string("log.error")}] {lang._instance.get_string("error.modelLoad")} {self.model}\033[0m'
+                    f'\033[91m[{lang._instance.get_string("log.error")}] {lang._instance.get_string("error.modelLoad")} {self.model}\033[0m'
                 )
-                print(f'\033[91mLoading Default model: {self.default_model}.\033[0m')
+                print(f"\033[91mLoading Default model: {self.default_model}.\033[0m")
                 self.sess = ort.InferenceSession(
-                    f"{self.default_model}/onnx/model.onnx",  
+                    f"{self.default_model}/onnx/model.onnx",
                     self.opts,
                     providers=provider,
                     provider_options=[{"device_id": self.gpu_index}, {"device_id": self.gpu_index}, {}], # We need a dict entry for each EP in our providers list
@@ -147,7 +149,7 @@ class BabbleProcessor:
             self.image_queue_outgoing.put((image_stack, output_information))
             if self.image_queue_outgoing.qsize() > 1:
                 self.image_queue_outgoing.get()
-                
+
             self.previous_image = self.current_image
             self.previous_rotation = self.config.rotation_angle
 
@@ -272,7 +274,7 @@ class BabbleProcessor:
             # else:
             #   pass
             # print(self.output)
-            
+
             self.output_images_and_update(CamInfo(self.current_algo, self.output))
 
     def get_framesize(self):
