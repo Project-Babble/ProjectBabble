@@ -29,6 +29,7 @@
 	"general.languageTooltip": "Change language",
 	"error.oscPort": "OSC port value must be an integer 0-65535",
 	"error.oscValue": "OSC port value cannot be empty and must be an integer 0-65535",
+	"error.modelLoad": "Error loading model",
 	"error.notAnInt": "Not an Integer",
 	"error.notAFloat": "Not a Float",
 	"error.improperTabValue": "Improper tab value",
