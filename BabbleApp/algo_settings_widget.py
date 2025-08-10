@@ -24,6 +24,7 @@ class AlgoSettingsWidget:
         self.gui_gpu_index = f"GPUINDEX{widget_id}"
         self.calib_deadzone = f"CALIBDEADZONE{widget_id}"
         self.main_config = main_config
+        self.main_config.settings.widget_id = widget_id
         self.config = main_config.settings
         self.osc_queue = osc_queue
         self.runtime_list = ("Default (ONNX)", "ONNX")
@@ -153,6 +154,14 @@ class AlgoSettingsWidget:
                     background_color=bg_color_highlight,
                 ),
             ],
+            [
+                sg.Button(
+                    lang._instance.get_string("algorithm.clearCalibration"),
+                    key=f"-CLEARCALIBRATION{widget_id}-",
+                    button_color=("white", "#d9534f"),
+                    tooltip=lang._instance.get_string("algorithm.clearCalibrationTooltip"),
+                ),
+            ],
         ]
 
         self.cancellation_event = (
@@ -200,6 +209,12 @@ class AlgoSettingsWidget:
                 window[self.gui_inference_threads].update(value)
                 values[self.gui_inference_threads] = value
 
+        # --- Begin patch: handle clear calibration button ---
+        if event == f"-CLEARCALIBRATION{self.main_config.settings.widget_id}-":
+            if hasattr(self.main_config.settings, "calibration_filter") and hasattr(self.main_config.settings.calibration_filter, "clear_calibration"):
+                self.main_config.settings.calibration_filter.clear_calibration()
+                sg.popup(lang._instance.get_string("algorithm.calibrationCleared"), title="Calibration Reset")
+        # --- End patch ---
         elif event == self.gui_gpu_index:
             value = values[self.gui_gpu_index]
             if not is_valid_int_input(value):

@@ -33,8 +33,6 @@ class CameraWidget:
         self.gui_tracking_fps = f"-TRACKINGFPS{widget_id}-"
         self.gui_tracking_bps = f"-TRACKINGBPS{widget_id}-"
         self.gui_output_graph = f"-OUTPUTGRAPH{widget_id}-"
-        self.gui_restart_calibration = f"-RESTARTCALIBRATION{widget_id}-"
-        self.gui_stop_calibration = f"-STOPCALIBRATION{widget_id}-"
         self.gui_mode_readout = f"-APPMODE{widget_id}-"
         self.gui_roi_message = f"-ROIMESSAGE{widget_id}-"
         self.gui_vertical_flip = f"-VERTICALFLIP{widget_id}-"
@@ -126,22 +124,6 @@ class CameraWidget:
                     key=self.gui_rotation_slider,
                     background_color=bg_color_highlight,
                     tooltip=lang._instance.get_string("camera.rotationTooltip"),
-                ),
-            ],
-            [
-                sg.Button(
-                    lang._instance.get_string("camera.startCalibration"),
-                    key=self.gui_restart_calibration,
-                    button_color=button_color,
-                    tooltip=lang._instance.get_string("camera.startCalibrationTooltip"),
-                    disabled=not self.settings_config.use_calibration,
-                ),
-                sg.Button(
-                    lang._instance.get_string("camera.stopCalibration"),
-                    key=self.gui_stop_calibration,
-                    button_color=button_color,
-                    tooltip=lang._instance.get_string("camera.startCalibrationTooltip"),
-                    disabled=not self.settings_config.use_calibration,
                 ),
             ],
             [
@@ -388,13 +370,14 @@ class CameraWidget:
 
         if event == self.use_calibration:
             if self.settings_config.use_calibration == True:
-                window[self.gui_restart_calibration].update(disabled=False)
-                window[self.gui_stop_calibration].update(disabled=False)
                 print(f'[{lang._instance.get_string("log.info")}] {lang._instance.get_string("info.enabled")}')
+                # Optionally, trigger BlendShapeCalibrator reset/init here if needed
+                playSound(os.path.join("Audio", "start.wav"))
             else:
-                window[self.gui_restart_calibration].update(disabled=True)
-                window[self.gui_stop_calibration].update(disabled=True)
                 print(f'[{lang._instance.get_string("log.info")}] {lang._instance.get_string("info.disabled")}')
+                # Stop calibration if it was running
+                if self.babble_cnn.calibration_frame_counter is not None:
+                    self.babble_cnn.calibration_frame_counter = None
 
         if event == "{}+UP".format(self.gui_roi_selection):
             # Event for mouse button up in ROI mode
@@ -438,18 +421,15 @@ class CameraWidget:
             #print(self.camera_list)
             window[self.gui_camera_addr].update(values=self.camera_list,size=(20,0))
 
-        if event == self.gui_restart_calibration:
+        
             if (
                 values[self.use_calibration] == True
             ):  # Don't start recording if the calibration filter is disabled.
-                self.babble_cnn.calibration_frame_counter = 1500
+                self.babble_cnn.calibration_frame_counter = None  # Disable old frame counter logic
+                # Optionally, trigger BlendShapeCalibrator reset/init here if needed
                 playSound(os.path.join("Audio", "start.wav"))
 
-        if event == self.gui_stop_calibration:
-            if (
-                self.babble_cnn.calibration_frame_counter != None
-            ):  # Only assign the variable if we are in calibration mode.
-                self.babble_cnn.calibration_frame_counter = 0
+        # Calibration is now controlled by the checkbox only
 
         needs_roi_set = self.config.roi_window_h <= 0 or self.config.roi_window_w <= 0
 

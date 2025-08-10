@@ -137,6 +137,18 @@ class BabbleProcessor:
         self.one_euro_filter = OneEuroFilter(
             noisy_point, min_cutoff=min_cutoff, beta=beta
         )
+        # Persistent calibrator instance for continuous calibration
+        self._calibrator = None
+
+    def process_output(self, output_array):
+        # Called after model inference, applies calibration if enabled
+        if self.settings.use_calibration:
+            if self._calibrator is None or (hasattr(self._calibrator, 'calibrator') and self._calibrator.calibrator is not None and self._calibrator.calibrator.num_blendshapes != len(output_array)):
+                from osc_calibrate_filter import cal
+                self._calibrator = cal(self.settings)
+            return self._calibrator.cal_osc(output_array)
+        else:
+            return output_array
 
     def output_images_and_update(self, output_information: CamInfo):
         try:
@@ -267,8 +279,11 @@ class BabbleProcessor:
             )  # copy this frame to have a clean image for blink algo
 
             run_model(self)
-            if self.settings.use_calibration:
-                self.output = cal.cal_osc(self, self.output)
+            # Replace the old calibration logic with the new persistent calibrator usage
+            # if self.settings.use_calibration:
+            #     self.output = cal(self.settings).cal_osc(self.output)
+            # New code:
+            self.output = self.process_output(self.output)
             # else:
             #   pass
             # print(self.output)

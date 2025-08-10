@@ -378,13 +378,13 @@ async def main_loop(window, config, cams, settings, thread_manager):
             config.cam_display_id = Tab.SETTINGS
             config.save()
 
-        elif (
+        elif (  
             values[UIConstants.ALGO_SETTINGS_RADIO_NAME]
             and config.cam_display_id != Tab.ALGOSETTINGS
         ):
             cams[0].stop()
             settings[0].stop()
-            settings[2].stop()
+            settings[2].stop()  
             settings[1].start()
             window[UIConstants.CAM_NAME].update(visible=False)
             window[UIConstants.SETTINGS_NAME].update(visible=False)

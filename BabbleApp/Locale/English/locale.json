@@ -150,6 +150,8 @@
 	"calibration.maxLeftValue": "Max Left Value",
 	"calibration.minRightValue": "Min Right Value",
 	"calibration.maxRightValue": "Max Right Value",
+	"algorithm.clearCalibration": "Clear Calibration",
+	"algorithm.clearCalibrationTooltip": "Reset all calibration values to their defaults",
 	"general.theme": "Theme",
 	"general.theme.system": "System",
 	"general.theme.light": "Light",
