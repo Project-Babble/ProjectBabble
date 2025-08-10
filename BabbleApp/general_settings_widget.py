@@ -22,6 +22,7 @@ class SettingsWidget:
         self.gui_min_cutoff = f"-MINCUTOFF{widget_id}-"
         self.gui_ROSC = f"-ROSC{widget_id}-"
         self.gui_update_check = f"-UPDATECHECK{widget_id}-"
+        self.gui_logging = f"-LOGGING{widget_id}-"
         self.gui_osc_location = f"-OSCLOCATION{widget_id}-"
         self.gui_cam_resolution_x = f"-CAMRESX{widget_id}-"
         self.gui_cam_resolution_y = f"-CAMRESY{widget_id}-"
@@ -44,6 +45,13 @@ class SettingsWidget:
                     key=self.gui_update_check,
                     background_color=bg_color_highlight,
                     tooltip=lang._instance.get_string("general.toolTip"),
+                ),
+                sg.Checkbox(
+                    lang._instance.get_string("general.logging"),
+                    default=self.config.gui_logging,
+                    key=self.gui_logging,
+                    background_color=bg_color_highlight,
+                    tooltip=lang._instance.get_string("general.loggingTooltip"),
                 ),
             ],
             [
@@ -331,6 +339,11 @@ class SettingsWidget:
         # Update check option
         if self.config.gui_update_check != values[self.gui_update_check]:
             self.config.gui_update_check = values[self.gui_update_check]
+            changed = True
+            
+        # Logging option
+        if self.config.gui_logging != values[self.gui_logging]:
+            self.config.gui_logging = values[self.gui_logging]
             changed = True
 
         # Update disable camera preview option

@@ -1,5 +1,5 @@
-import typing
 import serial
+import serial.tools.list_ports
 import sys
 import glob
 import os
@@ -9,6 +9,7 @@ import re
 import subprocess
 import sounddevice as sd
 import soundfile as sf
+import contextlib
 
 bg_color_highlight = "#424042"
 bg_color_clear = "#242224"
@@ -16,6 +17,7 @@ bg_color_clear = "#242224"
 onnx_providers = [
     "DmlExecutionProvider",
     "CUDAExecutionProvider",
+    "CoreMLExecutionProvider",
     "CPUExecutionProvider",
 ]
 
@@ -33,7 +35,7 @@ def is_valid_float_input(value):
 def is_valid_int_input(value):
     # Allow empty string, negative sign, or an integer number
     return bool(re.match(r"^-?\d*$", value))
-    
+
 def list_camera_names():
     cam_list = graph.get_input_devices()
     cam_names = []
@@ -42,20 +44,33 @@ def list_camera_names():
     cam_names = cam_names + list_serial_ports()
     return cam_names
 
+@contextlib.contextmanager
+def suppress_stderr():
+    """Context manager to suppress stderr (used for OpenCV warnings)."""
+    with open(os.devnull, 'w') as devnull:
+        old_stderr_fd = os.dup(2)
+        os.dup2(devnull.fileno(), 2)
+        try:
+            yield
+        finally:
+            os.dup2(old_stderr_fd, 2)
+            os.close(old_stderr_fd)
+
 def list_cameras_opencv():
     """Use OpenCV to check available cameras by index (fallback for Linux/macOS)"""
     index = 0
     arr = []
-    while True:
-        cap = cv2.VideoCapture(index)
-        if not cap.read()[0]:
-            break
-        else:
-            arr.append(f"/dev/video{index}")
-        cap.release()
-        index += 1
+    with suppress_stderr():  # tell OpenCV not to throw "cannot find camera" while we probe for cameras
+        while True:
+            cap = cv2.VideoCapture(index)
+            if not cap.read()[0]:
+                cap.release()
+                break
+            else:
+                arr.append(f"/dev/video{index}")
+                cap.release()
+            index += 1
     return arr
-
 
 def is_uvc_device(device):
     """Check if the device is a UVC video device (not metadata)"""
@@ -124,25 +139,16 @@ def list_serial_ports():
         :returns:
             A list of the serial ports available on the system
     """
-    if sys.platform.startswith("win"):
-        ports = ["COM%s" % (i + 1) for i in range(256)]
-    elif sys.platform.startswith("linux") or sys.platform.startswith("cygwin"):
-        # this excludes your current terminal "/dev/tty"
-        ports = glob.glob("/dev/tty[A-Za-z]*")
-    elif sys.platform.startswith("darwin"):
-        ports = glob.glob("/dev/tty.*")
-    else:
+    if not sys.platform.startswith(("win", "linux", "cygwin", "darwin")):
         raise EnvironmentError("Unsupported platform")
 
-    result = []
-    for port in ports:
-        try:
-            s = serial.Serial(port)
-            s.close()
-            result.append(port)
-        except (OSError, serial.SerialException):
-            pass
-    return result
+    ports = []
+    try:
+        for s in serial.tools.list_ports.comports():
+            ports.append(s.device)
+    except (AttributeError, OSError, serial.SerialException):
+        pass
+    return sorted(ports)
 
 
 def get_camera_index_by_name(name):
@@ -182,4 +188,3 @@ def playSound(file):
 def ensurePath():
     if os.path.exists(os.path.join(os.getcwd(), "BabbleApp")):
         os.chdir(os.path.join(os.getcwd(), "BabbleApp"))
-

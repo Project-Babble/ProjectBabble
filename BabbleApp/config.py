@@ -36,6 +36,7 @@ class BabbleSettingsConfig(BaseModel):
     gui_osc_delay_enable: bool = False
     gui_osc_delay_seconds: float = 0.01
     gui_update_check: bool = True
+    gui_logging: bool = True    #Prefer "False" for stable release?
     gui_ROSC: bool = False
     gui_osc_location: str = ""
     gui_multiply: float = 1
