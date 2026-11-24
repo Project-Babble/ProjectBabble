@@ -7,7 +7,6 @@ from typing import (
     ClassVar,
     Dict,
     List,
-    Optional,
     TYPE_CHECKING,
     Tuple,
     Type,

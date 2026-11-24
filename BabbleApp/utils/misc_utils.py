@@ -7,9 +7,25 @@ import platform
 import cv2
 import re
 import subprocess
-import sounddevice as sd
-import soundfile as sf
+import threading
 import contextlib
+
+# Android reports itself as "Linux" through platform.system() on Python 3.12, but none of the
+# Linux-only paths (v4l2, fcntl ioctls, /dev/video*) are usable there, so detect it explicitly.
+is_android = "ANDROID_ARGUMENT" in os.environ or hasattr(sys, "getandroidapilevel")
+
+# Set environment variable before importing sounddevice. Value is not important.
+os.environ["SD_ENABLE_ASIO"] = "1"
+try:
+    # PortAudio / libsndfile are not available on every platform (notably Android).
+    # When they are missing, sounds are played through Kivy's audio providers instead.
+    if is_android:
+        raise ImportError("sounddevice is not supported on Android")
+    import sounddevice as sd
+    import soundfile as sf
+except (ImportError, OSError):
+    sd = None
+    sf = None
 
 bg_color_highlight = "#424042"
 bg_color_clear = "#242224"
@@ -21,8 +37,8 @@ onnx_providers = [
     "CPUExecutionProvider",
 ]
 
-# Detect the operating system
-os_type = platform.system()
+# Detect the operating system ("Windows", "Linux", "Darwin" or "Android")
+os_type = "Android" if is_android else platform.system()
 
 if os_type == 'Windows':
     from pygrabber.dshow_graph import FilterGraph
@@ -126,6 +142,11 @@ def list_camera_names():
         # On macOS, fallback to OpenCV (device names aren't fetched)
         return list_cameras_opencv() + list_serial_ports()
 
+    elif os_type == "Android":
+        # Local cameras and serial ports are not reachable through OpenCV/pyserial on Android.
+        # Network (MJPEG/HTTP) camera addresses can still be typed in manually.
+        return []
+
     else:
         return ["Unsupported operating system"]
 
@@ -177,12 +198,29 @@ def get_camera_index_by_name(name):
 
     return None
 
-# Set environment variable before importing sounddevice. Value is not important.
-os.environ["SD_ENABLE_ASIO"] = "1"
+def _play_sound_kivy(file):
+    # Kivy's SoundLoader picks the right backend per platform (SDL2/GStreamer/Android MediaPlayer).
+    from kivy.core.audio import SoundLoader
+
+    sound = SoundLoader.load(file)
+    if sound is not None:
+        sound.play()
+
+
 def playSound(file):
-    data, fs = sf.read(file)
-    sd.play(data, fs)
-    sd.wait()
+    if sd is not None:
+        data, fs = sf.read(file)
+        sd.play(data, fs)
+        # Block worker threads until the sound finishes (previous behaviour), but never the UI thread.
+        if threading.current_thread() is not threading.main_thread():
+            sd.wait()
+        return
+    try:
+        from kivy.clock import Clock
+
+        Clock.schedule_once(lambda dt: _play_sound_kivy(file))
+    except Exception as e:
+        print(f"Unable to play sound {file}: {e}")
 
 # Handle debugging virtual envs.
 def ensurePath():

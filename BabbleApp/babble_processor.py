@@ -9,18 +9,15 @@ import queue
 import threading
 import numpy as np
 import cv2
-from enum import Enum
 from one_euro_filter import OneEuroFilter
 from utils.misc_utils import playSound, onnx_providers
-import importlib
-from osc import Tab
 from osc_calibrate_filter import *
 from tab import CamInfo, CamInfoOrigin
 from babble_model_loader import *
 import os
 
 os.environ["OMP_NUM_THREADS"] = "1"
-import onnxruntime as ort
+from inference_backend import create_backend
 from lang_manager import LocaleStringManager as lang
 
 
@@ -93,37 +90,22 @@ class BabbleProcessor:
         self.calibrate_config = np.empty((1, 45))
         self.min_max_array = np.empty((2, 45))
 
-        ort.disable_telemetry_events()
-        self.opts = ort.SessionOptions()
-        self.opts.inter_op_num_threads = 1
-        self.opts.intra_op_num_threads = settings.gui_inference_threads
-        self.opts.graph_optimization_level = ort.GraphOptimizationLevel.ORT_ENABLE_ALL
-        self.opts.add_session_config_entry("session.intra_op.allow_spinning", "0")  # ~3% savings worth ~6ms avg latency. Not noticeable at 60fps?
-        self.opts.enable_mem_pattern = False
-        if self.runtime in ("ONNX", "Default (ONNX)"):  # ONNX
-            if self.use_gpu:
-                provider = onnx_providers
-            else:
-                provider = [onnx_providers[-1]]
+        if self.runtime in ("ONNX", "Default (ONNX)"):  # ONNX model, run by ONNX Runtime or OpenCV DNN
+            backend_args = dict(
+                threads=settings.gui_inference_threads,
+                use_gpu=self.use_gpu,
+                gpu_index=self.gpu_index,
+                providers=onnx_providers,
+            )
             try:
-                self.sess = ort.InferenceSession(
-                    f"{self.model}/onnx/model.onnx",
-                    self.opts,
-                    providers=provider,
-                )
-            except:                                                 # Load default model if we can't find the specified model
+                self.sess = create_backend(self.model, **backend_args)
+            except Exception:  # Load default model if we can't find the specified model
                 print(
                 f'\033[91m[{lang._instance.get_string("log.error")}] {lang._instance.get_string("error.modelLoad")} {self.model}\033[0m'
                 )
                 print(f'\033[91mLoading Default model: {self.default_model}.\033[0m')
-                self.sess = ort.InferenceSession(
-                    f"{self.default_model}/onnx/model.onnx",  
-                    self.opts,
-                    providers=provider,
-                    provider_options=[{"device_id": self.gpu_index}, {"device_id": self.gpu_index}, {}], # We need a dict entry for each EP in our providers list
-                )
-            self.input_name = self.sess.get_inputs()[0].name
-            self.output_name = self.sess.get_outputs()[0].name
+                self.sess = create_backend(self.default_model, **backend_args)
+            print(f'\033[94m[{lang._instance.get_string("log.info")}] Inference backend: {self.sess.name}\033[0m')
         try:
             min_cutoff = float(self.settings.gui_min_cutoff)
             beta = float(self.settings.gui_speed_coefficient)

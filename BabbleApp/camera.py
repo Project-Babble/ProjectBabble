@@ -16,8 +16,17 @@ from PIL import Image
 from io import BytesIO
 from utils.misc_utils import get_camera_index_by_name, list_camera_names, os_type
 
-from vivefacialtracker.vivetracker import ViveTracker
-from vivefacialtracker.camera_controller import FTCameraController
+if os_type == "Android":
+    # The Vive Facial Tracker needs DirectShow/V4L2 USB access, which Android doesn't provide.
+    class ViveTracker:
+        @staticmethod
+        def is_device_vive_tracker(device_name) -> bool:
+            return False
+
+    FTCameraController = None
+else:
+    from vivefacialtracker.vivetracker import ViveTracker
+    from vivefacialtracker.camera_controller import FTCameraController
 
 from mjpeg_streamer import MJPEGVideoCapture
 

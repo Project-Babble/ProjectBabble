@@ -25,3 +25,6 @@ scripts/example_build_app_and_installer.bat
 *.kdev*
 *.code-workspace
 /BabbleBuilder
+/BabbleApp/venv-3.12.3
+/BabbleApp/venv-3.12.8
+/BabbleApp/venv-3.11.11

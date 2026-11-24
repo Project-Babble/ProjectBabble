@@ -4,7 +4,6 @@ import json
 os.environ["OMP_NUM_THREADS"] = "1"
 import onnxruntime as ort
 import time
-import FreeSimpleGUI as sg
 import cv2
 import numpy as np
 from pythonosc import udp_client

@@ -1,44 +1,25 @@
-from collections import deque
 from queue import Queue, Empty
 from threading import Event, Thread
-import FreeSimpleGUI as sg
-import cv2
 import os
+
+import kivy_ui as ui  # Must be imported before any other Kivy module
+from kivy.uix.boxlayout import BoxLayout
+
 from babble_processor import BabbleProcessor, CamInfoOrigin
-from camera import Camera, CameraState, MAX_RESOLUTION
+from camera import Camera, CameraState
 from config import BabbleConfig
 from osc import Tab
 from utils.misc_utils import (
     playSound,
     list_camera_names,
-    get_camera_index_by_name,
     bg_color_highlight,
-    bg_color_clear,
     is_valid_int_input
 )
 from lang_manager import LocaleStringManager as lang
 
+
 class CameraWidget:
     def __init__(self, widget_id: Tab, main_config: BabbleConfig, osc_queue: Queue):
-        self.gui_camera_addr = f"-CAMERAADDR{widget_id}-"
-        self.gui_rotation_slider = f"-ROTATIONSLIDER{widget_id}-"
-        self.gui_roi_button = f"-ROIMODE{widget_id}-"
-        self.gui_roi_layout = f"-ROILAYOUT{widget_id}-"
-        self.gui_roi_selection = f"-GRAPH{widget_id}-"
-        self.gui_tracking_button = f"-TRACKINGMODE{widget_id}-"
-        self.gui_autoroi = f"-AUTOROI{widget_id}-"
-        self.gui_save_tracking_button = f"-SAVETRACKINGBUTTON{widget_id}-"
-        self.gui_tracking_layout = f"-TRACKINGLAYOUT{widget_id}-"
-        self.gui_tracking_image = f"-IMAGE{widget_id}-"
-        self.gui_tracking_fps = f"-TRACKINGFPS{widget_id}-"
-        self.gui_tracking_bps = f"-TRACKINGBPS{widget_id}-"
-        self.gui_output_graph = f"-OUTPUTGRAPH{widget_id}-"
-        self.gui_mode_readout = f"-APPMODE{widget_id}-"
-        self.gui_roi_message = f"-ROIMESSAGE{widget_id}-"
-        self.gui_vertical_flip = f"-VERTICALFLIP{widget_id}-"
-        self.gui_horizontal_flip = f"-HORIZONTALFLIP{widget_id}-"
-        self.use_calibration = f"-USECALIBRATION{widget_id}-"
-        self.gui_refresh_button = f"-REFRESHCAMLIST{widget_id}-"
         self.osc_queue = osc_queue
         self.main_config = main_config
         self.cam_id = widget_id
@@ -85,166 +66,264 @@ class CameraWidget:
             self.settings,
         )
 
-        button_color = "#539e8a"
-        self.roi_layout = [
-            [
-                sg.Button(
-                    lang._instance.get_string("camera.selectEntireFrame"),
-                    key=self.gui_autoroi,
-                    button_color=button_color,
-                    tooltip=lang._instance.get_string(
-                        "camera.selectEntireFrameTooltip"
-                    ),
-                ),
-            ],
-            [
-                sg.Graph(
-                    (MAX_RESOLUTION, MAX_RESOLUTION),
-                    (0, MAX_RESOLUTION),
-                    (MAX_RESOLUTION, 0),
-                    key=self.gui_roi_selection,
-                    drag_submits=True,
-                    enable_events=True,
-                    background_color=bg_color_highlight,
-                )
-            ],
-        ]
-
-        # Define the window's contents
-        self.tracking_layout = [
-            [
-                sg.Text(
-                    lang._instance.get_string("camera.rotation"),
-                    background_color=bg_color_highlight,
-                ),
-                sg.Slider(
-                    range=(0, 360),
-                    default_value=self.config.rotation_angle,
-                    orientation="h",
-                    key=self.gui_rotation_slider,
-                    background_color=bg_color_highlight,
-                    tooltip=lang._instance.get_string("camera.rotationTooltip"),
-                ),
-            ],
-            [
-                sg.Checkbox(
-                    f'{lang._instance.get_string("camera.enableCalibration")}:',
-                    default=self.settings_config.use_calibration,
-                    key=self.use_calibration,
-                    background_color=bg_color_highlight,
-                    tooltip=lang._instance.get_string(
-                        "camera.enableCalibrationTooltip"
-                    ),
-                    enable_events=True,
-                ),
-            ],
-            [
-                sg.Text(
-                    f'{lang._instance.get_string("camera.mode")}:',
-                    background_color=bg_color_highlight,
-                ),
-                sg.Text(
-                    lang._instance.get_string("camera.calibrating"),
-                    key=self.gui_mode_readout,
-                    background_color=button_color,
-                ),
-                sg.Text(
-                    "", key=self.gui_tracking_fps, background_color=bg_color_highlight
-                ),
-                sg.Text(
-                    "", key=self.gui_tracking_bps, background_color=bg_color_highlight
-                ),
-            ],
-            [
-                sg.Checkbox(
-                    f'{lang._instance.get_string("camera.verticalFlip")}:',
-                    default=self.config.gui_vertical_flip,
-                    key=self.gui_vertical_flip,
-                    background_color=bg_color_highlight,
-                    tooltip=f'{lang._instance.get_string("camera.verticalFlipTooltip")}.',
-                ),
-                sg.Checkbox(
-                    f'{lang._instance.get_string("camera.horizontalFlip")}:',
-                    default=self.config.gui_horizontal_flip,
-                    key=self.gui_horizontal_flip,
-                    background_color=bg_color_highlight,
-                    tooltip=f'{lang._instance.get_string("camera.horizontalFlipTooltip")}:',
-                ),
-            ],
-            [sg.Image(filename="", key=self.gui_tracking_image)],
-            [
-                sg.Text(
-                    f'{lang._instance.get_string("camera.crop")}:',
-                    key=self.gui_roi_message,
-                    background_color=bg_color_highlight,
-                    visible=False,
-                ),
-            ],
-        ]
-
-        self.widget_layout = [
-            [
-                sg.Text(
-                    lang._instance.get_string("camera.cameraAddress"),
-                    background_color=bg_color_highlight,
-                ),
-                sg.InputCombo(
-                    values=self.camera_list,
-                    default_value=self.config.capture_source,
-                    key=self.gui_camera_addr,
-                    tooltip=lang._instance.get_string("camera.cameraAddressTooltip"),
-                    enable_events=True,
-                    size=(20,0),
-                ),
-                sg.Button(
-                    lang._instance.get_string("camera.refreshCameraList"),
-                    key=self.gui_refresh_button,
-                    button_color=button_color,
-                ),
-            ],
-            [
-                sg.Button(
-                    lang._instance.get_string("camera.saveAndRestartTracking"),
-                    key=self.gui_save_tracking_button,
-                    button_color=button_color,
-                ),
-            ],
-            [
-                sg.Button(
-                    lang._instance.get_string("camera.trackingMode"),
-                    key=self.gui_tracking_button,
-                    button_color=button_color,
-                    tooltip=f'{lang._instance.get_string("camera.trackingModeTooltip")}.',
-                ),
-                sg.Button(
-                    lang._instance.get_string("camera.croppingMode"),
-                    key=self.gui_roi_button,
-                    button_color=button_color,
-                    tooltip=f'{lang._instance.get_string("camera.croppingModeToolTip")}.',
-                ),
-            ],
-            [
-                sg.Column(
-                    self.tracking_layout,
-                    key=self.gui_tracking_layout,
-                    background_color=bg_color_highlight,
-                ),
-                sg.Column(
-                    self.roi_layout,
-                    key=self.gui_roi_layout,
-                    background_color=bg_color_highlight,
-                    visible=False,
-                ),
-            ],
-        ]
-
-        self.x0, self.y0 = None, None
-        self.x1, self.y1 = None, None
-        self.figure = None
-        self.is_mouse_up = True
         self.in_roi_mode = False
         self.bps = 0
+        self._build_layout()
 
+    # ------------------------------------------------------------------------------------------
+    # Layout
+    # ------------------------------------------------------------------------------------------
+    def _build_layout(self):
+        s = lang._instance.get_string
+
+        # --- Cropping (ROI) view ---
+        self.roi_layout = ui.Panel(bg=bg_color_highlight)
+        self.roi_layout.add_widget(
+            ui.row(
+                ui.button(
+                    s("camera.selectEntireFrame"),
+                    on_press=self.on_select_entire_frame,
+                    tooltip=s("camera.selectEntireFrameTooltip"),
+                )
+            )
+        )
+        self.roi_selector = ui.ROISelector(on_select=self.on_roi_selected)
+        self.roi_layout.add_widget(self.roi_selector)
+
+        # --- Tracking view ---
+        self.tracking_layout = ui.Panel(bg=bg_color_highlight)
+        self.rotation_value = ui.label(str(int(self.config.rotation_angle)), bg=bg_color_highlight)
+        self.tracking_layout.add_widget(
+            ui.row(
+                ui.label(s("camera.rotation"), bg=bg_color_highlight),
+                ui.slider(
+                    0,
+                    360,
+                    self.config.rotation_angle,
+                    on_change=self.on_rotation_changed,
+                    tooltip=s("camera.rotationTooltip"),
+                ),
+                self.rotation_value,
+            )
+        )
+        # Calibration is controlled by the checkbox only (continuous auto-calibration).
+        self.use_calibration_checkbox = ui.checkbox(
+            f'{s("camera.enableCalibration")}:',
+            self.settings_config.use_calibration,
+            on_change=self.on_use_calibration_changed,
+            tooltip=s("camera.enableCalibrationTooltip"),
+        )
+        self.tracking_layout.add_widget(ui.row(self.use_calibration_checkbox))
+
+        self.mode_readout = ui.label(s("camera.calibrating"), bg=ui.BUTTON_COLOR)
+        self.tracking_fps = ui.label("")
+        self.tracking_bps = ui.label("")
+        self.tracking_layout.add_widget(
+            ui.row(
+                ui.label(f'{s("camera.mode")}:'),
+                self.mode_readout,
+                self.tracking_fps,
+                self.tracking_bps,
+            )
+        )
+        self.tracking_layout.add_widget(
+            ui.row(
+                ui.checkbox(
+                    f'{s("camera.verticalFlip")}:',
+                    self.config.gui_vertical_flip,
+                    on_change=self.on_vertical_flip_changed,
+                    tooltip=f'{s("camera.verticalFlipTooltip")}.',
+                ),
+                ui.checkbox(
+                    f'{s("camera.horizontalFlip")}:',
+                    self.config.gui_horizontal_flip,
+                    on_change=self.on_horizontal_flip_changed,
+                    tooltip=f'{s("camera.horizontalFlipTooltip")}:',
+                ),
+            )
+        )
+        self.roi_message = ui.wrapping_label(f'{s("camera.crop")}:')
+        self.roi_message_holder = BoxLayout(size_hint_y=None, height=0)
+        self.tracking_layout.add_widget(self.roi_message_holder)
+        self.tracking_image = ui.FrameView()
+        self.tracking_image_holder = BoxLayout()
+        self.tracking_image_holder.add_widget(self.tracking_image)
+        self.tracking_layout.add_widget(self.tracking_image_holder)
+
+        # --- Page ---
+        self.widget_layout = ui.Panel(bg=bg_color_highlight)
+        self.camera_addr = ui.ComboInput(
+            self.camera_list,
+            self.config.capture_source,
+            tooltip=s("camera.cameraAddressTooltip"),
+        )
+        self.widget_layout.add_widget(
+            ui.row(
+                ui.label(s("camera.cameraAddress")),
+                self.camera_addr,
+                ui.button(s("camera.refreshCameraList"), on_press=self.on_refresh_camera_list),
+            )
+        )
+        self.widget_layout.add_widget(
+            ui.row(ui.button(s("camera.saveAndRestartTracking"), on_press=self.on_save_and_restart))
+        )
+        self.widget_layout.add_widget(
+            ui.row(
+                ui.button(
+                    s("camera.trackingMode"),
+                    on_press=self.on_tracking_mode,
+                    tooltip=f'{s("camera.trackingModeTooltip")}.',
+                ),
+                ui.button(
+                    s("camera.croppingMode"),
+                    on_press=self.on_roi_mode,
+                    tooltip=f'{s("camera.croppingModeToolTip")}.',
+                ),
+            )
+        )
+        # Holds either the tracking view or the cropping view; fills the remaining height.
+        self.body = BoxLayout()
+        self.body.add_widget(self.tracking_layout)
+        self.widget_layout.add_widget(self.body)
+
+    def _set_roi_message_visible(self, visible):
+        if visible and self.roi_message.parent is None:
+            self.roi_message_holder.add_widget(self.roi_message)
+            self.roi_message_holder.height = ui.ROW_HEIGHT
+        elif not visible and self.roi_message.parent is not None:
+            self.roi_message_holder.remove_widget(self.roi_message)
+            self.roi_message_holder.height = 0
+
+    def _set_body(self, widget):
+        if widget is None:
+            self.body.clear_widgets()
+        elif widget.parent is not self.body:
+            self.body.clear_widgets()
+            self.body.add_widget(widget)
+
+    # ------------------------------------------------------------------------------------------
+    # Event handlers (previously dispatched from the FreeSimpleGUI event loop)
+    # ------------------------------------------------------------------------------------------
+    def on_save_and_restart(self):
+        value = self.camera_addr.text
+        if value == self.config.capture_source or value == str(self.config.capture_source):
+            return
+        print(
+            f'\033[94m[{lang._instance.get_string("log.info")}] {lang._instance.get_string("info.newValue")}: {value}\033[0m'
+        )
+        try:
+            self.config.use_ffmpeg = False
+            # Try storing ints as ints, for those using wired cameras.
+            ports = ("COM", "/dev/ttyACM")
+            if any(x in str(value) for x in ports):
+                self.config.capture_source = value
+            else:
+                if is_valid_int_input(value):
+                    self.config.capture_source = int(value)
+                else:
+                    self.config.capture_source = value
+        except ValueError:
+            if value == "":
+                self.config.capture_source = None
+            else:
+                # If http is not in camera address, add it.
+                self.config.capture_source = value
+
+                if "udp" in value:
+                    self.config.use_ffmpeg = True
+                elif (
+                    "http" not in value
+                    and ".mp4" not in value
+                    and "udp" not in value
+                    and "COM" not in value
+                    and "/dev/ttyACM" not in value
+                    and value not in self.camera_list
+                ):  # If http is not in camera address, add it.
+                    self.config.capture_source = f"http://{value}/"
+        self.main_config.save()
+
+    def on_rotation_changed(self, value):
+        value = int(value)
+        self.rotation_value.text = str(value)
+        if self.config.rotation_angle != value:
+            self.config.rotation_angle = value
+            self.main_config.save()
+
+    def on_vertical_flip_changed(self, value):
+        self.config.gui_vertical_flip = bool(value)
+        self.main_config.save()
+
+    def on_horizontal_flip_changed(self, value):
+        self.config.gui_horizontal_flip = bool(value)
+        self.main_config.save()
+
+    def on_use_calibration_changed(self, value):
+        self.settings_config.use_calibration = bool(value)
+        self.main_config.save()
+        if value:
+            print(f'[{lang._instance.get_string("log.info")}] {lang._instance.get_string("info.enabled")}')
+            playSound(os.path.join("Audio", "start.wav"))
+        else:
+            print(f'[{lang._instance.get_string("log.info")}] {lang._instance.get_string("info.disabled")}')
+            # Stop calibration if it was running
+            if self.babble_cnn.calibration_frame_counter is not None:
+                self.babble_cnn.calibration_frame_counter = None
+
+    def on_tracking_mode(self):
+        print(
+            f'\033[94m[{lang._instance.get_string("log.info")}] {lang._instance.get_string("info.moveToTrackingMode")}\033[0m'
+        )
+        self.in_roi_mode = False
+        self.camera.set_output_queue(self.capture_queue)
+        self._set_body(self.tracking_layout)
+
+    def on_roi_mode(self):
+        print(
+            f'\033[94m[{lang._instance.get_string("log.info")}] {lang._instance.get_string("info.moveToROIMode")}\033[0m'
+        )
+        self.in_roi_mode = True
+        self.camera.set_output_queue(self.roi_queue)
+        self._set_body(self.roi_layout)
+
+    def on_roi_selected(self, x, y, w, h):
+        self.config.roi_window_x = int(x)
+        self.config.roi_window_y = int(y)
+        self.config.roi_window_w = int(w)
+        self.config.roi_window_h = int(h)
+        self.main_config.save()
+
+    def on_select_entire_frame(self):
+        print(lang._instance.get_string("info.setROI"))
+        if self.maybe_image is None:
+            return
+        output = self.maybe_image[0].shape
+        self.config.roi_window_x = 0
+        self.config.roi_window_y = 0
+        self.config.roi_window_w = output[1]
+        self.config.roi_window_h = output[0]
+        self.roi_selector.start = (0, 0)
+        self.roi_selector.end = (output[1], output[0])
+        self.main_config.save()
+
+    def on_refresh_camera_list(self):
+        print(
+            f'\033[94m[{lang._instance.get_string("log.info")}] {lang._instance.get_string("info.refreshedCameraList")}\033[0m'
+        )
+        self.camera_list = list_camera_names()
+        self.camera_addr.values = self.camera_list
+
+    def clear_calibration(self):
+        """Discard the auto-calibrator's learned ranges (used by the Algorithm page's button)."""
+        from osc_calibrate_filter import cal
+
+        # Swap in a fresh calibrator rather than mutating the one the processor thread may be
+        # using right now; attribute assignment is atomic, so the thread sees old or new, never None.
+        self.babble_cnn._calibrator = cal(self.settings_config)
+        print(f'\033[94m[{lang._instance.get_string("log.info")}] {lang._instance.get_string("algorithm.clearCalibration")}\033[0m')
+
+    # ------------------------------------------------------------------------------------------
+    # Lifecycle
+    # ------------------------------------------------------------------------------------------
     def _movavg_fps(self, next_fps):
         # next_fps is already averaged
         return f"{round(next_fps)} FPS {round((1 / next_fps if next_fps else 0) * 1000)} ms"
@@ -261,13 +340,10 @@ class CameraWidget:
         if not self.cancellation_event.is_set():
             return
         self.cancellation_event.clear()
-        self.babble_cnn_thread = Thread(target=self.babble_cnn.run)
+        self.babble_cnn_thread = Thread(target=self.babble_cnn.run, name="BabbleProcessorThread")
         self.babble_cnn_thread.start()
-        # self.babble_landmark_thread = Thread(target=self.babble_landmark.run)
-        # self.babble_landmark_thread.start()
-        self.camera_thread = Thread(target=self.camera.run)
+        self.camera_thread = Thread(target=self.camera.run, name="CameraThread")
         self.camera_thread.start()
-
 
     def stop(self):
         # If we're not running yet, bail
@@ -275,230 +351,66 @@ class CameraWidget:
             return
         self.cancellation_event.set()
         self.babble_cnn_thread.join()
-        # self.babble_landmark_thread.join()
         self.camera_thread.join()
 
-    def render(self, window, event, values):
+    def render(self):
+        """Called periodically on the UI thread to refresh status text and camera previews."""
         if self.image_queue.qsize() > 2:
             with self.image_queue.mutex:
                 self.image_queue.queue.clear()
-        else:
-            pass
-        changed = False
-        # If anything has changed in our configuration settings, change/update those.
-        if (
-            event == self.gui_save_tracking_button
-            and values[self.gui_camera_addr] != self.config.capture_source
-        ):
-            value = values[self.gui_camera_addr]
-            print(
-                f'\033[94m[{lang._instance.get_string("log.info")}] {lang._instance.get_string("info.newValue")}: {value}\033[0m'
-            )
-            try:
-                self.config.use_ffmpeg = False
-                # Try storing ints as ints, for those using wired cameras.
-                # if value not in self.camera_list:
-                #    self.config.capture_source = value
-                # if "COM" not in value:
-                ports = ("COM", "/dev/ttyACM")
-                if any(x in str(value) for x in ports):
-                    self.config.capture_source = value
-                else:
-                    if is_valid_int_input(value):
-                        self.config.capture_source = int(value)
-                    else:
-                        self.config.capture_source = value
-            except ValueError:
-                if value == "":
-                    self.config.capture_source = None
-                else:
-                    # If http is not in camera address, add it.
-                    self.config.capture_source = value
 
-                    if "udp" in value:
-                        self.config.use_ffmpeg = True
-                    elif (
-                        "http" not in value
-                        and ".mp4" not in value
-                        and "udp" not in value
-                        and "COM" not in value
-                        and "/dev/ttyACM" not in value
-                        and value not in self.camera_list
-                    ):  # If http is not in camera address, add it.
-                        self.config.capture_source = (
-                            f"http://{values[self.gui_camera_addr]}/"
-                        )
-
-            changed = True
-
-        if self.config.rotation_angle != values[self.gui_rotation_slider]:
-            self.config.rotation_angle = int(values[self.gui_rotation_slider])
-            changed = True
-
-        if self.config.gui_vertical_flip != values[self.gui_vertical_flip]:
-            self.config.gui_vertical_flip = values[self.gui_vertical_flip]
-            changed = True
-
-        if self.config.gui_horizontal_flip != values[self.gui_horizontal_flip]:
-            self.config.gui_horizontal_flip = values[self.gui_horizontal_flip]
-            changed = True
-
-        if self.settings_config.use_calibration != values[self.use_calibration]:
-            self.settings_config.use_calibration = values[self.use_calibration]
-            changed = True
-
-        if changed:
-            self.main_config.save()
-
-        if event == self.gui_tracking_button:
-            print(
-                f'\033[94m[{lang._instance.get_string("log.info")}] {lang._instance.get_string("info.moveToTrackingMode")}\033[0m'
-            )
-            self.in_roi_mode = False
-            self.camera.set_output_queue(self.capture_queue)
-            window[self.gui_roi_layout].update(visible=False)
-            window[self.gui_tracking_layout].update(visible=True)
-
-        if event == self.gui_roi_button:
-            print(
-                f'\033[94m[{lang._instance.get_string("log.info")}] {lang._instance.get_string("info.moveToROIMode")}\033[0m'
-            )
-            self.in_roi_mode = True
-            self.camera.set_output_queue(self.roi_queue)
-            window[self.gui_roi_layout].update(visible=True)
-            window[self.gui_tracking_layout].update(visible=False)
-
-        if event == self.use_calibration:
-            if self.settings_config.use_calibration == True:
-                print(f'[{lang._instance.get_string("log.info")}] {lang._instance.get_string("info.enabled")}')
-                # Optionally, trigger BlendShapeCalibrator reset/init here if needed
-                playSound(os.path.join("Audio", "start.wav"))
-            else:
-                print(f'[{lang._instance.get_string("log.info")}] {lang._instance.get_string("info.disabled")}')
-                # Stop calibration if it was running
-                if self.babble_cnn.calibration_frame_counter is not None:
-                    self.babble_cnn.calibration_frame_counter = None
-
-        if event == "{}+UP".format(self.gui_roi_selection):
-            # Event for mouse button up in ROI mode
-            self.is_mouse_up = True
-            if self.x1 < 0:
-                self.x1 = 0
-            if self.y1 < 0:
-                self.y1 = 0
-            if abs(self.x0 - self.x1) != 0 and abs(self.y0 - self.y1) != 0:
-                self.config.roi_window_x = min([self.x0, self.x1])
-                self.config.roi_window_y = min([self.y0, self.y1])
-                self.config.roi_window_w = abs(self.x0 - self.x1)
-                self.config.roi_window_h = abs(self.y0 - self.y1)
-                self.main_config.save()
-
-        if event == self.gui_roi_selection:
-            # Event for mouse button down or mouse drag in ROI mode
-            if self.is_mouse_up:
-                self.is_mouse_up = False
-                self.x0, self.y0 = values[self.gui_roi_selection]
-            self.x1, self.y1 = values[self.gui_roi_selection]
-
-        if event == self.gui_autoroi:
-            print(lang._instance.get_string("info.setROI"))
-            if self.maybe_image is None:
-                # Skip rendering or use a default/placeholder image
-                return  # Or handle appropriately
-
-            output = self.maybe_image[0].shape
-            self.config.roi_window_x = 0
-            self.config.roi_window_y = 0
-            self.config.roi_window_w = output[1]
-            self.config.roi_window_h = output[0]
-            self.main_config.save()
-
-        if event == self.gui_refresh_button:
-            print(
-                f'\033[94m[{lang._instance.get_string("log.info")}] {lang._instance.get_string("info.refreshedCameraList")}\033[0m'
-            )
-            self.camera_list = list_camera_names()
-            #print(self.camera_list)
-            window[self.gui_camera_addr].update(values=self.camera_list,size=(20,0))
-
-        
-            if (
-                values[self.use_calibration] == True
-            ):  # Don't start recording if the calibration filter is disabled.
-                self.babble_cnn.calibration_frame_counter = None  # Disable old frame counter logic
-                # Optionally, trigger BlendShapeCalibrator reset/init here if needed
-                playSound(os.path.join("Audio", "start.wav"))
-
-        # Calibration is now controlled by the checkbox only
-
+        s = lang._instance.get_string
         needs_roi_set = self.config.roi_window_h <= 0 or self.config.roi_window_w <= 0
 
-        # TODO: Refactor if statements below...
-        window[self.gui_tracking_fps].update("")
-        window[self.gui_tracking_bps].update("")
-
+        fps_text = ""
+        bps_text = ""
         if self.config.capture_source is None or self.config.capture_source == "":
-            window[self.gui_mode_readout].update(
-                lang._instance.get_string("camera.waiting")
-            )
-            window[self.gui_roi_message].update(visible=False)
+            mode = s("camera.waiting")
+            self._set_roi_message_visible(False)
         elif self.camera.camera_status == CameraState.CONNECTING:
-            window[self.gui_mode_readout].update(
-                lang._instance.get_string("camera.connecting")
-            )
+            mode = s("camera.connecting")
         elif self.camera.camera_status == CameraState.DISCONNECTED:
-            window[self.gui_mode_readout].update(
-                lang._instance.get_string("camera.reconnecting")
-            )
+            mode = s("camera.reconnecting")
         elif needs_roi_set:
-            window[self.gui_mode_readout].update(
-                lang._instance.get_string("camera.waitingOnMouthCrop")
-            )
+            mode = s("camera.waitingOnMouthCrop")
         elif self.babble_cnn.calibration_frame_counter != None:
-            window[self.gui_mode_readout].update(
-                lang._instance.get_string("camera.calibration")
-            )
+            mode = s("camera.calibration")
         else:
-            window[self.gui_mode_readout].update(
-                lang._instance.get_string("camera.tracking")
-            )
-            window[self.gui_tracking_fps].update(self._movavg_fps(self.camera.fps))
-            window[self.gui_tracking_bps].update(self._movavg_bps(self.camera.bps))
-        if not self.settings_config.gui_disable_camera_preview: #If not hiding the image
-            if self.in_roi_mode:
-                try:
-                    if self.roi_queue.empty():
-                        self.capture_event.set()
-                    maybe_image = self.roi_queue.get(block=False)
-                    self.maybe_image = maybe_image
-                    imgbytes = cv2.imencode(".ppm", maybe_image[0])[1].tobytes()
-                    graph = window[self.gui_roi_selection]
-                    if self.figure:
-                        graph.delete_figure(self.figure)
-                    # INCREDIBLY IMPORTANT ERASE. Drawing images does NOT overwrite the buffer, the fucking
-                    # graph keeps every image fed in until you call this. Therefore we have to make sure we
-                    # erase before we redraw, otherwise we'll leak memory *very* quickly.
-                    graph.erase()
-                    graph.draw_image(data=imgbytes, location=(0, 0))
-                    if None not in (self.x0, self.y0, self.x1, self.y1):
-                        self.figure = graph.draw_rectangle(
-                            (self.x0, self.y0), (self.x1, self.y1), line_color="#6f4ca1"
-                        )
-                except Empty:
-                    pass
-            else:
-                if needs_roi_set:
-                    window[self.gui_roi_message].update(visible=True)
-                    return
-            try:
-                window[self.gui_roi_message].update(visible=False)
-                (maybe_image, cam_info) = self.image_queue.get(block=False)
-                imgbytes = cv2.imencode(".ppm", maybe_image)[1].tobytes()
-                window[self.gui_tracking_image].update(data=imgbytes)
+            mode = s("camera.tracking")
+            fps_text = self._movavg_fps(self.camera.fps)
+            bps_text = self._movavg_bps(self.camera.bps)
+        if self.mode_readout.text != mode:
+            self.mode_readout.text = mode
+        self.tracking_fps.text = fps_text
+        self.tracking_bps.text = bps_text
 
+        if self.settings_config.gui_disable_camera_preview:
+            # We are hiding the previews and crop feed.
+            if self.in_roi_mode:
+                self.in_roi_mode = False
+                self.camera.set_output_queue(self.capture_queue)
+            self._set_body(None)
+            return
+        if self.body.children == [] :
+            self._set_body(self.tracking_layout)
+
+        if self.in_roi_mode:
+            try:
+                if self.roi_queue.empty():
+                    self.capture_event.set()
+                maybe_image = self.roi_queue.get(block=False)
+                self.maybe_image = maybe_image
+                self.roi_selector.show_frame(maybe_image[0])
             except Empty:
                 pass
-        else: # We are hiding the previews and crop feed.
-            window[self.gui_roi_layout].update(visible=False)
-            window[self.gui_tracking_layout].update(visible=False)
-            self.in_roi_mode = False
+            return
+
+        if needs_roi_set:
+            self._set_roi_message_visible(True)
+            return
+        try:
+            self._set_roi_message_visible(False)
+            (maybe_image, cam_info) = self.image_queue.get(block=False)
+            self.tracking_image.show_frame(maybe_image)
+        except Empty:
+            pass

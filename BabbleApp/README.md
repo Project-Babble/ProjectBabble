@@ -9,6 +9,25 @@ Currently the architecture is a modified efficientnetv2-b0 training on blenshape
 ### How to run
 Go to the releases tab, download the latest exe. Clone this repo, and then move the calibration file (calib.json) to the same location as the exe. Next get the .onnx model in the repo and move it to the same location as the exe. Run the exe and enjoy!
 
+### Running from source (Windows, macOS, Linux)
+The UI is built with [Kivy](https://kivy.org), so the same code runs on every desktop platform and on Android. Requires Python 3.12.
+```
+pip install -r requirements.txt
+python babbleapp.py
+```
+Package a desktop build with `pyinstaller babbleapp.spec`.
+
+If the Chinese locales render as boxes, point `BABBLE_FONT` at a font file with CJK glyphs (the app searches the usual system fonts automatically).
+
+### Android
+Android builds use [buildozer](https://buildozer.readthedocs.io) (run on Linux, macOS or WSL2):
+```
+buildozer -v android debug
+```
+* ONNX Runtime isn't available for python-for-android, so on Android the model runs on OpenCV's DNN module. That needs a constant-folded copy of each model, created on a desktop machine with
+  `python tools/export_opencv_model.py Models/<model folder>` (writes `onnx/model.opencv.onnx`). The same fallback is used on any desktop where `onnxruntime` isn't installed.
+* Only network camera addresses (e.g. `http://<ip>/`) work on Android; USB/UVC cameras, serial devices and the Vive Facial Tracker need desktop OS APIs.
+
 ### PLEASE HIT THE TURN OFF CALIBRATION BUTTON UNTILL FURTHER NOTICE
 It ruins the model's quality 
 
