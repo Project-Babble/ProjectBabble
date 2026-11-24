@@ -50,6 +50,10 @@ class LocaleStringManager:
     def get_string(self, pattern):
         pattern = f"locale.{pattern}"
         if pattern not in self._instance._strings[self._instance._current_language]:
+            # Fall back to English for strings that haven't been translated yet.
+            fallback = self._instance._strings.get("English", {})
+            if pattern in fallback:
+                return fallback[pattern]
             raise KeyError(
                 f"String pattern '{pattern}' not found for current language '{self._instance._current_language}'"
             )

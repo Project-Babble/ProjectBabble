@@ -1,34 +1,22 @@
-import FreeSimpleGUI as sg
+import kivy_ui as ui  # Must be imported before any other Kivy module
+from kivy.uix.scrollview import ScrollView
+
 from lang_manager import LocaleStringManager as lang
 from config import BabbleSettingsConfig
 from osc import Tab
 from queue import Queue
 from threading import Event
-from utils.misc_utils import bg_color_highlight, bg_color_clear, is_valid_int_input
+from utils.misc_utils import bg_color_highlight, bg_color_clear, is_valid_int_input, is_valid_float_input
+
+
+def _is_port(value):
+    return value.isdigit() and len(value) <= 5
+
 
 class SettingsWidget:
     def __init__(
         self, widget_id: Tab, main_config: BabbleSettingsConfig, osc_queue: Queue
     ):
-        self.gui_general_settings_layout = f"-GENERALSETTINGSLAYOUT{widget_id}-"
-        self.gui_osc_address = f"-OSCADDRESS{widget_id}-"
-        self.gui_osc_port = f"-OSCPORT{widget_id}-"
-        self.gui_osc_receiver_port = f"OSCRECEIVERPORT{widget_id}-"
-        self.gui_osc_recalibrate_address = f"OSCRECALIBRATEADDRESS{widget_id}-"
-        self.gui_osc_delay_enable = f"OSCDELAYENABLE{widget_id}-"
-        self.gui_osc_delay_seconds = f"OSCDELAYSECONDS{widget_id}-"
-        self.gui_disable_camera_preview = f"DISABLECAMERAPREVIEW{widget_id}-"
-        self.gui_speed_coefficient = f"-SPEEDCOEFFICIENT{widget_id}-"
-        self.gui_min_cutoff = f"-MINCUTOFF{widget_id}-"
-        self.gui_ROSC = f"-ROSC{widget_id}-"
-        self.gui_update_check = f"-UPDATECHECK{widget_id}-"
-        self.gui_logging = f"-LOGGING{widget_id}-"
-        self.gui_osc_location = f"-OSCLOCATION{widget_id}-"
-        self.gui_cam_resolution_x = f"-CAMRESX{widget_id}-"
-        self.gui_cam_resolution_y = f"-CAMRESY{widget_id}-"
-        self.gui_cam_framerate = f"-CAMFRAMERATE{widget_id}-"
-        self.gui_use_red_channel = f"-REDCHANNEL{widget_id}-"
-        self.gui_language = f"-LANGUAGE{widget_id}-"  # Add this line
         self.main_config = main_config
         self.config = main_config.settings
         self.osc_queue = osc_queue
@@ -36,245 +24,211 @@ class SettingsWidget:
             lang._instance.get_languages()
         )  # Add more languages as needed
 
-        # Define the window's contents
-        self.general_settings_layout = [
-            [
-                sg.Checkbox(
-                    lang._instance.get_string("general.checkForUpdates"),
-                    default=self.config.gui_update_check,
-                    key=self.gui_update_check,
-                    background_color=bg_color_highlight,
-                    tooltip=lang._instance.get_string("general.toolTip"),
-                ),
-                sg.Checkbox(
-                    lang._instance.get_string("general.logging"),
-                    default=self.config.gui_logging,
-                    key=self.gui_logging,
-                    background_color=bg_color_highlight,
-                    tooltip=lang._instance.get_string("general.loggingTooltip"),
-                ),
-            ],
-            [
-                sg.Text(
-                    f'{lang._instance.get_string("general.oscSettings")}:',
-                    background_color=bg_color_clear,
-                ),
-            ],
-            [
-                sg.Text(
-                    f'{lang._instance.get_string("general.locationPrefix")}:',
-                    background_color=bg_color_highlight,
-                ),
-                sg.InputText(
-                    self.config.gui_osc_location,
-                    key=self.gui_osc_location,
-                    size=(30),
-                    tooltip=f'{lang._instance.get_string("general.locationTooltip")}.',
-                ),
-            ],
-            [
-                sg.Text(
-                    f'{lang._instance.get_string("general.address")}:',
-                    background_color=bg_color_highlight,
-                ),
-                sg.InputText(
-                    self.config.gui_osc_address,
-                    key=self.gui_osc_address,
-                    size=(0, 20),
-                    tooltip=f'{lang._instance.get_string("general.addressTooltip")}.',
-                ),
-                #  ],
-                #  [
-                sg.Text(
-                    f'{lang._instance.get_string("general.port")}:',
-                    background_color=bg_color_highlight,
-                ),
-                sg.InputText(
-                    self.config.gui_osc_port,
-                    key=self.gui_osc_port,
-                    size=(0, 10),
-                    tooltip=f'{lang._instance.get_string("general.portTooltip")}.',
-                    enable_events=True,
-                ),
-            ],
-            [
-                sg.Text(
-                    f'{lang._instance.get_string("general.receiver")}',
-                    background_color=bg_color_highlight,
-                ),
-                sg.Checkbox(
-                    "",
-                    default=self.config.gui_ROSC,
-                    key=self.gui_ROSC,
-                    background_color=bg_color_highlight,
-                    size=(0, 10),
-                    tooltip=f'{lang._instance.get_string("general.receiverTooltip")}.',
-                ),
-            ],
-            [
-                sg.Text(
-                    f'{lang._instance.get_string("general.receiver")}:',
-                    background_color=bg_color_highlight,
-                ),
-                sg.InputText(
-                    self.config.gui_osc_receiver_port,
-                    key=self.gui_osc_receiver_port,
-                    size=(0, 10),
-                    tooltip=f'{lang._instance.get_string("general.receiverPortTooltip")}:',
-                    enable_events=True,
-                ),
-            ],
-            [
-                sg.Text(
-                    f'{lang._instance.get_string("general.recalibrate")}:',
-                    background_color=bg_color_highlight,
-                ),
-                sg.InputText(
-                    self.config.gui_osc_recalibrate_address,
-                    key=self.gui_osc_recalibrate_address,
-                    size=(0, 10),
-                    tooltip=f'{lang._instance.get_string("general.recalibrateTooltip")}.',
-                ),
-            ],
-            [
-                sg.Text(
-                    f'{lang._instance.get_string("general.disableCameraPreview")}',
-                    background_color=bg_color_highlight,
-                ),
-                sg.Checkbox(
-                    "",
-                    default=self.config.gui_disable_camera_preview,
-                    key=self.gui_disable_camera_preview,
-                    background_color=bg_color_highlight,
-                    size=(0, 10),
-                    tooltip=f'{lang._instance.get_string("general.disableCameraPreview")}.',
-                ),
-            ],
-            [
-                sg.Text(
-                    f'{lang._instance.get_string("general.oscDelayEnable")}',
-                    background_color=bg_color_highlight,
-                ),
-                sg.Checkbox(
-                    "",
-                    default=self.config.gui_osc_delay_enable,
-                    key=self.gui_osc_delay_enable,
-                    background_color=bg_color_highlight,
-                    size=(0, 10),
-                    tooltip=f'{lang._instance.get_string("general.oscDelayEnable")}.',
-                ),
-            ],
-            [
-                sg.Text(
-                    f'{lang._instance.get_string("general.oscDelaySeconds")}:',
-                    background_color=bg_color_highlight,
-                ),
-                sg.InputText(
-                    self.config.gui_osc_delay_seconds,
-                    key=self.gui_osc_delay_seconds,
-                    size=(0, 10),
-                    tooltip=f'{lang._instance.get_string("general.oscDelaySeconds")}.',
-                ),
-            ],
-            [
-                sg.Text(
-                    f'{lang._instance.get_string("general.uvcCameraSettings")}:',
-                    background_color=bg_color_clear,
-                ),
-            ],
-            [
-                sg.Text(
-                    f'{lang._instance.get_string("general.useRedChannel")}:',
-                    background_color=bg_color_highlight,
-                ),
-                sg.Checkbox(
-                    "",
-                    default=self.config.gui_use_red_channel,
-                    key=self.gui_use_red_channel,
-                    background_color=bg_color_highlight,
-                    size=(0, 10),
-                    tooltip=f'{lang._instance.get_string("general.useRedChannelTooltip")}.',
-                ),
-                sg.Text(
-                    f'{lang._instance.get_string("general.xResolution")}.',
-                    background_color=bg_color_highlight,
-                ),
-                sg.InputText(
-                    self.config.gui_cam_resolution_x,
-                    key=self.gui_cam_resolution_x,
-                    size=(0, 20),
-                    tooltip=f'{lang._instance.get_string("general.xResolutionTooltip")}',
-                    enable_events=True,
-                ),
-                #  ],
-                #  [
-                sg.Text(
-                    f'{lang._instance.get_string("general.yResolution")}.',
-                    background_color=bg_color_highlight,
-                ),
-                sg.InputText(
-                    self.config.gui_cam_resolution_y,
-                    key=self.gui_cam_resolution_y,
-                    size=(0, 10),
-                    tooltip=f'{lang._instance.get_string("general.yResolutionTooltip")}',
-                    enable_events=True,
-                ),
-                #  ],
-                #  [
-                sg.Text(
-                    f'{lang._instance.get_string("general.framerate")}:',
-                    background_color=bg_color_highlight,
-                ),
-                sg.InputText(
-                    self.config.gui_cam_framerate,
-                    key=self.gui_cam_framerate,
-                    size=(0, 10),
-                    tooltip=f'{lang._instance.get_string("general.framerateTooltip")}',
-                ),
-            ],
-            [
-                sg.Text(
-                    f'{lang._instance.get_string("general.language")}:',
-                    background_color=bg_color_clear,
-                ),
-            ],
-            [
-                sg.Text(
-                    f'{lang._instance.get_string("general.languageInstructions")}.',
-                    background_color=bg_color_highlight,
-                ),
-            ],
-            [
-                sg.OptionMenu(
-                    self.available_languages,
-                    default_value=self.config.gui_language,
-                    key=self.gui_language,
-                    tooltip=f'{lang._instance.get_string("general.languageTooltip")}.',
-                ),
-            ],
-        ]
+        s = lang._instance.get_string
+        c = self.config
+        digits = lambda v: v == "" or v.isdigit()
+        port_chars = lambda v: v == "" or _is_port(v)
 
-        self.widget_layout = [
-            [
-                sg.Text(
-                    f'{lang._instance.get_string("general.header")}:',
-                    background_color=bg_color_clear,
+        # Define the window's contents
+        panel = ui.Panel(bg=bg_color_highlight, auto_height=True)
+        panel.add_widget(
+            ui.row(
+                ui.checkbox(
+                    s("general.checkForUpdates"),
+                    c.gui_update_check,
+                    on_change=self._setter("gui_update_check", bool),
+                    tooltip=s("general.toolTip"),
                 ),
-            ],
-            [
-                sg.Column(
-                    self.general_settings_layout,
-                    key=self.gui_general_settings_layout,
-                    background_color=bg_color_highlight,
+                ui.checkbox(
+                    s("general.logging"),
+                    c.gui_logging,
+                    on_change=self._setter("gui_logging", bool),
+                    tooltip=s("general.loggingTooltip"),
                 ),
-            ],
-        ]
+            )
+        )
+        panel.add_widget(ui.section_header(f'{s("general.oscSettings")}:'))
+        panel.add_widget(
+            ui.row(
+                ui.label(f'{s("general.locationPrefix")}:'),
+                ui.text_input(
+                    c.gui_osc_location,
+                    on_change=self._setter("gui_osc_location", str),
+                    chars=30,
+                    tooltip=f'{s("general.locationTooltip")}.',
+                ),
+            )
+        )
+        panel.add_widget(
+            ui.row(
+                ui.label(f'{s("general.address")}:'),
+                ui.text_input(
+                    c.gui_osc_address,
+                    on_change=self._setter("gui_osc_address", str),
+                    chars=18,
+                    tooltip=f'{s("general.addressTooltip")}.',
+                ),
+                ui.label(f'{s("general.port")}:'),
+                ui.text_input(
+                    c.gui_osc_port,
+                    on_change=self._setter("gui_osc_port", int, _is_port),
+                    chars=7,
+                    validator=port_chars,
+                    tooltip=f'{s("general.portTooltip")}.',
+                ),
+            )
+        )
+        panel.add_widget(
+            ui.row(
+                ui.label(f'{s("general.receiver")}'),
+                ui.checkbox(
+                    "",
+                    c.gui_ROSC,
+                    on_change=self._setter("gui_ROSC", bool),
+                    tooltip=f'{s("general.receiverTooltip")}.',
+                ),
+            )
+        )
+        panel.add_widget(
+            ui.row(
+                ui.label(f'{s("general.receiver")}:'),
+                ui.text_input(
+                    c.gui_osc_receiver_port,
+                    on_change=self._setter("gui_osc_receiver_port", int, _is_port),
+                    chars=7,
+                    validator=port_chars,
+                    tooltip=f'{s("general.receiverPortTooltip")}:',
+                ),
+            )
+        )
+        panel.add_widget(
+            ui.row(
+                ui.label(f'{s("general.recalibrate")}:'),
+                ui.text_input(
+                    c.gui_osc_recalibrate_address,
+                    on_change=self._setter("gui_osc_recalibrate_address", str),
+                    chars=36,
+                    tooltip=f'{s("general.recalibrateTooltip")}.',
+                ),
+            )
+        )
+        panel.add_widget(
+            ui.row(
+                ui.label(f'{s("general.disableCameraPreview")}'),
+                ui.checkbox(
+                    "",
+                    c.gui_disable_camera_preview,
+                    on_change=self._setter("gui_disable_camera_preview", bool),
+                    tooltip=f'{s("general.disableCameraPreview")}.',
+                ),
+            )
+        )
+        panel.add_widget(
+            ui.row(
+                ui.label(f'{s("general.oscDelayEnable")}'),
+                ui.checkbox(
+                    "",
+                    c.gui_osc_delay_enable,
+                    on_change=self._setter("gui_osc_delay_enable", bool),
+                    tooltip=f'{s("general.oscDelayEnable")}.',
+                ),
+            )
+        )
+        panel.add_widget(
+            ui.row(
+                ui.label(f'{s("general.oscDelaySeconds")}:'),
+                ui.text_input(
+                    c.gui_osc_delay_seconds,
+                    on_change=self._setter("gui_osc_delay_seconds", float, _is_float),
+                    chars=8,
+                    validator=is_valid_float_input,
+                    tooltip=f'{s("general.oscDelaySeconds")}.',
+                ),
+            )
+        )
+        panel.add_widget(ui.section_header(f'{s("general.uvcCameraSettings")}:'))
+        panel.add_widget(
+            ui.row(
+                ui.label(f'{s("general.useRedChannel")}:'),
+                ui.checkbox(
+                    "",
+                    c.gui_use_red_channel,
+                    on_change=self._setter("gui_use_red_channel", bool),
+                    tooltip=f'{s("general.useRedChannelTooltip")}.',
+                ),
+                ui.label(f'{s("general.xResolution")}.'),
+                ui.text_input(
+                    c.gui_cam_resolution_x,
+                    on_change=self._setter("gui_cam_resolution_x", int, str.isdigit),
+                    chars=6,
+                    validator=digits,
+                    tooltip=f'{s("general.xResolutionTooltip")}',
+                ),
+                ui.label(f'{s("general.yResolution")}.'),
+                ui.text_input(
+                    c.gui_cam_resolution_y,
+                    on_change=self._setter("gui_cam_resolution_y", int, str.isdigit),
+                    chars=6,
+                    validator=digits,
+                    tooltip=f'{s("general.yResolutionTooltip")}',
+                ),
+                ui.label(f'{s("general.framerate")}:'),
+                ui.text_input(
+                    c.gui_cam_framerate,
+                    on_change=self._setter("gui_cam_framerate", int, str.isdigit),
+                    chars=6,
+                    validator=digits,
+                    tooltip=f'{s("general.framerateTooltip")}',
+                ),
+            )
+        )
+        panel.add_widget(ui.section_header(f'{s("general.language")}:'))
+        panel.add_widget(ui.wrapping_label(f'{s("general.languageInstructions")}.'))
+        panel.add_widget(
+            ui.row(
+                ui.spinner(
+                    self.available_languages,
+                    c.gui_language,
+                    on_change=self._setter("gui_language", str),
+                    tooltip=f'{s("general.languageTooltip")}.',
+                )
+            )
+        )
+
+        self.general_settings_layout = panel
+
+        page = ui.Panel(bg=bg_color_clear, padding=0)
+        page.add_widget(ui.section_header(f'{s("general.header")}:'))
+        scroll = ScrollView(do_scroll_x=False, bar_width=ui.dp(8), scroll_type=["bars", "content"])
+        scroll.add_widget(panel)
+        page.add_widget(scroll)
+        self.widget_layout = page
 
         self.cancellation_event = (
             Event()
         )  # Set the event until start is called, otherwise we can block if shutdown is called.
         self.cancellation_event.set()
         self.image_queue = Queue(maxsize=2)
+
+    def _setter(self, attr, convert, is_complete=None):
+        """Build a change handler that converts, stores and saves a setting.
+
+        ``is_complete`` filters out partial input (e.g. an empty field or a lone "-") so it
+        isn't written to the config, matching the previous behaviour.
+        """
+
+        def handler(value):
+            if is_complete is not None and not is_complete(value):
+                return
+            try:
+                new_value = convert(value)
+            except (TypeError, ValueError):
+                return
+            if getattr(self.config, attr) != new_value:
+                setattr(self.config, attr, new_value)
+                self.main_config.save()
+
+        return handler
 
     def started(self):
         return not self.cancellation_event.is_set()
@@ -291,129 +245,14 @@ class SettingsWidget:
             return
         self.cancellation_event.set()
 
-    def render(self, window, event, values):
-        # If anything has changed in our configuration settings, change/update those.
-        changed = False
-
-        # Check if the OSC port is a valid integer and update if necessary
-        value = values[self.gui_osc_port]
-        if value.isdigit() and len(value) <= 5:
-            if self.config.gui_osc_port != int(value):
-                self.config.gui_osc_port = int(value)
-                changed = True
-        else:
-            if not is_valid_int_input(value):
-                value = value[:-1]
-                window[self.gui_osc_port].update(value)
-                values[self.gui_osc_port] = value
-
-        # Check if the OSC receiver port is a valid integer and update if necessary
-        value = values[self.gui_osc_receiver_port]
-        if value.isdigit() and len(value) <= 5:
-            if self.config.gui_osc_receiver_port != int(value):
-                self.config.gui_osc_receiver_port = int(value)
-                changed = True
-        else:
-            print(f'\033[91m[{lang._instance.get_string("log.error")}] {lang._instance.get_string("error.oscPort")}\033[0m')
-            if not is_valid_int_input(value):
-                value = value[:-1]
-                window[self.gui_osc_receiver_port].update(value)
-                values[self.gui_osc_receiver_port] = value
+    def render(self):
+        # Settings are applied as soon as they are edited (see _setter); nothing to poll.
+        pass
 
 
-        # Update OSC location if it has changed
-        if self.config.gui_osc_location != values[self.gui_osc_location]:
-            self.config.gui_osc_location = values[self.gui_osc_location]
-            changed = True
-
-        # Update OSC address if it has changed
-        if self.config.gui_osc_address != values[self.gui_osc_address]:
-            self.config.gui_osc_address = values[self.gui_osc_address]
-            changed = True
-
-        # Update recalibrate address if it has changed
-        if self.config.gui_osc_recalibrate_address != values[self.gui_osc_recalibrate_address]:
-            self.config.gui_osc_recalibrate_address = values[self.gui_osc_recalibrate_address]
-            changed = True
-
-        # Update check option
-        if self.config.gui_update_check != values[self.gui_update_check]:
-            self.config.gui_update_check = values[self.gui_update_check]
-            changed = True
-            
-        # Logging option
-        if self.config.gui_logging != values[self.gui_logging]:
-            self.config.gui_logging = values[self.gui_logging]
-            changed = True
-
-        # Update disable camera preview option
-        value = values[self.gui_disable_camera_preview]
-        if self.config.gui_disable_camera_preview != values[self.gui_disable_camera_preview]:
-            self.config.gui_disable_camera_preview = bool(values[self.gui_disable_camera_preview])
-            changed = True
-
-        # Update frame delay enable option
-        value = values[self.gui_osc_delay_enable]
-        if self.config.gui_osc_delay_enable != values[self.gui_osc_delay_enable]:
-            self.config.gui_osc_delay_enable = bool(values[self.gui_osc_delay_enable])
-            changed = True
-
-        # Update frame delay option
-        value = values[self.gui_osc_delay_seconds]
-        if self.config.gui_osc_delay_seconds != values[self.gui_osc_delay_seconds]:
-            self.config.gui_osc_delay_seconds = float(values[self.gui_osc_delay_seconds])
-            changed = True
-
-        # Update ROSC option
-        if self.config.gui_ROSC != values[self.gui_ROSC]:
-            self.config.gui_ROSC = values[self.gui_ROSC]
-            changed = True
-
-        # Update camera resolution X if it's a valid integer and different
-        value = values[self.gui_cam_resolution_x]
-        if value.isdigit():
-            if str(self.config.gui_cam_resolution_x) != value:
-                self.config.gui_cam_resolution_x = int(value)
-                changed = True
-        else:
-            value = value[:-1]
-            window[self.gui_cam_resolution_x].update(value)
-            values[self.gui_cam_resolution_x] = value
-
-        # Update camera resolution Y if it's a valid integer and different
-        value = values[self.gui_cam_resolution_y]
-        if value.isdigit():
-            if str(self.config.gui_cam_resolution_y) != value:
-                self.config.gui_cam_resolution_y = int(value)
-                changed = True
-        else:
-            value = value[:-1]
-            window[self.gui_cam_resolution_y].update(value)
-            values[self.gui_cam_resolution_y] = value
-
-        # Update camera framerate if it's a valid integer and different
-        value = values[self.gui_cam_framerate]
-        if value.isdigit():
-            if str(self.config.gui_cam_framerate) != value:
-                self.config.gui_cam_framerate = int(value)
-                changed = True
-        else:
-            value = value[:-1]
-            window[self.gui_cam_framerate].update(value)
-            values[self.gui_cam_framerate] = value
-
-        # Update the use of the red channel
-        if self.config.gui_use_red_channel != bool(values[self.gui_use_red_channel]):
-            self.config.gui_use_red_channel = bool(values[self.gui_use_red_channel])
-            changed = True
-
-        # Update language if it has changed
-        if self.config.gui_language != values[self.gui_language]:
-            self.config.gui_language = values[self.gui_language]
-            changed = True
-
-        # Save the configuration if changes were made
-        if changed:
-            self.main_config.save()
-
-        self.osc_queue.put(Tab.SETTINGS)
+def _is_float(value):
+    try:
+        float(value)
+        return True
+    except ValueError:
+        return False

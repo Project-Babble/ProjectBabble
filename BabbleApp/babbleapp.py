@@ -17,12 +17,18 @@ Copyright (c) 2023 Project Babble <3
 """
 
 import os
-import FreeSimpleGUI as sg
 import queue
 import requests
 import threading
-import asyncio
 import logging
+
+import kivy_ui as ui  # Configures Kivy; must come before any other Kivy import
+from kivy.app import App
+from kivy.clock import Clock
+from kivy.core.window import Window
+from kivy.uix.boxlayout import BoxLayout
+from kivy.uix.togglebutton import ToggleButton
+
 from babble_model_loader import *
 from camera_widget import CameraWidget
 from config import BabbleConfig
@@ -31,10 +37,10 @@ from osc import VRChatOSCReceiver, VRChatOSC
 from general_settings_widget import SettingsWidget
 from algo_settings_widget import AlgoSettingsWidget
 from calib_settings_widget import CalibSettingsWidget
-from utils.misc_utils import ensurePath, os_type, bg_color_highlight, bg_color_clear
+from utils.misc_utils import ensurePath, os_type, is_android, bg_color_highlight, bg_color_clear
 from lang_manager import LocaleStringManager as lang
 from logger import setup_logging
-from constants import UIConstants, AppConstants
+from constants import AppConstants
 
 winmm = None
 
@@ -47,7 +53,8 @@ if os_type == "Windows":
             f'\033[91m[{lang._instance.get_string("log.error")}] {lang._instance.get_string("error.winmm")}.\033[0m'
         )
 
-os.system("color")  # init ANSI color
+if os_type == "Windows":
+    os.system("color")  # init ANSI color
 
 # Random environment variable to speed up webcam opening on the MSMF backend.
 # https://github.com/opencv/opencv/issues/17687
@@ -167,7 +174,205 @@ class ThreadManager:
             self.logger.info("All threads terminated successfully")
 
 
-async def async_main():
+class BabbleApp(App):
+    """Kivy application hosting the camera, settings, algorithm and calibration pages."""
+
+    def __init__(self, config: BabbleConfig, **kwargs):
+        super().__init__(**kwargs)
+        self.babble_config = config
+        self.title = f"{AppConstants.VERSION}"
+        self.icon = os.path.join("Images", "logo.ico")
+        self.cancellation_event = threading.Event()
+        self.thread_manager = ThreadManager(self.cancellation_event)
+        self.focused = True
+        self._render_event = None
+        self._stopped = False
+
+    # Kivy's App has its own "config" attribute, so ours is kept as babble_config.
+    def build(self):
+        config = self.babble_config
+        Window.clearcolor = ui.rgba(bg_color_clear)
+
+        osc_queue: queue.Queue[tuple[bool, int, int]] = queue.Queue(maxsize=10)
+        osc = VRChatOSC(self.cancellation_event, osc_queue, config)
+        osc_thread = threading.Thread(target=osc.run, name="OSCThread")
+        self.thread_manager.add_thread(osc_thread, shutdown_obj=osc)
+
+        self.cams = [
+            CameraWidget(Tab.CAM, config, osc_queue),
+        ]
+        self.settings_pages = [
+            SettingsWidget(Tab.SETTINGS, config, osc_queue),
+            AlgoSettingsWidget(Tab.ALGOSETTINGS, config, osc_queue),
+            CalibSettingsWidget(Tab.CALIBRATION, config, osc_queue),
+        ]
+        self.settings_pages[1].on_clear_calibration = self.cams[0].clear_calibration
+        self.pages = {
+            Tab.CAM: self.cams[0].widget_layout,
+            Tab.SETTINGS: self.settings_pages[0].widget_layout,
+            Tab.ALGOSETTINGS: self.settings_pages[1].widget_layout,
+            Tab.CALIBRATION: self.settings_pages[2].widget_layout,
+        }
+
+        s = lang._instance.get_string
+        root = BoxLayout(orientation="vertical", padding=ui.PADDING, spacing=ui.SPACING)
+
+        # Tab selector (replaces the TABSELECTRADIO radio buttons)
+        tab_bar = ui.row()
+        self.tab_buttons = {}
+        for tab, key in [
+            (Tab.CAM, "babble.camPage"),
+            (Tab.SETTINGS, "babble.settingsPage"),
+            (Tab.ALGOSETTINGS, "babble.algoSettingsPage"),
+            (Tab.CALIBRATION, "babble.calibrationPage"),
+        ]:
+            btn = ToggleButton(
+                text=s(key),
+                group="TABSELECTRADIO",
+                allow_no_selection=False,
+                state="down" if config.cam_display_id == tab else "normal",
+                size_hint=(None, None),
+                height=ui.ROW_HEIGHT,
+                font_size=ui.FONT_SIZE,
+                background_normal="",
+                background_down="",
+            )
+            ui._fit_width(btn, extra=ui.dp(28))
+            self._style_tab(btn)
+            btn.bind(state=lambda inst, value, t=tab: self._on_tab_state(inst, value, t))
+            self.tab_buttons[tab] = btn
+            tab_bar.add_widget(btn)
+        root.add_widget(tab_bar)
+
+        self.page_container = BoxLayout()
+        ui.paint_background(self.page_container, bg_color_highlight)
+        root.add_widget(self.page_container)
+
+        # Keep at bottom!
+        self.focus_label = ui.wrapping_label(
+            f'- - -  {s("general.windowFocus")}  - - -', halign="center"
+        )
+
+        if config.cam_display_id not in self.pages:
+            config.cam_display_id = Tab.CAM
+        self.page_container.add_widget(self.pages[config.cam_display_id])
+        if config.cam_display_id in [Tab.CAM]:
+            self.cams[0].start()
+        if config.cam_display_id in [Tab.SETTINGS]:
+            self.settings_pages[0].start()
+        if config.cam_display_id in [Tab.ALGOSETTINGS]:
+            self.settings_pages[1].start()
+        if config.cam_display_id in [Tab.CALIBRATION]:
+            self.settings_pages[2].start()
+
+        # the cam needs to be running before it is passed to the OSC
+        if config.settings.gui_ROSC:
+            osc_receiver = VRChatOSCReceiver(self.cancellation_event, config, self.cams)
+            osc_receiver_thread = threading.Thread(
+                target=osc_receiver.run, name="OSCReceiverThread"
+            )
+            self.thread_manager.add_thread(osc_receiver_thread, shutdown_obj=osc_receiver)
+
+        self.root_layout = root
+        if not is_android:
+            Window.bind(focus=self._on_window_focus)
+        self._schedule_render(AppConstants.DEFAULT_WINDOW_FOCUS_REFRESH)
+        return root
+
+    # --- Tabs ---------------------------------------------------------------------------------
+    @staticmethod
+    def _style_tab(btn):
+        btn.background_color = ui.rgba(bg_color_highlight if btn.state == "down" else "#333133")
+        btn.bold = btn.state == "down"
+
+    def _on_tab_state(self, btn, state, tab):
+        self._style_tab(btn)
+        if state == "down":
+            self.select_tab(tab)
+
+    def select_tab(self, tab):
+        config = self.babble_config
+        if config.cam_display_id == tab and self.pages[tab].parent is self.page_container:
+            return
+        cams, settings = self.cams, self.settings_pages
+        if tab == Tab.CAM:
+            cams[0].start()
+            settings[0].stop()
+            settings[1].stop()
+            settings[2].stop()
+        elif tab == Tab.SETTINGS:
+            cams[0].stop()
+            settings[1].stop()
+            settings[2].stop()
+            settings[0].start()
+        elif tab == Tab.ALGOSETTINGS:
+            cams[0].stop()
+            settings[0].stop()
+            settings[2].stop()
+            settings[1].start()
+        elif tab == Tab.CALIBRATION:
+            cams[0].start()  # Allow tracking to continue in calibration tab
+            settings[0].stop()
+            settings[1].stop()
+            settings[2].start()
+        ui.tooltips.hide()
+        self.page_container.clear_widgets()
+        self.page_container.add_widget(self.pages[tab])
+        config.cam_display_id = tab
+        config.save()
+
+    # --- Rendering ----------------------------------------------------------------------------
+    def _schedule_render(self, interval_ms):
+        if self._render_event is not None:
+            self._render_event.cancel()
+        self._render_event = Clock.schedule_interval(self.render, interval_ms / 1000.0)
+
+    def _on_window_focus(self, window, focused):
+        # If the window isn't in focus, refresh less often and pause the previews.
+        if focused == self.focused:
+            return
+        self.focused = focused
+        if focused:
+            if self.focus_label.parent is not None:
+                self.root_layout.remove_widget(self.focus_label)
+            self._schedule_render(AppConstants.DEFAULT_WINDOW_FOCUS_REFRESH)
+        else:
+            ui.tooltips.hide()
+            if self.focus_label.parent is None:
+                self.root_layout.add_widget(self.focus_label)
+            self._schedule_render(AppConstants.UNFOCUSED_WINDOW_REFRESH)
+
+    def render(self, dt):
+        if not self.focused:
+            return
+        for cam in self.cams:
+            if cam.started():
+                cam.render()
+        for setting in self.settings_pages:
+            if setting.started():
+                setting.render()
+
+    # --- Lifecycle ----------------------------------------------------------------------------
+    def on_pause(self):
+        # Android: keep tracking/OSC running while the app is in the background.
+        return True
+
+    def on_resume(self):
+        pass
+
+    def on_stop(self):
+        if self._stopped:
+            return
+        self._stopped = True
+        if self._render_event is not None:
+            self._render_event.cancel()
+        # Exit code here
+        for cam in getattr(self, "cams", []):
+            cam.stop()
+        self.thread_manager.shutdown_all()
+
+
+def main():
     ensurePath()
 
     # Get Configuration
@@ -185,244 +390,18 @@ async def async_main():
     # Uncomment for low-level Vive Facial Tracker logging
     # logging.basicConfig(filename='BabbleApp.log', filemode='w', encoding='utf-8', level=logging.INFO)
 
-    cancellation_event = threading.Event()
-    ROSC = False
-
     timerResolution(True)
-
-    thread_manager = ThreadManager(cancellation_event)
-
-    osc_queue: queue.Queue[tuple[bool, int, int]] = queue.Queue(maxsize=10)
-    osc = VRChatOSC(cancellation_event, osc_queue, config)
-    osc_thread = threading.Thread(target=osc.run, name="OSCThread")
-    thread_manager.add_thread(osc_thread, shutdown_obj=osc)
-    cams = [
-        CameraWidget(Tab.CAM, config, osc_queue),
-    ]
-
-    settings = [
-        SettingsWidget(Tab.SETTINGS, config, osc_queue),
-        AlgoSettingsWidget(Tab.ALGOSETTINGS, config, osc_queue),
-        CalibSettingsWidget(Tab.CALIBRATION, config, osc_queue),
-    ]
-
-    layout = [
-        [
-            sg.Radio(
-                lang._instance.get_string("babble.camPage"),
-                "TABSELECTRADIO",
-                background_color=bg_color_clear,
-                default=(config.cam_display_id == Tab.CAM),
-                key=UIConstants.CAM_RADIO_NAME,
-            ),
-            sg.Radio(
-                lang._instance.get_string("babble.settingsPage"),
-                "TABSELECTRADIO",
-                background_color=bg_color_clear,
-                default=(config.cam_display_id == Tab.SETTINGS),
-                key=UIConstants.SETTINGS_RADIO_NAME,
-            ),
-            sg.Radio(
-                lang._instance.get_string("babble.algoSettingsPage"),
-                "TABSELECTRADIO",
-                background_color=bg_color_clear,
-                default=(config.cam_display_id == Tab.ALGOSETTINGS),
-                key=UIConstants.ALGO_SETTINGS_RADIO_NAME,
-            ),
-            sg.Radio(
-                lang._instance.get_string("babble.calibrationPage"),
-                "TABSELECTRADIO",
-                background_color=bg_color_clear,
-                default=(config.cam_display_id == Tab.CALIBRATION),
-                key=UIConstants.CALIB_SETTINGS_RADIO_NAME,
-            ),
-        ],
-        [
-            sg.Column(
-                cams[0].widget_layout,
-                vertical_alignment="top",
-                key=UIConstants.CAM_NAME,
-                visible=(config.cam_display_id in [Tab.CAM]),
-                background_color=bg_color_highlight,
-            ),
-            sg.Column(
-                settings[0].widget_layout,
-                vertical_alignment="top",
-                key=UIConstants.SETTINGS_NAME,
-                visible=(config.cam_display_id in [Tab.SETTINGS]),
-                background_color=bg_color_highlight,
-            ),
-            sg.Column(
-                settings[1].widget_layout,
-                vertical_alignment="top",
-                key=UIConstants.ALGO_SETTINGS_NAME,
-                visible=(config.cam_display_id in [Tab.ALGOSETTINGS]),
-                background_color=bg_color_highlight,
-            ),
-            sg.Column(
-                settings[2].widget_layout,
-                vertical_alignment="top",
-                key=UIConstants.CALIB_SETTINGS_NAME,
-                visible=(config.cam_display_id in [Tab.CALIBRATION]),
-                background_color=bg_color_highlight,
-            ),
-        ],
-        # Keep at bottom!
-        [
-            sg.Text(
-                f'- - -  {lang._instance.get_string("general.windowFocus")}  - - -',
-                key="-WINFOCUS-",
-                background_color=bg_color_clear,
-                text_color="#F0F0F0",
-                justification="center",
-                expand_x=True,
-                visible=False,
-            )
-        ],
-    ]
-
-    if config.cam_display_id in [Tab.CAM]:
-        cams[0].start()
-    if config.cam_display_id in [Tab.SETTINGS]:
-        settings[0].start()
-    if config.cam_display_id in [Tab.ALGOSETTINGS]:
-        settings[1].start()
-    if config.cam_display_id in [Tab.CALIBRATION]:
-        settings[2].start()
-
-    # the cam needs to be running before it is passed to the OSC
-    if config.settings.gui_ROSC:
-        osc_receiver = VRChatOSCReceiver(cancellation_event, config, cams)
-        osc_receiver_thread = threading.Thread(
-            target=osc_receiver.run, name="OSCReceiverThread"
-        )
-        thread_manager.add_thread(osc_receiver_thread, shutdown_obj=osc_receiver)
-        ROSC = True
-
-    # Create the window
-    window = sg.Window(
-        f"{AppConstants.VERSION}",
-        layout,
-        icon=os.path.join("Images", "logo.ico"),
-        background_color=bg_color_clear,
-    )
-
-    # Run the main loop
-    await main_loop(window, config, cams, settings, thread_manager)
-
-    # Cleanup after main loop exits
-    timerResolution(False)
+    ui.setup_fonts()
+    app = BabbleApp(config)
+    try:
+        app.run()
+    finally:
+        # Also runs if the UI failed to start, so worker threads don't keep the process alive.
+        app.on_stop()
+        timerResolution(False)
     print(
         f'\033[94m[{lang._instance.get_string("log.info")}] {lang._instance.get_string("babble.exit")}\033[0m'
     )
-
-
-async def main_loop(window, config, cams, settings, thread_manager):
-    tint = AppConstants.DEFAULT_WINDOW_FOCUS_REFRESH
-    fs = False
-
-    while True:
-        event, values = window.read(timeout=tint)
-
-        if event in ("Exit", sg.WIN_CLOSED):
-            # Exit code here
-            for cam in cams:
-                cam.stop()
-            thread_manager.shutdown_all()
-            window.close()
-            return
-
-        try:
-            # If window isn't in focus increase timeout and stop loop early
-            if window.TKroot.focus_get():
-                if fs:
-                    fs = False
-                    tint = AppConstants.DEFAULT_WINDOW_FOCUS_REFRESH
-                    window[UIConstants.WINDOW_FOCUS_KEY].update(visible=False)
-                    window[UIConstants.WINDOW_FOCUS_KEY].hide_row()
-                    window.refresh()
-            else:
-                if not fs:
-                    fs = True
-                    tint = AppConstants.UNFOCUSED_WINDOW_REFRESH
-                    window[UIConstants.WINDOW_FOCUS_KEY].update(visible=True)
-                    window[UIConstants.WINDOW_FOCUS_KEY].unhide_row()
-                continue
-        except KeyError:
-            pass
-
-        if values[UIConstants.CAM_RADIO_NAME] and config.cam_display_id != Tab.CAM:
-            cams[0].start()
-            settings[0].stop()
-            settings[1].stop()
-            settings[2].stop()
-            window[UIConstants.CAM_NAME].update(visible=True)
-            window[UIConstants.SETTINGS_NAME].update(visible=False)
-            window[UIConstants.ALGO_SETTINGS_NAME].update(visible=False)
-            window[UIConstants.CALIB_SETTINGS_NAME].update(visible=False)
-            config.cam_display_id = Tab.CAM
-            config.save()
-
-        elif (
-            values[UIConstants.SETTINGS_RADIO_NAME]
-            and config.cam_display_id != Tab.SETTINGS
-        ):
-            cams[0].stop()
-            settings[1].stop()
-            settings[2].stop()
-            settings[0].start()
-            window[UIConstants.CAM_NAME].update(visible=False)
-            window[UIConstants.SETTINGS_NAME].update(visible=True)
-            window[UIConstants.ALGO_SETTINGS_NAME].update(visible=False)
-            window[UIConstants.CALIB_SETTINGS_NAME].update(visible=False)
-            config.cam_display_id = Tab.SETTINGS
-            config.save()
-
-        elif (  
-            values[UIConstants.ALGO_SETTINGS_RADIO_NAME]
-            and config.cam_display_id != Tab.ALGOSETTINGS
-        ):
-            cams[0].stop()
-            settings[0].stop()
-            settings[2].stop()  
-            settings[1].start()
-            window[UIConstants.CAM_NAME].update(visible=False)
-            window[UIConstants.SETTINGS_NAME].update(visible=False)
-            window[UIConstants.ALGO_SETTINGS_NAME].update(visible=True)
-            window[UIConstants.CALIB_SETTINGS_NAME].update(visible=False)
-            config.cam_display_id = Tab.ALGOSETTINGS
-            config.save()
-
-        elif (
-            values[UIConstants.CALIB_SETTINGS_RADIO_NAME]
-            and config.cam_display_id != Tab.CALIBRATION
-        ):
-            cams[0].start()  # Allow tracking to continue in calibration tab
-            settings[0].stop()
-            settings[1].stop()
-            settings[2].start()
-            window[UIConstants.CAM_NAME].update(visible=False)
-            window[UIConstants.SETTINGS_NAME].update(visible=False)
-            window[UIConstants.ALGO_SETTINGS_NAME].update(visible=False)
-            window[UIConstants.CALIB_SETTINGS_NAME].update(visible=True)
-            config.cam_display_id = Tab.CALIBRATION
-            config.save()
-
-        # Otherwise, render all
-        for cam in cams:
-            if cam.started():
-                cam.render(window, event, values)
-        for setting in settings:
-            if setting.started():
-                setting.render(window, event, values)
-
-        # Rather than await asyncio.sleep(0), yield control periodically
-        await asyncio.sleep(0.001)  # Small sleep to allow other tasks to rundef main():
-    asyncio.run(async_main())
-
-
-def main():
-    asyncio.run(async_main())
 
 
 if __name__ == "__main__":
